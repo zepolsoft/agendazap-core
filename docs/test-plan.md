@@ -235,3 +235,44 @@ workflow testada, resultado por cenário e evidência da execução)._
 - **Formato de `data`:** os pins de agendamentos usaram o formato novo das queries
   (`2026-10-03T10:00:00-03:00`) e os nodes de Code o leram sem problema (cenários 30 e 31a).
 - **Decisão do `servico_id`:** não foi tocada; a IA devolveu sempre o nome exato do seed.
+
+### Rodada 3 — Grupo A, cenários 13 a 19 do Lembrete (30/09/2026)
+
+- **Workflow:** "Lembrete, Cancelamento e Remarcação (Supabase)" (`0mPYXZesloutZbek`), versão
+  `bd29f821-9c53-4304-932b-edbc73c5ef2f`, desativado. Primeira rodada neste workflow.
+- **Como:** `test_workflow` a partir do trigger "Disparar Lembrete Diário às 8h", com pin em todos
+  os nodes de WhatsApp, Google Calendar, Postgres, Data Tables e HTTP. Os agentes "Classificar
+  Resposta do Lembrete" e "Classificar Confirmação da Remarcação" rodaram de verdade. Execuções
+  1589 a 1594, entre 12h19 e 12h22 (horário de São Paulo), todas com `status: success`.
+- **Resposta do cliente:** os dois nodes de Wait ("Aguardar Resposta do Cliente" e "Aguardar
+  Confirmação da Remarcação") foram fixados com o payload que o webhook entregaria
+  (`body.messages[0].text.body`); no cenário de timeout, com um item sem `body`. Ou seja, a espera
+  real de 10 minutos e a retomada por webhook não foram exercitadas — isso é Grupo B.
+- **Pins:** uma linha por cenário em "Buscar Agendamentos de Hoje (Planilha)", com `data` de hoje
+  às 16h no formato novo das queries (`2026-09-30T16:00:00-03:00`); serviços do seed;
+  `profissional_id` fictício, como nas rodadas anteriores.
+- **Resultado:** os 6 cenários passaram (o 17 é do Grupo B).
+
+| # | Resposta do cliente | Telefone | Resultado | Evidência |
+|---|---|---|---|---|
+| 13 | "confirmo, estarei aí" | 5511900000301 | ✅ `decisao: confirmar` → `Enviar Confirmação Final no WhatsApp` | exec. 1589 |
+| 14 | "não vou poder ir, pode cancelar" | 5511900000302 | ✅ `decisao: cancelar` → `Cancelar Evento no Calendar` → `Atualizar Status na Planilha (Cancelar)` → `Enviar Confirmação de Cancelamento no WhatsApp` | exec. 1590 |
+| 15 | "pode remarcar pra hoje às 17h?" → "sim" (Corte Masculino) | 5511900000303 | ✅ `decisao: remarcar`, início 17h; a IA mandou fim 18h e o Code corrigiu para 17h30 (`duracao_minutos: 30`, `duracao_fonte: planilha`). Após o "sim": `Atualizar Evento no Calendar` → `Atualizar Data na Planilha` → `Enviar Confirmação Final da Remarcação no WhatsApp` | exec. 1591 |
+| 16 | "consegue passar pra amanhã às 10h?" → "pode sim" (Corte + Barba) | 5511900000304 | ✅ Idem, com a data nova: 01/10 10h–10h50 (`duracao_minutos: 50`) | exec. 1592 |
+| 18 | "pode remarcar pra hoje às 17h?", com `Verificar Novo Horário Disponível` → `available: false` | 5511900000305 | ✅ `Pedir Outro Horário no WhatsApp`; `Propor Remarcação` e `Atualizar Evento no Calendar` não executaram | exec. 1593 |
+| 19 | Sem resposta (timeout) | 5511900000306 | ✅ `Reverificar Agendamento Antes do Timeout` → `Agendamento Ainda É o Mesmo?` (sim) → `Avisar Timeout do Lembrete no WhatsApp`; execução terminou com sucesso, sem chamar a IA | exec. 1594 |
+
+**Observações desta rodada**
+
+- **Formato de `data`:** o prompt do "Classificar Resposta do Lembrete" recebeu o horário do
+  agendamento já como `...T16:00:00-03:00`, que é o formato que a correção do SQL passou a devolver
+  (antes seria UTC). A comparação de `data` em "Agendamento Ainda É o Mesmo?" casou (cenário 19).
+  Com o Postgres fixado, isso prova que o workflow lida bem com o formato — não que o SQL o
+  produz.
+- **O que o pin não prova:** o mesmo da rodada 1 (SQL, `queryReplacement` e a expression de
+  calendário dinâmico não são avaliados em node fixado), mais a espera real dos nodes de Wait.
+- **Erros engolidos:** vários nodes deste workflow têm `onError: continueRegularOutput` (incluindo
+  os `UPDATE`s de Postgres). Os cenários aprovados aqui são o caminho feliz; o que acontece quando
+  um `UPDATE` falha de verdade não foi testado.
+- O trigger das 22h ("Marcar Atendimentos Concluídos") não faz parte dos cenários 13–19 e não foi
+  executado.
