@@ -147,6 +147,58 @@ estacionamento) — o prompt da IA não mudou, então o comportamento esperado �
 
 ---
 
+## Grupo B — Plano de execução confirmado (2026-09-30)
+
+Decisões tomadas antes de começar a rodar o Grupo B:
+
+1. **Trigger do Agendamento (troca temporária, só durante o Grupo B):** sai o WhatsApp Trigger
+   "Receber Mensagem WhatsApp", entra um Webhook `POST` com caminho aleatório, respondendo 200 na
+   hora. Logo depois, um Set "Extrair Mensagem do Webhook" repassa só o `body` (mesmo shape que a
+   Meta manda), pra nenhum node downstream precisar mudar. A expression de "Encaminhar Mensagem
+   para Lembrete" que citava o trigger pelo nome passa a apontar pro Set novo. O Lembrete **não**
+   muda de trigger (os dele são Schedule + Wait, disparados direto pelo `execute_workflow`).
+   Checklist de cutover (remover Webhook/Set, recolocar o WhatsApp Trigger, restaurar a
+   referência, só então ativar) vai para `docs/migracao-supabase.md`.
+2. **Execução dos cenários:**
+   - 9, 17, 20, 22, 26, 33, 34, 21: `test_workflow`, fixando só envio de WhatsApp e indicador de
+     digitação — banco, Calendar e Data Tables reais. (`execute_workflow` não aceita pin, por isso
+     não serve aqui.)
+   - 23 e 29 (Error Workflow): exigem execução de produção de verdade — a cópia do Agendamento
+     (já com o Webhook) é **publicada só durante esses dois cenários e despublicada em seguida**.
+     Monitorar a aba Executions enquanto estiver publicada; não deixar publicada além do
+     necessário, já que a instância do n8n está exposta na internet (easypanel) e, com Webhook
+     ativo, é alcançável por quem descobrir a URL aleatória (risco baixo — path aleatório, janela
+     curta — mas mitigado por essa monitoração).
+     - 29: mesmo protocolo do G1 (snapshot do parser antes, troca temporária pro schema
+       impossível, roda, restaura, confere byte a byte).
+     - 23: erro provocado apontando um node Postgres **só da cópia** para uma tabela inexistente;
+       restaurar depois.
+   - 32 (lembrete real): Lembrete em modo manual, com uma linha real no banco para um número de
+     teste que **não é cliente cadastrado na produção**. Número ainda não definido — pendente de
+     confirmação (ver "Pendências" abaixo).
+3. **Notificações de erro (23 e 29):** vão para o número real de produção (`5511975049937`), sem
+   criar cópia do "Notificação de Erros". Quem recebe esse WhatsApp deve ser avisado **antes**
+   que vão chegar 2 notificações de erro propositais nesse dia, pra não causar susto — o nome do
+   workflow (sufixo "...Supabase") já ajuda a diferenciar.
+4. **Faixa de telefones de teste:** `5511091000001`–`5511091000099` (12 dígitos, prefixo `0` —
+   não existe como número de assinante real no Brasil, evita colidir com cliente de verdade nas
+   Data Tables compartilhadas com produção). `message_id` de teste usa o prefixo `wamid.GB-…`.
+   Limpeza por workflow auxiliar temporário (Data Tables não têm operação de apagar linha via
+   MCP), filtrando por `telefone LIKE '5511091000%'` / `message_id LIKE 'wamid.GB-%'`, com
+   conferência antes/depois e o auxiliar arquivado no fim. No Supabase/Calendar, limpeza por SQL
+   pelo mesmo prefixo de telefone e pelo `event_id` criado.
+5. **Cenário 25b** (mensagem entre 23h–1h): fica de fora desta rodada — não vamos esperar até a
+   madrugada artificialmente. Roda numa sessão futura que caia nesse horário naturalmente.
+
+### Pendências antes de executar
+
+- **Número de teste do cenário 32**: precisa ser um número que o responsável confirme não ser
+  cliente cadastrado na produção. Ainda não definido.
+- **Troca do trigger do Agendamento**: depende do MCP do n8n para editar o workflow na instância
+  (`https://n8n-n8n.wg1izd.easypanel.host`). Esse conector não está disponível nesta sessão —
+  assim que estiver, a troca do trigger é o primeiro passo antes de rodar qualquer cenário do
+  Grupo B.
+
 ## Registro de execuções
 
 _(registre aqui cada rodada de teste, no mesmo formato do roteiro de produção: data, versão do
