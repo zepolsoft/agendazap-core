@@ -13,15 +13,25 @@ Novo projeto de automação de agendamento via WhatsApp, usando **Supabase
 
 ```
 agendazap-core/
+├── .claude/skills/
+│   ├── n8n-node-conventions/SKILL.md
+│   ├── n8n-workflow-builder/SKILL.md
+│   └── whatsapp-message-style/SKILL.md
 ├── db/
 │   ├── 001_initial_schema.sql   # schema inicial (tabelas, enums, triggers, constraint anti-conflito)
 │   └── 002_seed_exemplo.sql     # dados de exemplo para testes (2 profissionais + serviços)
+├── docs/
+│   ├── arquitetura.md            # visão geral da arquitetura e decisões de design
+│   ├── migracao-supabase.md      # mapeamento node a node da migração + decisões em aberto
+│   └── test-plan.md              # roteiro de testes (adaptado do repo de produção)
+├── prompts/
+│   ├── agendamento-interpretar-intencao.md
+│   └── lembrete-classificar-resposta.md
 ├── workflows/
 │   ├── agendamento-whatsapp/                  # export do workflow n8n "Agendamento via WhatsApp"
 │   ├── lembrete-cancelamento-remarcacao/      # export do workflow n8n "Lembrete, Cancelamento e Remarcação"
 │   └── notificacao-erros/                     # export do workflow n8n "Notificação de Erros"
-└── docs/
-    └── migracao-supabase.md      # mapeamento node a node da migração + decisões em aberto
+└── CLAUDE.md                     # contexto do projeto para o Claude Code
 ```
 
 ## Banco de dados
