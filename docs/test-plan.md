@@ -199,3 +199,39 @@ workflow testada, resultado por cenário e evidência da execução)._
 - **Memória da IA:** funcionou entre execuções sequenciais do mesmo telefone (cenários 1, 6 e 7).
 - Uma chamada de `test_workflow` (cenário 3b) expirou sem criar execução e foi repetida; a
   repetição é a exec. 1559.
+
+### Rodada 2 — Grupo A, cenários 10, 11, 12, 25a, 27, 30, 31a e 31e (30/09/2026)
+
+- **Workflow:** o mesmo da rodada 1 — "Agendamento via WhatsApp (Supabase)" (`ny0fqlw8ojzmId7C`),
+  versão `a85d413b-65a5-468b-803b-2c25f9807df4`, desativado.
+- **Como:** mesmas regras e mesmos pins da rodada 1 (incluindo o `profissional_id` fictício).
+  Execuções 1570 a 1588, entre 12h07 e 12h14 (horário de São Paulo), todas com `status: success`.
+  Exceção: nas duas execuções do cenário 25a o agente de IA **foi fixado de propósito**, porque o
+  cenário testa a lógica de fuso do node de Code, não a interpretação da IA.
+- **Resultado:** os 8 cenários passaram.
+
+| # | Mensagem(ns) | Telefone | Resultado | Evidência |
+|---|---|---|---|---|
+| 10 | (a) "quero marcar uma Barba amanhã às 10h"; (b) "quero marcar Corte + Barba amanhã às 14h" | 5511900000210, 5511900000211 | ✅ (a) fim 10h20, `duracao_minutos: 20`; (b) fim 14h50, `duracao_minutos: 50`; nos dois `duracao_fonte: planilha` | exec. 1570, 1571 |
+| 11 | Proposta aceita com "blz", "pode" e "👍" (o "sim" é o cenário 1) | 5511900000221, 5511900000222, 5511900000223 | ✅ As três viraram `confirmado: true` → `Criar Evento no Calendar` → `Confirmar Agendamento no WhatsApp` | exec. 1572–1574 (propostas), 1576–1578 (confirmações) |
+| 12 | Mensagem do tipo `audio`, `image` e `sticker`, sem texto | 5511900000231, 5511900000232, 5511900000233 | ✅ `mensagem` chega vazia, o fluxo não quebra; `intencao: duvida`, a IA diz que não conseguiu ver a mensagem e pede para o cliente contar como pode ajudar → `Responder Dúvida no WhatsApp`; nada criado | exec. 1575, 1579, 1580 |
+| 25a | Saída da IA fixada em UTC: (a) `2026-10-03T20:30:00Z` (sábado 17h30 em São Paulo), Barba; (b) `2026-10-04T13:00:00Z` (domingo 10h em São Paulo) | 5511900000241, 5511900000242 | ✅ (a) fim calculado `2026-10-03T17:50:00-03:00`, `dentro_do_expediente: true` → `Propor Horário no WhatsApp` (em UTC seria 20h30, fora do expediente). (b) `dentro_do_expediente: false` → `Avisar Horário Fora do Expediente no WhatsApp` | exec. 1581, 1582 |
+| 27 | "quero um Corte Masculino, me sugere um dia e horário livre" → "pode ser a de quinta". Calendar fixado com quinta 9h–12h e sexta 9h–18h ocupados | 5511900000251 | ✅ Ofereceu 3 opções dentro das janelas livres calculadas (hoje 13h30, quinta 12h, sábado 9h), nenhuma em horário ocupado, domingo ou passado. Na escolha: quinta 12h–12h30, `confirmado: true` → `Criar Evento no Calendar` → `Confirmar Agendamento no WhatsApp` | exec. 1583, 1587 |
+| 30 | "quero cancelar meu horário", com 2 agendamentos ativos (Corte Masculino quinta 15h, Barba sábado 10h) | 5511900000261 | ✅ `agendamento_alvo: ""`, pergunta qual dos dois listando os agendamentos reais → `Perguntar Qual Agendamento no WhatsApp`; `Cancelar Evento no Calendar` não executou | exec. 1584 |
+| 31a | "cancela o do meu filho", com 2 agendamentos ativos (um "Eu mesmo", um "Filho") | 5511900000271 | ✅ `agendamento_alvo: evt_31_b` (o do filho), sem perguntar → `Cancelar Evento no Calendar` → `Atualizar Linha na Planilha (Cancelar)` → `Confirmar Cancelamento no WhatsApp` | exec. 1585 |
+| 31e | "quero marcar um Corte Masculino pro meu filho Pedro amanhã às 16h" → "sim" | 5511900000281 | ✅ `beneficiario: "Pedro - filho"` nas duas mensagens; após o "sim", `Criar Evento no Calendar` → `Salvar Cliente na Planilha` | exec. 1586, 1588 |
+
+**Observações desta rodada**
+
+- **Cenário 12:** a IA pede para o cliente "contar" como pode ajudar; não diz explicitamente para
+  escrever em texto. Considerado aprovado (não quebra, não cria nada, pede nova mensagem).
+- **Cenário 25a:** com o agente fixado, esta é só a prova da lógica do node "Validar Horário de
+  Funcionamento". De quebra, exercitou o ramo `Avisar Horário Fora do Expediente no WhatsApp`, que
+  não tinha rodado no cenário 5. A resolução de "amanhã" perto da meia-noite continua sendo o
+  cenário 25b, do Grupo B.
+- **Cenário 31e:** o `INSERT` estava fixado, então a gravação de `beneficiario` em
+  `agendamentos.beneficiario` não foi verificada no banco — só que a IA devolve o valor certo e
+  que o fluxo chega ao node de gravação.
+- **Formato de `data`:** os pins de agendamentos usaram o formato novo das queries
+  (`2026-10-03T10:00:00-03:00`) e os nodes de Code o leram sem problema (cenários 30 e 31a).
+- **Decisão do `servico_id`:** não foi tocada; a IA devolveu sempre o nome exato do seed.
