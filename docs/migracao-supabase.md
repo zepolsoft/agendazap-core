@@ -120,16 +120,16 @@ por violar a constraint `NOT NULL` (pior do que antes: no Sheets isso sempre "fu
 silenciosamente).
 
 Guardei o texto original da IA em `agendamentos.observacoes` em todo `INSERT` (auditoria), mas
-isso não evita a falha do `INSERT`. Três caminhos possíveis, para decidir com calma antes de ir
+isso não evita a falha do `INSERT`. Quatro caminhos possíveis, para decidir com calma antes de ir
 pra produção:
 
 1. **Cadastrar as combinações mais comuns como serviços de verdade** na tabela `servicos` (ex.:
    "Corte + Barba" já existe no seed) — mais simples, mas não cobre combinações arbitrárias.
 2. **Matching mais tolerante na query** (`ILIKE`, `pg_trgm`/`similarity()`) em vez de igualdade
    exata — cobre mais casos, mas pode casar errado com nomes parecidos.
-2. **Ajustar o prompt da IA** para sempre escolher um serviço exato da lista, sem combinar
+3. **Ajustar o prompt da IA** para sempre escolher um serviço exato da lista, sem combinar
    (mudança de comportamento/regra de negócio, teria que ser testada no `docs/test-plan.md`).
-3. **Modelar agendamento com múltiplos serviços** (tabela de junção agendamento↔serviço em vez de
+4. **Modelar agendamento com múltiplos serviços** (tabela de junção agendamento↔serviço em vez de
    uma FK única) — mais correto a longo prazo, mas é uma mudança de schema.
 
 Não escolhi nenhuma dessas sozinho porque são trade-offs de produto, não só técnicos.

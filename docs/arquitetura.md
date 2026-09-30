@@ -16,7 +16,7 @@ Resposta no WhatsApp
 
 [Workflow: lembrete-cancelamento-remarcacao]  (roda todo dia às 8h; conclui às 22h)
       │
-      ├─► Postgres: agendamentos de hoje (join com profissionais/serviços)
+      ├─► Postgres: agendamentos de hoje (join com serviços)
       ├─► WhatsApp: lembrete + aguarda resposta
       ├─► IA: classifica confirmar / cancelar / remarcar
       └─► Google Calendar + Postgres: aplica a decisão
