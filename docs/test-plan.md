@@ -149,5 +149,49 @@ estacionamento) — o prompt da IA não mudou, então o comportamento esperado �
 
 ## Registro de execuções
 
-_(ainda vazio — registre aqui cada rodada de teste, no mesmo formato do roteiro de produção: data,
-versão do workflow testada, resultado por cenário e evidência da execução)._
+_(registre aqui cada rodada de teste, no mesmo formato do roteiro de produção: data, versão do
+workflow testada, resultado por cenário e evidência da execução)._
+
+### Rodada 1 — Grupo A, cenários 1 a 8 (30/09/2026)
+
+- **Workflow:** "Agendamento via WhatsApp (Supabase)" (`ny0fqlw8ojzmId7C`), versão
+  `a85d413b-65a5-468b-803b-2c25f9807df4`, desativado. Repo no commit `1e2a570`.
+- **Como:** `test_workflow` com pin em todos os nodes de WhatsApp, Google Calendar, Postgres, Data
+  Tables e HTTP; o agente "Interpretar Intenção do Cliente" rodou de verdade (Claude Sonnet 5).
+  Execuções entre 11h36 e 11h56 (horário de São Paulo), todas com `status: success`.
+- **Pins:** serviços = os 3 do seed, com `preco` como texto (`"35.00"`), do jeito que o Postgres
+  devolve `numeric`. "Buscar Profissional Ativo" com o `google_calendar_id` real do PROF-01 do seed
+  e um `profissional_id` **fictício** (o seed não fixa UUIDs e o valor real não foi consultado no
+  banco).
+- **Resultado:** 7 cenários passaram, 1 divergiu do esperado (cenário 8).
+
+| # | Mensagem(ns) | Telefone | Resultado | Evidência |
+|---|---|---|---|---|
+| 1 | "Oi, quero marcar um Corte Masculino amanhã às 15h" → "sim, pode confirmar" | 5511900000101 | ✅ 1ª: `servico: Corte Masculino`, início 01/10 15h, fim 15h30 (`duracao_minutos: 30`, `duracao_fonte: planilha`), `confirmado: false` → `Propor Horário no WhatsApp`. 2ª: `confirmado: true` → `Criar Evento no Calendar` → `Salvar Cliente na Planilha` → `Confirmar Agendamento no WhatsApp` | exec. 1555, 1556 |
+| 2 | "quero cortar o cabelo" | 5511900000102 | ✅ Datas vazias, pergunta dia e horário → `Responder Dúvida no WhatsApp`; nada criado. A IA já assumiu `Corte Masculino` e não perguntou o serviço | exec. 1557 |
+| 3 | (a) "queria fazer cabelo e barba na sexta às 10h"; (b) "quero fazer um degradê amanhã às 14h" | 5511900000103, 5511900000113 | ✅ (a) mapeou para o nome oficial `Corte + Barba`, 50 min, propôs. (b) `servico: não especificado`, perguntou se é Corte Masculino ou Corte + Barba → `Responder Dúvida no WhatsApp`; não inventou serviço | exec. 1558, 1559 |
+| 4 | "quero marcar Barba amanhã às 11h", com `Verificar Disponibilidade` → `available: false` | 5511900000104 | ✅ `Sugerir Outro Horário no WhatsApp`; `Criar Evento no Calendar` não executou | exec. 1560 |
+| 5 | (a) "quero um Corte Masculino hoje às 9h" (já passado); (b) "...amanhã às 20h"; (c) "quero Corte + Barba amanhã às 17h30" (terminaria 18h20) | 5511900000105, 5511900000115, 5511900000125 | ✅ Nos três a IA deixou as datas vazias, explicou o motivo e pediu outro horário → `Responder Dúvida no WhatsApp`; nada criado | exec. 1561, 1562, 1563 |
+| 6 | "quero marcar um Corte Masculino amanhã às 15h" → "pensando bem, melhor às 16h" | 5511900000106 | ✅ Nova proposta para 16h–16h30, `confirmado: false` → `Propor Horário no WhatsApp`; nada criado | exec. 1564, 1565 |
+| 7 | "quero agendar uma barba" → "sexta às 10h" | 5511900000107 | ✅ 1ª pergunta dia e horário; 2ª junta os dados: `Barba`, 02/10 10h–10h20, propõe | exec. 1566, 1568 |
+| 8 | Cliente com `Corte Masculino` ativo no sábado 03/10 às 10h: (a) "quero marcar uma Barba na sexta às 14h"; (b) "quero marcar um Corte Masculino sábado às 11h" | 5511900000108, 5511900000118 | ❌ Nas duas a IA recebeu o agendamento ativo na lista (`[evt_ativo_108] Corte Masculino — sábado, 03/10 ... às 10:00`), mas propôs o novo horário direto (`Propor Horário no WhatsApp`), sem avisar que já existe agendamento nem perguntar se quer remarcar ou marcar outro | exec. 1567, 1569 |
+
+**Observações desta rodada**
+
+- **Cenário 8:** o prompt do agente não tem regra mandando avisar sobre agendamento já existente ao
+  marcar um novo, e ele é idêntico ao de produção — a divergência não vem da troca de Sheets por
+  Postgres. Falta conferir se o mesmo cenário passa em produção ou se o esperado do roteiro está
+  desatualizado. Nada foi alterado.
+- **O que o pin não prova:** node fixado não avalia os próprios parâmetros. Esta rodada não
+  exercitou o SQL, os `queryReplacement`, nem as expressions
+  `$('Buscar Profissional Ativo').item.json.google_calendar_id` dos nodes de Calendar — isso só
+  aparece em execução sem pin (Grupo B).
+- **Cenário 5:** a própria IA recusou os três horários, então o ramo do Code "Validar Horário de
+  Funcionamento" → `Avisar Horário Fora do Expediente no WhatsApp` não chegou a rodar.
+- **Decisão do `servico_id`:** não foi tocada. Nos cenários 1–8 a IA devolveu sempre o nome exato
+  do seed (`Corte Masculino`, `Barba`, `Corte + Barba`), então o `INSERT` casaria; com pin isso não
+  é verificado de qualquer forma.
+- **Preço:** a lista de serviços chega ao prompt como `R$ 35.00`, `R$ 75.00`, `R$ 50.00`.
+- **Memória da IA:** funcionou entre execuções sequenciais do mesmo telefone (cenários 1, 6 e 7).
+- Uma chamada de `test_workflow` (cenário 3b) expirou sem criar execução e foi repetida; a
+  repetição é a exec. 1559.
