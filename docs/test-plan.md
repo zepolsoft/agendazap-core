@@ -544,3 +544,103 @@ estado inicial.
 dinâmico, que não é avaliada em node fixado), WhatsApp, Data Tables, a espera real dos Wait, o
 Error Workflow, o workflow de Lembrete contra o banco real e o `UPDATE` de remarcação
 (`Atualizar Linha na Planilha`), que não foi exercitado.
+
+## Checklist de saúde pós Grupo A (30/09/2026)
+
+Auditoria só de leitura, feita no fim do dia, depois da correção do desempate em
+"Buscar Profissional Ativo" (`ORDER BY criado_em, id`). Nenhum agendamento foi criado nem
+alterado, nenhum workflow foi ativado.
+
+**Versões auditadas:** Agendamento `033ecb2c-ce31-446f-8808-b260659c54b9`, Lembrete
+`3a9291ec-f122-4b6c-b890-3e90aa2030db`.
+
+### 1. Notificação de Erros
+
+- Os dois workflows novos têm `settings.errorWorkflow = ZxJfBbFmiD5Hqp5o`.
+- "Notificação de Erros" (`ZxJfBbFmiD5Hqp5o`) existe, está ativo e publicado: `activeVersionId`
+  = `versionId` = `be7b77da-…`, versão única, de 23/09. Tem 3 nodes: Error Trigger →
+  Code "Formatar Resumo do Erro" → WhatsApp para 5511975049937.
+- **Formato que ele espera:** o payload padrão do Error Trigger do n8n. O Code lê só
+  `workflow.name`, `workflow.id`, `execution.id`, `execution.lastNodeExecuted` e
+  `execution.error.message`, e tem valor padrão para cada um que faltar ("workflow
+  desconhecido", "node desconhecido", "erro sem mensagem"). Esse payload é montado pelo
+  próprio n8n, não pelo workflow que falhou, então os workflows novos mandam dado compatível
+  sem precisar de nada específico. Exemplos do que chegaria:
+  - G1 (falha da IA no Agendamento): node "Escalar Falha da IA para a Equipe", com a mensagem
+    do Stop and Error ("A IA não conseguiu interpretar a mensagem de …").
+  - R2 (conflito no `INSERT`): node "Salvar Cliente na Planilha", mensagem `conflicting key
+    value violates exclusion constraint "agendamentos_sem_conflito"`. O detalhe do Postgres
+    (`Key (profissional_id, …) conflicts with …`) vai em `error.description`, que o Code
+    **não** usa; a equipe receberia só a primeira linha.
+- **Limites:**
+  - O Error Workflow só dispara em execução de produção. Como as cópias estão desativadas, ele
+    nunca vai disparar para elas até a ativação, e a entrega real não foi vista (cenário 29,
+    Grupo B).
+  - O destino é o mesmo número de WhatsApp da produção: erros das cópias, depois de ativadas,
+    chegam para o mesmo responsável, sem indicação de ambiente além do nome do workflow
+    ("… (Supabase)").
+
+### 2. Google Calendar real, só leitura
+
+Feito com o próprio workflow de Agendamento. A mensagem gera só uma **proposta** ("quero
+marcar um Corte Masculino amanhã às 10h", `confirmado: false`). Rodaram de verdade apenas os
+dois nodes de leitura do Calendar: "Buscar Eventos dos Próximos Dias" (`getAll`) e
+"Verificar Disponibilidade" (free/busy). "Criar", "Atualizar" e "Cancelar Evento" ficaram
+fixados; nenhum deles chegou a executar. WhatsApp, Data Tables e os `INSERT`/`UPDATE` também
+ficaram fixados; os `SELECT`s rodaram contra o Supabase.
+
+| Profissional | Calendário | Resultado | Evidência |
+|---|---|---|---|
+| Carlos (`3bac4287-…`, lido do banco pelo "Buscar Profissional Ativo" real) | `93f64202…@group.calendar.google.com` (PROF-01) | ✅ `getAll` sem erro e vazio (`agenda_consultada: true`); `Verificar Disponibilidade` → `available: true` para 01/10 10h–10h30 | exec. 1658 |
+| Larissa (`4c0ac211-…`, fixado) | `c3cf9382…@group.calendar.google.com` (PROF-02 do seed) | ✅ Idem: `getAll` sem erro e vazio; `available: true` | exec. 1659 |
+
+- A credencial "Google Calendar account" tem acesso aos dois calendários, e a expression do
+  calendário dinâmico (`$('Buscar Profissional Ativo').item.json.google_calendar_id`) foi
+  avaliada de verdade pela primeira vez.
+- Por que isso prova o acesso: "Buscar Eventos" tem `onError: continueRegularOutput`, então uma
+  falha de acesso apareceria como item `{error}` e `agenda_consultada: false`. Veio lista vazia,
+  sem erro.
+- Os dois calendários estão vazios nos próximos 14 dias.
+- O `google_calendar_id` da Larissa veio do seed (`db/002_seed_exemplo.sql`), não de leitura no
+  banco. O do Carlos, lido do banco, bate com o PROF-01 do mesmo seed.
+- A memória da IA dos telefones fictícios 5511900000701 e 5511900000702 guardou a proposta. Nada
+  foi gravado no Postgres nem nas Data Tables.
+
+### 3. Workflow auxiliar temporário
+
+"TEMP - Consulta Supabase (agendazap-core, teste real)" (`J2liPsCnxpEbbVo0`) está arquivado: não
+aparece na listagem de workflows (nem na busca por "TEMP"), e o MCP recusa acesso a ele
+("is archived"). Foi criado desativado e nunca foi ativado. Arquivado não é apagado: ele ainda
+pode ser restaurado ou excluído de vez pela interface.
+
+### 4. Auditoria estrutural
+
+| Checagem | Agendamento (`ny0fqlw8ojzmId7C`) | Lembrete (`0mPYXZesloutZbek`) |
+|---|---|---|
+| Desativado, sem versão publicada | ✅ `active: false`, `activeVersionId: null` | ✅ idem |
+| Credenciais (todas existem na instância e o tipo bate com o node) | ✅ Postgres 9, Calendar 6, WhatsApp 16 (inclui o HTTP do indicador de digitação), WhatsApp Trigger 1, Anthropic 1 | ✅ Postgres 8, Calendar 3, WhatsApp 19, Anthropic 2 |
+| Node que precisa de credencial e está sem | ✅ nenhum | ✅ nenhum |
+| Conexão para node inexistente / node isolado | ✅ nenhuma / nenhum | ✅ nenhuma / nenhum |
+| Nodes sem entrada | Só os subnodes de IA (modelo, memória, parser), ligados ao agente por `ai_*` | Idem |
+| Nodes desativados | ✅ nenhum | ✅ nenhum |
+| Igual ao JSON do repo (nodes, conexões, settings; credenciais à parte) | ✅ | ✅ |
+
+**Produção não foi tocada:** "Agendamento via WhatsApp" (`BIOdwZebPkUPyzRu`) e "Lembrete,
+Cancelamento e Remarcação" (`wkIfUOGhEom4rFow`) têm uma única versão cada, de 28/09. "Notificação
+de Erros" (`ZxJfBbFmiD5Hqp5o`) tem uma única versão, de 23/09. Os três continuam ativos.
+
+**Fora do escopo, mas visível na instância:** "hello-supabase" (`LKVXq3uAPenJIDNU`, desativado,
+tag `teste`) tem 3 autosaves da interface hoje às 09h38 UTC, feitos pelo usuário da instância
+(não via MCP), antes do início desta sessão de testes. Não é workflow de produção nem deste repo.
+
+### Pendências abertas
+
+- Cenário 33 (proposto): tratar o erro do `INSERT`/`UPDATE` no Postgres (achado R2 da rodada 7),
+  deixado para a próxima sessão. Ainda não entrou nos cenários do Grupo B.
+- Cenário 8: bug herdado do prompt de produção.
+- Decisão nome do serviço × `servico_id`.
+- Grupo B inteiro, incluindo o Error Workflow real (cenário 29) e o workflow de Lembrete contra o
+  banco real.
+- Achado 2 da rodada 7 (profissional não determinístico): **corrigido** depois da rodada, com
+  `ORDER BY criado_em, id` nos dois workflows (commit `7c5860b`). O registro da rodada 7
+  foi mantido como estava.
