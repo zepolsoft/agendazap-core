@@ -31,7 +31,6 @@
       ],
       "alwaysOutputData": true,
       "executeOnce": true,
-      "onError": "continueRegularOutput",
       "parameters": {
         "operation": "executeQuery",
         "query": "SELECT id AS profissional_id, google_calendar_id, nome AS profissional_nome\nFROM profissionais\nWHERE ativo = true\nORDER BY criado_em\nLIMIT 1;",
@@ -55,7 +54,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT\n  a.google_event_id AS event_id,\n  a.cliente_nome AS nome,\n  a.cliente_telefone AS telefone,\n  s.nome AS servico,\n  a.beneficiario,\n  a.status,\n  a.data_hora_inicio AS data\nFROM agendamentos a\nJOIN servicos s ON s.id = a.servico_id;",
+        "query": "SELECT\n  a.google_event_id AS event_id,\n  a.cliente_nome AS nome,\n  a.cliente_telefone AS telefone,\n  s.nome AS servico,\n  a.beneficiario,\n  a.status,\n  to_char(a.data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data\nFROM agendamentos a\nJOIN servicos s ON s.id = a.servico_id;",
         "options": {}
       },
       "credentials": {
@@ -300,7 +299,7 @@
       "onError": "continueRegularOutput",
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT a.google_event_id AS event_id, a.status, a.data_hora_inicio AS data\nFROM agendamentos a\nWHERE a.google_event_id = $1\nLIMIT 1;",
+        "query": "SELECT a.google_event_id AS event_id, a.status, to_char(a.data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data\nFROM agendamentos a\nWHERE a.google_event_id = $1\nLIMIT 1;",
         "options": {
           "queryReplacement": "={{ [$('Processar Cada Agendamento').item.json.event_id] }}"
         }
@@ -1434,7 +1433,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT google_event_id AS event_id, status, data_hora_inicio AS data\nFROM agendamentos\nWHERE status IN ('agendado', 'remarcado');",
+        "query": "SELECT google_event_id AS event_id, status, to_char(data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data\nFROM agendamentos\nWHERE status IN ('agendado', 'remarcado');",
         "options": {}
       },
       "credentials": {
