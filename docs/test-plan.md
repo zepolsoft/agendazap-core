@@ -155,7 +155,7 @@ workflow testada, resultado por cenário e evidência da execução)._
 ### Rodada 1 — Grupo A, cenários 1 a 8 (30/09/2026)
 
 - **Workflow:** "Agendamento via WhatsApp (Supabase)" (`ny0fqlw8ojzmId7C`), versão
-  `a85d413b-65a5-468b-803b-2c25f9807df4`, desativado. Repo no commit `1e2a570`.
+  `889ca256-3cc1-4f4c-8a33-cc28345f6fa5`, desativado. Repo no commit `1e2a570`.
 - **Como:** `test_workflow` com pin em todos os nodes de WhatsApp, Google Calendar, Postgres, Data
   Tables e HTTP; o agente "Interpretar Intenção do Cliente" rodou de verdade (Claude Sonnet 5).
   Execuções entre 11h36 e 11h56 (horário de São Paulo), todas com `status: success`.
@@ -203,7 +203,7 @@ workflow testada, resultado por cenário e evidência da execução)._
 ### Rodada 2 — Grupo A, cenários 10, 11, 12, 25a, 27, 30, 31a e 31e (30/09/2026)
 
 - **Workflow:** o mesmo da rodada 1 — "Agendamento via WhatsApp (Supabase)" (`ny0fqlw8ojzmId7C`),
-  versão `a85d413b-65a5-468b-803b-2c25f9807df4`, desativado.
+  versão `889ca256-3cc1-4f4c-8a33-cc28345f6fa5`, desativado.
 - **Como:** mesmas regras e mesmos pins da rodada 1 (incluindo o `profissional_id` fictício).
   Execuções 1570 a 1588, entre 12h07 e 12h14 (horário de São Paulo), todas com `status: success`.
   Exceção: nas duas execuções do cenário 25a o agente de IA **foi fixado de propósito**, porque o
@@ -279,7 +279,7 @@ workflow testada, resultado por cenário e evidência da execução)._
 
 ### Rodada 4 — Grupo A, escopo da conversa E1–E24 (30/09/2026)
 
-- **Workflows:** Agendamento (`ny0fqlw8ojzmId7C`, versão `a85d413b-65a5-468b-803b-2c25f9807df4`)
+- **Workflows:** Agendamento (`ny0fqlw8ojzmId7C`, versão `889ca256-3cc1-4f4c-8a33-cc28345f6fa5`)
   e Lembrete (`0mPYXZesloutZbek`, versão `bd29f821-9c53-4304-932b-edbc73c5ef2f`), ambos
   desativados e sem nenhuma alteração.
 - **Como:** mesmas regras das rodadas anteriores — pin em tudo que tem efeito externo, IA rodando
@@ -348,3 +348,50 @@ workflow testada, resultado por cenário e evidência da execução)._
 - **Instabilidade do MCP:** uma chamada de `test_workflow` (E21) expirou sem criar execução e foi
   repetida (exec. 1628); entre as execuções 1608 e 1628 houve um intervalo longo por timeout da
   ferramenta, sem efeito nos resultados.
+
+### Rodada 5 — Guard-rail G1 (30/09/2026)
+
+- **Workflow:** "Agendamento via WhatsApp (Supabase)" (`ny0fqlw8ojzmId7C`), desativado. Única
+  rodada até aqui com alteração real no workflow, feita com autorização explícita e desfeita em
+  seguida.
+- **Como:**
+  1. Antes de alterar, o node "Parser Estruturado de Agendamento" (parser do agente "Interpretar
+     Intenção do Cliente") foi comparado com `workflows/agendamento-whatsapp/agendamento.json`:
+     idêntico byte a byte. O workflow inteiro foi salvo como referência (versão
+     `889ca256-3cc1-4f4c-8a33-cc28345f6fa5`).
+  2. Parser trocado por `schemaType: manual` com `inputSchema` exigindo a propriedade
+     `impossivel` com `{"not": {}}` (versão `87bee297-5360-4ddf-a916-ef55562035fa`).
+  3. Uma execução com pin em todos os nodes de efeito externo e a IA rodando de verdade:
+     "quero marcar um Corte Masculino amanhã às 15h", telefone 5511900000601.
+  4. Parser restaurado ao original (versão `05a38b1c-d51f-4c62-82de-c1a5c73dd08d`).
+- **Resultado:** ✅ aprovado.
+
+| # | Esperado | Obtido | Evidência |
+|---|---|---|---|
+| G1 | Parser roda 2x; `Avisar Cliente Sobre Falha da IA` → `Escalar Falha da IA para a Equipe`; execução termina em erro de propósito | Modelo e parser rodaram 2 vezes (retry); o agente saiu pela saída de erro com `error: "Model output doesn't fit required format"` → `Avisar Cliente Sobre Falha da IA` → `Escalar Falha da IA para a Equipe`, que encerrou a execução com status `error` e a mensagem "A IA não conseguiu interpretar a mensagem de Gustavo Teste (5511900000601) depois de 2 tentativas: ... Motivo: Model output doesn't fit required format". Nenhum node de agendamento executou | exec. 1644 |
+
+**Conferência da restauração (feita antes de marcar o G1 como aprovado)**
+
+- Parâmetro do parser na instância depois do teste × `agendamento.json` do repo: **idêntico
+  byte a byte** — mesma única chave (`jsonSchemaExample`), mesma string (incluindo espaços e o
+  emoji) e nenhuma sobra de `schemaType`/`inputSchema`.
+- Node do parser inteiro (id, tipo, versão, posição, parâmetros) depois × antes do teste:
+  idêntico. Workflow inteiro depois × antes do teste: nenhum node diferente, conexões e
+  settings idênticos, continua desativado.
+- O histórico de versões do workflow registra as duas alterações (troca e restauração).
+
+**Observações desta rodada**
+
+- **Error Workflow:** a notificação do "Notificação de Erros" não dispara em execução manual
+  (o n8n só aciona o Error Workflow em execução de produção), então essa parte do G1 não foi
+  vista aqui. Fica para o Grupo B (cenário 29).
+- **Correção nos registros das rodadas 1, 2 e 4:** eles citavam a versão `a85d413b...` do
+  Agendamento, que é a da importação. Às 14h33 UTC, antes da primeira execução de teste
+  (14h36), o workflow foi salvo pela interface do n8n (autosave, versão `889ca256...`), e foi
+  nessa versão que todos os testes do Agendamento rodaram. Os registros foram corrigidos. O
+  autosave só mudou a forma como o n8n grava valores padrão: removeu parâmetros que tinham o
+  valor padrão (`resource: row`, `condition: eq`, `mode`, `language`, `contentType`,
+  `errorType`), acrescentou `options: {}` vazios e `version: 1` nas condições de IF/Switch, e
+  incluiu `binaryMode: separate` nos settings. Nenhuma query, expressão, prompt ou código
+  mudou. Por isso o JSON do repo e a instância diferem nesses pontos de forma; o parser e o
+  agente não estão entre eles.
