@@ -29,13 +29,13 @@
         374,
         720
       ],
-      "alwaysOutputData": true,
-      "executeOnce": true,
       "parameters": {
         "operation": "executeQuery",
         "query": "SELECT id AS profissional_id, google_calendar_id, nome AS profissional_nome\nFROM profissionais\nWHERE ativo = true\nORDER BY criado_em\nLIMIT 1;",
         "options": {}
       },
+      "executeOnce": true,
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
           "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
@@ -126,15 +126,15 @@
         1136,
         80
       ],
-      "webhookId": "4c69e8f0-da06-4c78-bda7-35c5e3ae116d",
-      "onError": "continueRegularOutput",
       "parameters": {
         "operation": "send",
         "phoneNumberId": "1367004446487242",
         "recipientPhoneNumber": "={{ $json.telefone.toString() }}",
         "textBody": "={{ (() => { const nome = $json.nome || ''; const horario = $json.data ? (dt => dt.minute === 0 ? `${dt.toFormat('H')}h` : `${dt.toFormat('H')}h${dt.toFormat('mm')}`)(DateTime.fromISO($json.data).setZone('America/Sao_Paulo')) : ''; const b = String($json.beneficiario ?? '').trim(); const para = b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : ''; const opcoes = [ `Oi ${nome}! Passando para lembrar do seu horário de ${$json.servico}${para} hoje às ${horario}. Você confirma, quer cancelar ou prefere remarcar?`, `Oi ${nome}, tudo bem? Só passando pra confirmar seu horário de ${$json.servico}${para} hoje às ${horario}. Fica confirmado, ou prefere cancelar/remarcar?`, `${nome}, lembrando do seu ${$json.servico}${para} hoje às ${horario}! Confirma pra gente, ou precisa cancelar/remarcar?` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
         "additionalFields": {}
-      }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "4c69e8f0-da06-4c78-bda7-35c5e3ae116d"
     },
     {
       "id": "3eacf4bd-55f1-46dd-8348-695f6d30f81e",
@@ -211,7 +211,6 @@
         1360,
         80
       ],
-      "webhookId": "fc559c9b-9099-4c77-b926-1376f2bb39cc",
       "parameters": {
         "resume": "webhook",
         "httpMethod": "POST",
@@ -220,7 +219,8 @@
         "limitType": "afterTimeInterval",
         "resumeAmount": 10,
         "resumeUnit": "minutes"
-      }
+      },
+      "webhookId": "fc559c9b-9099-4c77-b926-1376f2bb39cc"
     },
     {
       "id": "f34ca7c2-b7ca-43c4-a496-6f7813842a47",
@@ -288,6 +288,37 @@
       }
     },
     {
+      "id": "8536ddb1-d10b-49d9-bdd4-0f577c84dd9b",
+      "name": "Normalizar Resposta do Lembrete",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1584,
+        80
+      ],
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": true,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "resposta_cliente",
+              "name": "resposta_cliente",
+              "value": "={{ $json.body?.messages?.[0]?.text?.body ?? $json.messages?.[0]?.text?.body ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "message_id",
+              "name": "message_id",
+              "value": "={{ $json.body?.messages?.[0]?.id ?? $json.messages?.[0]?.id ?? \"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
       "id": "1c662cd1-0b17-4768-9c71-033c53eac18a",
       "name": "Reverificar Agendamento Antes do Timeout",
       "type": "n8n-nodes-base.postgres",
@@ -296,7 +327,6 @@
         1584,
         300
       ],
-      "onError": "continueRegularOutput",
       "parameters": {
         "operation": "executeQuery",
         "query": "SELECT a.google_event_id AS event_id, a.status, to_char(a.data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data\nFROM agendamentos a\nWHERE a.google_event_id = $1\nLIMIT 1;",
@@ -304,6 +334,7 @@
           "queryReplacement": "={{ [$('Processar Cada Agendamento').item.json.event_id] }}"
         }
       },
+      "onError": "continueRegularOutput",
       "credentials": {
         "postgres": {
           "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
@@ -352,46 +383,43 @@
         1700,
         300
       ],
-      "webhookId": "3fc061e9-b380-471d-ae78-6298100a50f6",
-      "onError": "continueRegularOutput",
       "parameters": {
         "operation": "send",
         "phoneNumberId": "1367004446487242",
         "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
         "textBody": "={{ (() => { const nome = $('Processar Cada Agendamento').item.json.nome || ''; const servico = $('Processar Cada Agendamento').item.json.servico; const horario = $('Processar Cada Agendamento').item.json.data ? (dt => dt.minute === 0 ? `${dt.toFormat('H')}h` : `${dt.toFormat('H')}h${dt.toFormat('mm')}`)(DateTime.fromISO($('Processar Cada Agendamento').item.json.data).setZone('America/Sao_Paulo')) : ''; const opcoes = [ `Oi ${nome}! Não recebi resposta sobre o lembrete do seu horário de ${servico} hoje às ${horario}. Vou manter seu agendamento como está — qualquer coisa, é só me chamar por aqui! 😊`, `${nome}, não vi sua resposta por aqui, mas deixei seu horário de ${servico} hoje às ${horario} como estava. Qualquer mudança, é só falar comigo!`, `Oi ${nome}, tudo certo? Como não recebi retorno, mantive seu ${servico} de hoje às ${horario} confirmado. Pode me chamar se precisar mudar algo 😊` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
         "additionalFields": {}
-      }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "3fc061e9-b380-471d-ae78-6298100a50f6"
     },
     {
-      "id": "8536ddb1-d10b-49d9-bdd4-0f577c84dd9b",
-      "name": "Normalizar Resposta do Lembrete",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.5,
+      "id": "0306dfc0-9c0d-43b0-9e21-aaba97ce2696",
+      "name": "Ativar Indicador de Digitação",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
       "position": [
-        1584,
-        80
+        2144,
+        780
       ],
       "parameters": {
-        "mode": "manual",
-        "includeOtherFields": true,
-        "assignments": {
-          "assignments": [
-            {
-              "id": "resposta_cliente",
-              "name": "resposta_cliente",
-              "value": "={{ $json.body?.messages?.[0]?.text?.body ?? $json.messages?.[0]?.text?.body ?? \"\" }}",
-              "type": "string"
-            },
-            {
-              "id": "message_id",
-              "name": "message_id",
-              "value": "={{ $json.body?.messages?.[0]?.id ?? $json.messages?.[0]?.id ?? \"\" }}",
-              "type": "string"
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/1367004446487242/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"messaging_product\": \"whatsapp\", \"status\": \"read\", \"message_id\": $('Normalizar Resposta do Lembrete').item.json.message_id, \"typing_indicator\": { \"type\": \"text\" } } }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
             }
-          ]
-        },
-        "options": {}
-      }
+          }
+        }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "id": "6988df4b-0cf9-49dc-b0ef-af08a81e4ce5",
@@ -623,6 +651,86 @@
       }
     },
     {
+      "id": "95248699-9c28-42a0-805e-12e1d881e7db",
+      "name": "Preparar Aviso de Falha da IA",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3168,
+        800
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "etapa",
+              "name": "etapa",
+              "type": "string",
+              "value": "={{ $prevNode.name === 'Classificar Confirmação da Remarcação' ? 'confirmação da remarcação' : 'resposta ao lembrete' }}"
+            },
+            {
+              "id": "resposta",
+              "name": "resposta",
+              "type": "string",
+              "value": "={{ $prevNode.name === 'Classificar Confirmação da Remarcação' ? $('Normalizar Confirmação da Remarcação').item.json.resposta_confirmacao : $('Normalizar Resposta do Lembrete').item.json.resposta_cliente }}"
+            },
+            {
+              "id": "mensagem_cliente",
+              "name": "mensagem_cliente",
+              "type": "string",
+              "value": "={{ `Opa, me enrolei aqui pra entender sua resposta 😅 Seu horário de ${$('Processar Cada Agendamento').item.json.servico}${(b => b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : '')(String($('Processar Cada Agendamento').item.json.beneficiario ?? '').trim())} hoje às ${(dt => dt.minute === 0 ? `${dt.toFormat('H')}h` : `${dt.toFormat('H')}h${dt.toFormat('mm')}`)(DateTime.fromISO($('Processar Cada Agendamento').item.json.data).setZone('America/Sao_Paulo'))} continua marcado como estava — já chamei alguém da equipe pra confirmar isso direitinho com você.` }}"
+            },
+            {
+              "id": "mensagem_equipe",
+              "name": "mensagem_equipe",
+              "type": "string",
+              "value": "={{ `⚠️ Lembrete: a IA não conseguiu interpretar a ${$prevNode.name === 'Classificar Confirmação da Remarcação' ? 'confirmação da remarcação' : 'resposta ao lembrete'} de ${$('Processar Cada Agendamento').item.json.nome} (${$('Processar Cada Agendamento').item.json.telefone}) depois de 2 tentativas: \"${$prevNode.name === 'Classificar Confirmação da Remarcação' ? $('Normalizar Confirmação da Remarcação').item.json.resposta_confirmacao : $('Normalizar Resposta do Lembrete').item.json.resposta_cliente}\". Agendamento: ${$('Processar Cada Agendamento').item.json.servico}${(b => b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : '')(String($('Processar Cada Agendamento').item.json.beneficiario ?? '').trim())} hoje às ${(dt => dt.minute === 0 ? `${dt.toFormat('H')}h` : `${dt.toFormat('H')}h${dt.toFormat('mm')}`)(DateTime.fromISO($('Processar Cada Agendamento').item.json.data).setZone('America/Sao_Paulo'))} (event_id ${$('Processar Cada Agendamento').item.json.event_id}). O cliente foi avisado e o horário foi mantido — responda manualmente. Motivo: ${$json.error}` }}"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "7617f5e5-b1b0-4b1e-acfa-de93fc9f6242",
+      "name": "Avisar Cliente Sobre Falha da IA",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3392,
+        800
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "={{ $('Preparar Aviso de Falha da IA').item.json.mensagem_cliente }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "b2e77e20-4de1-4eb6-aead-c42ee6629eb3"
+    },
+    {
+      "id": "94b0dd7d-779d-4fe0-b437-42cb760f8efc",
+      "name": "Notificar Equipe Sobre Falha da IA",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3616,
+        800
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "5511975049937",
+        "textBody": "={{ $('Preparar Aviso de Falha da IA').item.json.mensagem_equipe }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "24082cf8-8e1e-436f-8af2-47a5d0bff410"
+    },
+    {
       "id": "60b7146b-de60-430a-aea4-2e209d5896c1",
       "name": "Enviar Confirmação Final no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
@@ -631,15 +739,15 @@
         2496,
         -96
       ],
-      "webhookId": "0259b084-7c60-4810-961b-99f069d25d95",
-      "onError": "continueRegularOutput",
       "parameters": {
         "operation": "send",
         "phoneNumberId": "1367004446487242",
         "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
         "textBody": "={{ $('Classificar Resposta do Lembrete').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
-      }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "0259b084-7c60-4810-961b-99f069d25d95"
     },
     {
       "id": "92470214-1ad0-46cd-8bbb-675fef7a9563",
@@ -650,7 +758,6 @@
         2496,
         96
       ],
-      "onError": "continueRegularOutput",
       "parameters": {
         "operation": "delete",
         "calendar": {
@@ -660,50 +767,8 @@
         },
         "eventId": "={{ $('Processar Cada Agendamento').item.json.event_id }}",
         "options": {}
-      }
-    },
-    {
-      "id": "53c6661d-32d4-4239-937a-1df287f0c783",
-      "name": "Atualizar Status na Planilha (Cancelar)",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.5,
-      "position": [
-        2944,
-        176
-      ],
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE agendamentos SET status = 'cancelado' WHERE google_event_id = $1 RETURNING id;",
-        "options": {
-          "queryReplacement": "={{ [$('Processar Cada Agendamento').item.json.event_id] }}"
-        }
       },
-      "credentials": {
-        "postgres": {
-          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
-          "name": "Supabase - agendazap-core"
-        }
-      }
-    },
-    {
-      "id": "da5d323f-07e5-4fa8-99b1-c17e39ec0d4f",
-      "name": "Enviar Confirmação de Cancelamento no WhatsApp",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        2720,
-        176
-      ],
-      "webhookId": "2ec9a9f5-fb87-4438-934c-66bd3f51eddb",
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-        "textBody": "={{ $('Classificar Resposta do Lembrete').item.json.output.confirmacao_texto }}",
-        "additionalFields": {}
-      }
+      "onError": "continueRegularOutput"
     },
     {
       "id": "2f1a2168-d62c-4ca2-b761-1c441c097620",
@@ -727,6 +792,237 @@
       }
     },
     {
+      "id": "c67d7bcc-976b-4a3d-8221-d435fdadfc22",
+      "name": "Checar Encaminhamento Recente",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3392,
+        1056
+      ],
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "LIsp5qJ88DxWRnOY"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telefone",
+              "keyValue": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "f28206ce-9656-4d0a-a320-d9af2b3dab58",
+      "name": "Recusar Assunto Fora do Escopo no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3392,
+        1312
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "Desculpe, só consigo ajudar com assuntos da Barbearia ZAP: serviços, preços e agendamentos. Se quiser marcar, remarcar ou cancelar um horário, é só me falar! 💈",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "5155409e-0d00-4379-af1d-62b69abb2c5c"
+    },
+    {
+      "id": "b1f3aae2-c659-42fa-a472-f9c6f58dc293",
+      "name": "Responder Informação da Barbearia no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3392,
+        1504
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "={{ $('Classificar Resposta do Lembrete').item.json.output.confirmacao_texto }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "a72cae8a-b5c5-46a9-b916-7a5fa4a9b2ee"
+    },
+    {
+      "id": "c0e4d91f-4f1b-4015-9211-1cbfe2c4cc58",
+      "name": "Pedir Esclarecimento no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2496,
+        480
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "={{ (() => { const a = $('Processar Cada Agendamento').item.json; const nome = a.nome || ''; const dt = DateTime.fromISO(a.data).setZone('America/Sao_Paulo'); const hora = dt.minute === 0 ? `${dt.toFormat('H')}h` : `${dt.toFormat('H')}h${dt.toFormat('mm')}`; const b = String(a.beneficiario ?? '').trim(); const para = b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : ''; const qual = `${a.servico}${para} de hoje às ${hora}`; const opcoes = [ `Desculpa` + (nome ? `, ${nome}` : '') + `, não entendi bem. Sobre o ${qual}: você quer confirmar, cancelar ou remarcar?`, `Não peguei direito` + (nome ? `, ${nome}` : '') + `! Esse lembrete é do ${qual} — confirma, cancela ou prefere remarcar?`, `Só pra eu confirmar` + (nome ? `, ${nome}` : '') + `: sobre o ${qual}, você quer manter, cancelar ou remarcar?` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "26dd6075-9e6c-4268-8ac8-2c310fc7bc72"
+    },
+    {
+      "id": "30393899-297a-4699-aa56-f302940d6d66",
+      "name": "Já Encaminhou Nos Últimos 30 Min?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3616,
+        1056
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.encaminhado_em ? (DateTime.fromISO($json.encaminhado_em) > DateTime.now().minus({ minutes: 30 })) : false }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "17423a14-3416-40a4-9593-5854b63a9979",
+      "name": "Avisar Dúvida Já Encaminhada no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3840,
+        960
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "Já repassei sua dúvida pro responsável da Barbearia ZAP — aguarde o contato dele, por favor. 🙂",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "49ccedc3-6cc0-4941-8b4d-05cd057a8cd3"
+    },
+    {
+      "id": "0074ab20-fdd0-43d1-a300-4625e703a27a",
+      "name": "Registrar Encaminhamento de Dúvida",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3840,
+        1152
+      ],
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "LIsp5qJ88DxWRnOY"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telefone",
+              "keyValue": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+            "encaminhado_em": "={{ $now.toISO() }}"
+          },
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "encaminhado_em",
+              "displayName": "encaminhado_em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "48b909ed-73e9-4af7-91f4-29d3ab1a0a3b",
+      "name": "Encaminhar Dúvida ao Responsável no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        4064,
+        1152
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "5511975049937",
+        "textBody": "=📩 Dúvida de cliente sobre o negócio (não é erro do sistema)\n\nCliente: {{ $('Processar Cada Agendamento').item.json.nome }} ({{ String($('Processar Cada Agendamento').item.json.telefone) }})\nMensagem: \"{{ $('Normalizar Resposta do Lembrete').item.json.resposta_cliente }}\"\nContexto: resposta ao lembrete do {{ $('Processar Cada Agendamento').item.json.servico }} de hoje às {{ DateTime.fromISO($('Processar Cada Agendamento').item.json.data).setZone('America/Sao_Paulo').toFormat('HH:mm') }} (o agendamento continua marcado).\n\nA IA não tem essa informação e avisou o cliente que você vai entrar em contato. Responder: https://wa.me/{{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "84bba5e0-122c-41ef-b6a9-bf1ff2cf9a79"
+    },
+    {
+      "id": "266554fd-c9ff-4dc2-9d78-066d88c331c8",
+      "name": "Avisar Cliente Sobre Dúvida Encaminhada no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        4288,
+        1152
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "Boa pergunta! Essa informação eu não tenho por aqui, mas já repassei sua dúvida pro responsável da Barbearia ZAP — ele vai entrar em contato com você em breve. 😊",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "1f4844da-e008-40e3-b783-e9e41c669313"
+    },
+    {
       "id": "555dd9af-f44a-489a-a894-794c31b6af9b",
       "name": "Validar Horário de Funcionamento",
       "type": "n8n-nodes-base.code",
@@ -735,12 +1031,55 @@
         2496,
         400
       ],
-      "onError": "continueRegularOutput",
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
         "jsCode": "const ZONA = 'America/Sao_Paulo';\nconst normalizar = s => String(s ?? '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().replace(/\\s+/g, ' ').trim();\nconst servicos = $('Buscar Duração dos Serviços').all().map(i => i.json);\n\n// Acha um serviço da planilha pelo nome: igual (ignorando acento/caixa) ou, se só um bater, parcial.\nconst encontrarServico = nome => {\n  const alvo = normalizar(nome);\n  if (!alvo) return null;\n  const exato = servicos.find(s => normalizar(s.servico) === alvo);\n  if (exato) return exato;\n  const parciais = servicos.filter(s => normalizar(s.servico).includes(alvo) || alvo.includes(normalizar(s.servico)));\n  return parciais.length === 1 ? parciais[0] : null;\n};\n\n// Duração em minutos pela planilha de Serviços; combinações (\"X e Y\") somam as partes.\nconst duracaoDoServico = nome => {\n  if (!nome || normalizar(nome) === 'nao especificado') return null;\n  const unico = encontrarServico(nome);\n  if (unico) return Number(unico.duracao_minutos) || null;\n  const partes = normalizar(nome).split(/\\s*(?:\\+|,| e )\\s*/).filter(Boolean);\n  if (partes.length < 2) return null;\n  const encontrados = partes.map(encontrarServico);\n  if (encontrados.some(s => !s || !Number(s.duracao_minutos))) return null;\n  return encontrados.reduce((total, s) => total + Number(s.duracao_minutos), 0);\n};\n\n// A entrada são as linhas da planilha de Serviços; o agendamento em si vem pelo pareamento do item 0.\nconst output = { ...($('Classificar Resposta do Lembrete').first().json.output || {}) };\nconst agendamento = $('Processar Cada Agendamento').itemMatching(0).json;\nconst inicio = DateTime.fromISO(output.novo_horario_inicio, { zone: ZONA });\nconst duracao = duracaoDoServico(agendamento.servico);\n\n// O término sai sempre de início + duração da planilha; o novo_horario_fim da IA só fica se o serviço não for achado.\nif (duracao && inicio.isValid) {\n  output.novo_horario_fim = inicio.plus({ minutes: duracao }).toFormat(\"yyyy-MM-dd'T'HH:mm:ssZZ\");\n}\nconst fim = DateTime.fromISO(output.novo_horario_fim, { zone: ZONA });\n\nconst abertura = 9 * 60;\nconst fechamento = 18 * 60;\nconst minutosInicio = inicio.hour * 60 + inicio.minute;\nconst minutosFim = fim.hour * 60 + fim.minute;\nconst domingo = inicio.weekday === 7;\nconst jaPassou = inicio.isValid && inicio < DateTime.now().setZone(ZONA);\n\nconst dentroDoExpediente =\n  inicio.isValid &&\n  fim.isValid &&\n  !domingo &&\n  !jaPassou &&\n  minutosInicio >= abertura &&\n  minutosInicio < fechamento &&\n  minutosFim <= fechamento;\n\nreturn [{\n  json: { output, duracao_minutos: duracao, duracao_fonte: duracao ? 'planilha' : 'ia', dentro_do_expediente: dentroDoExpediente },\n  pairedItem: { item: 0 }\n}];\n"
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "53c6661d-32d4-4239-937a-1df287f0c783",
+      "name": "Atualizar Status na Planilha (Cancelar)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2944,
+        176
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE agendamentos SET status = 'cancelado' WHERE google_event_id = $1 RETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [$('Processar Cada Agendamento').item.json.event_id] }}"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "postgres": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Supabase - agendazap-core"
+        }
       }
+    },
+    {
+      "id": "da5d323f-07e5-4fa8-99b1-c17e39ec0d4f",
+      "name": "Enviar Confirmação de Cancelamento no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2720,
+        176
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "={{ $('Classificar Resposta do Lembrete').item.json.output.confirmacao_texto }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "2ec9a9f5-fb87-4438-934c-66bd3f51eddb"
     },
     {
       "id": "7748679e-45d2-4e7a-8350-bd8bc7fd8655",
@@ -775,25 +1114,6 @@
       }
     },
     {
-      "id": "d983b852-28a0-4999-94d6-e422d51ceade",
-      "name": "Avisar Horário Fora do Expediente no WhatsApp",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        2720,
-        480
-      ],
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-        "textBody": "={{ (() => { const nome = $('Processar Cada Agendamento').item.json.nome || ''; const opcoes = [ (nome ? `${nome}, esse` : `Esse`) + ` horário já passou ou está fora do nosso expediente (funcionamos de segunda a sábado, das 9h às 18h). Pode me dizer outro dia ou horário?`, `Esse horário não rola` + (nome ? `, ${nome}` : '') + ` — nosso expediente é de segunda a sábado, 9h às 18h. Qual outro horário funciona pra você?`, `Ops, estamos fechados nesse horário (atendemos seg-sáb, 9h às 18h)` + (nome ? `, ${nome}` : '') + `. Me diz outro dia ou horário que já verifico!` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
-        "additionalFields": {}
-      },
-      "webhookId": "8380b5b4-6211-4897-9ab6-d57108212307"
-    },
-    {
       "id": "4ce6e434-bdc8-4412-a1f2-61c9a0c352c8",
       "name": "Verificar Novo Horário Disponível",
       "type": "n8n-nodes-base.googleCalendar",
@@ -802,7 +1122,6 @@
         2496,
         288
       ],
-      "onError": "continueRegularOutput",
       "parameters": {
         "resource": "calendar",
         "calendar": {
@@ -813,7 +1132,27 @@
         "timeMin": "={{ $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio }}",
         "timeMax": "={{ $('Validar Horário de Funcionamento').item.json.output.novo_horario_fim }}",
         "options": {}
-      }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "d983b852-28a0-4999-94d6-e422d51ceade",
+      "name": "Avisar Horário Fora do Expediente no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2720,
+        480
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "={{ (() => { const nome = $('Processar Cada Agendamento').item.json.nome || ''; const opcoes = [ (nome ? `${nome}, esse` : `Esse`) + ` horário já passou ou está fora do nosso expediente (funcionamos de segunda a sábado, das 9h às 18h). Pode me dizer outro dia ou horário?`, `Esse horário não rola` + (nome ? `, ${nome}` : '') + ` — nosso expediente é de segunda a sábado, 9h às 18h. Qual outro horário funciona pra você?`, `Ops, estamos fechados nesse horário (atendemos seg-sáb, 9h às 18h)` + (nome ? `, ${nome}` : '') + `. Me diz outro dia ou horário que já verifico!` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "8380b5b4-6211-4897-9ab6-d57108212307"
     },
     {
       "id": "2bea6f4b-ea56-4562-bf23-15db281fa4de",
@@ -848,54 +1187,6 @@
       }
     },
     {
-      "id": "1bbed566-3e17-4cf8-8d43-2c469691e6a7",
-      "name": "Atualizar Evento no Calendar",
-      "type": "n8n-nodes-base.googleCalendar",
-      "typeVersion": 1.3,
-      "position": [
-        2944,
-        368
-      ],
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "update",
-        "calendar": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $('Buscar Profissional Ativo').item.json.google_calendar_id }}"
-        },
-        "eventId": "={{ $('Processar Cada Agendamento').item.json.event_id }}",
-        "updateFields": {
-          "start": "={{ $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio }}",
-          "end": "={{ $('Validar Horário de Funcionamento').item.json.output.novo_horario_fim }}"
-        }
-      }
-    },
-    {
-      "id": "5765c76a-ab3b-4e9e-92fd-2b506db8f750",
-      "name": "Atualizar Data na Planilha",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.5,
-      "position": [
-        3168,
-        368
-      ],
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE agendamentos\nSET data_hora_inicio = $1, data_hora_fim = $2, status = 'remarcado'\nWHERE google_event_id = $3\nRETURNING id;",
-        "options": {
-          "queryReplacement": "={{ [\n  $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio,\n  $('Validar Horário de Funcionamento').item.json.output.novo_horario_fim,\n  $('Processar Cada Agendamento').item.json.event_id\n] }}"
-        }
-      },
-      "credentials": {
-        "postgres": {
-          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
-          "name": "Supabase - agendazap-core"
-        }
-      }
-    },
-    {
       "id": "0678f35d-0a93-4ca7-a264-9a49d4c43c45",
       "name": "Propor Remarcação no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
@@ -904,15 +1195,34 @@
         2944,
         560
       ],
-      "webhookId": "e8fbe6b7-9b88-4fbb-ab86-451071db4406",
-      "onError": "continueRegularOutput",
       "parameters": {
         "operation": "send",
         "phoneNumberId": "1367004446487242",
         "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
         "textBody": "={{ $('Classificar Resposta do Lembrete').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
-      }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "e8fbe6b7-9b88-4fbb-ab86-451071db4406"
+    },
+    {
+      "id": "5780e1db-95a1-45c1-9711-069ffa68e99d",
+      "name": "Pedir Outro Horário no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2944,
+        704
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "={{ (() => { const nome = $('Processar Cada Agendamento').item.json.nome || ''; const opcoes = [ (nome ? `Poxa, ${nome}, esse` : `Esse`) + ` novo horário já está ocupado! Pode me sugerir outro dia ou horário?`, `Ih, esse horário já foi preenchido` + (nome ? `, ${nome}` : '') + `! Tem outro dia ou horário em mente?`, (nome ? `${nome}, esse` : `Esse`) + ` horário não está mais livre. Qual outro você prefere?` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "73a3c0a8-3ab9-478c-928a-0df558645211"
     },
     {
       "id": "27195e81-625b-4342-88bb-e4526763e4ee",
@@ -989,7 +1299,6 @@
         3168,
         560
       ],
-      "webhookId": "cc46563b-80da-444f-bf5b-120abdea7e2e",
       "parameters": {
         "resume": "webhook",
         "httpMethod": "POST",
@@ -998,7 +1307,8 @@
         "limitType": "afterTimeInterval",
         "resumeAmount": 10,
         "resumeUnit": "minutes"
-      }
+      },
+      "webhookId": "cc46563b-80da-444f-bf5b-120abdea7e2e"
     },
     {
       "id": "e8cf4bfc-2c47-4d85-b7a3-0858e1c32b4b",
@@ -1091,6 +1401,25 @@
       }
     },
     {
+      "id": "92fe5752-3e30-4eb9-9637-40a99631cc00",
+      "name": "Avisar Timeout da Confirmação no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3616,
+        700
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "={{ (() => { const nome = $('Processar Cada Agendamento').item.json.nome || ''; const opcoes = [ `Oi` + (nome ? ` ${nome}` : '') + `! Não recebi sua confirmação sobre a remarcação, então mantive seu horário original como estava. Qualquer coisa, é só me chamar!`, (nome ? `${nome}, ` : ``) + `não vi sua resposta sobre a remarcação, então deixei seu horário original. Se ainda quiser mudar, é só falar comigo!` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "1c237dfc-f95a-4e67-bb08-0bb4b0ce2ce1"
+    },
+    {
       "id": "7cad0c15-226a-4742-b545-a914f7e821aa",
       "name": "Classificar Confirmação da Remarcação",
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -1099,10 +1428,6 @@
         3840,
         480
       ],
-      "retryOnFail": true,
-      "maxTries": 2,
-      "waitBetweenTries": 1000,
-      "onError": "continueErrorOutput",
       "parameters": {
         "promptType": "define",
         "text": "=Nome do cliente: {{ $('Processar Cada Agendamento').item.json.nome }}\nMensagem que você (atendente) acabou de enviar perguntando se pode confirmar a remarcação: {{ $('Classificar Resposta do Lembrete').item.json.output.confirmacao_texto }}\nNovo horário proposto (ISO): {{ $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio }}\nResposta do cliente a essa pergunta: {{ $json.resposta_confirmacao }}",
@@ -1110,7 +1435,11 @@
         "options": {
           "systemMessage": "Você avalia se a resposta do cliente confirma ou não uma proposta de remarcação de horário que o atendente acabou de enviar pelo WhatsApp (mostrada acima como \"mensagem que você enviou\").\n\nRetorne:\n- confirmado: true se a resposta for afirmativa (ex.: \"sim\", \"pode\", \"confirma\", \"isso mesmo\", \"perfeito\", \"ok\", \"blz\", ou um emoji positivo como \"👍\") — trate reações curtas e informais como confirmação, já que o cliente está respondendo a uma pergunta direta de sim/não.\n- confirmado: false se a resposta for negativa (ex.: \"não\", \"deixa pra lá\", \"não quero mais\") OU se for algo completamente diferente/ambíguo que não responde à pergunta feita.\n\nconfirmacao_texto: mensagem curta, natural e calorosa em português, como um atendente de verdade estivesse digitando no WhatsApp:\n- Se confirmado = true: confirme definitivamente a remarcação, em tom caloroso (ex.: \"Prontinho! Remarcado. Até lá! 😊\").\n- Se confirmado = false: tranquilize o cliente de forma gentil, deixando claro que o horário ORIGINAL continua confirmado, sem remarcar nada (ex.: \"Sem problema! Mantive seu horário como estava.\").\nNunca repita sempre a mesma frase de abertura — varie a cada resposta."
         }
-      }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "onError": "continueErrorOutput"
     },
     {
       "id": "36852873-3675-414e-b273-31c22d924201",
@@ -1177,6 +1506,30 @@
       }
     },
     {
+      "id": "1bbed566-3e17-4cf8-8d43-2c469691e6a7",
+      "name": "Atualizar Evento no Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        2944,
+        368
+      ],
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Buscar Profissional Ativo').item.json.google_calendar_id }}"
+        },
+        "eventId": "={{ $('Processar Cada Agendamento').item.json.event_id }}",
+        "updateFields": {
+          "start": "={{ $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio }}",
+          "end": "={{ $('Validar Horário de Funcionamento').item.json.output.novo_horario_fim }}"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
       "id": "301a0bc2-34c2-40cf-8953-d72a24dc5650",
       "name": "Avisar Remarcação Não Confirmada no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
@@ -1185,7 +1538,6 @@
         4288,
         640
       ],
-      "onError": "continueRegularOutput",
       "parameters": {
         "operation": "send",
         "phoneNumberId": "1367004446487242",
@@ -1193,26 +1545,32 @@
         "textBody": "={{ $('Classificar Confirmação da Remarcação').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
       },
+      "onError": "continueRegularOutput",
       "webhookId": "2b547012-b2b5-4d27-b648-3604701b89b5"
     },
     {
-      "id": "92fe5752-3e30-4eb9-9637-40a99631cc00",
-      "name": "Avisar Timeout da Confirmação no WhatsApp",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
+      "id": "5765c76a-ab3b-4e9e-92fd-2b506db8f750",
+      "name": "Atualizar Data na Planilha",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
       "position": [
-        3616,
-        700
+        3168,
+        368
       ],
-      "onError": "continueRegularOutput",
       "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-        "textBody": "={{ (() => { const nome = $('Processar Cada Agendamento').item.json.nome || ''; const opcoes = [ `Oi` + (nome ? ` ${nome}` : '') + `! Não recebi sua confirmação sobre a remarcação, então mantive seu horário original como estava. Qualquer coisa, é só me chamar!`, (nome ? `${nome}, ` : ``) + `não vi sua resposta sobre a remarcação, então deixei seu horário original. Se ainda quiser mudar, é só falar comigo!` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
-        "additionalFields": {}
+        "operation": "executeQuery",
+        "query": "UPDATE agendamentos\nSET data_hora_inicio = $1, data_hora_fim = $2, status = 'remarcado'\nWHERE google_event_id = $3\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio,\n  $('Validar Horário de Funcionamento').item.json.output.novo_horario_fim,\n  $('Processar Cada Agendamento').item.json.event_id\n] }}"
+        }
       },
-      "webhookId": "1c237dfc-f95a-4e67-bb08-0bb4b0ce2ce1"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "postgres": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Supabase - agendazap-core"
+        }
+      }
     },
     {
       "id": "b3743143-be8f-46fb-8e13-9a7b5f38795c",
@@ -1223,7 +1581,6 @@
         3392,
         368
       ],
-      "onError": "continueRegularOutput",
       "parameters": {
         "operation": "send",
         "phoneNumberId": "1367004446487242",
@@ -1231,181 +1588,8 @@
         "textBody": "={{ $('Classificar Confirmação da Remarcação').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
       },
+      "onError": "continueRegularOutput",
       "webhookId": "f7d6a228-f0ac-4d57-a0cc-3b26b82bc25e"
-    },
-    {
-      "id": "5780e1db-95a1-45c1-9711-069ffa68e99d",
-      "name": "Pedir Outro Horário no WhatsApp",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        2944,
-        704
-      ],
-      "webhookId": "73a3c0a8-3ab9-478c-928a-0df558645211",
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-        "textBody": "={{ (() => { const nome = $('Processar Cada Agendamento').item.json.nome || ''; const opcoes = [ (nome ? `Poxa, ${nome}, esse` : `Esse`) + ` novo horário já está ocupado! Pode me sugerir outro dia ou horário?`, `Ih, esse horário já foi preenchido` + (nome ? `, ${nome}` : '') + `! Tem outro dia ou horário em mente?`, (nome ? `${nome}, esse` : `Esse`) + ` horário não está mais livre. Qual outro você prefere?` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
-        "additionalFields": {}
-      }
-    },
-    {
-      "id": "95248699-9c28-42a0-805e-12e1d881e7db",
-      "name": "Preparar Aviso de Falha da IA",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        3168,
-        800
-      ],
-      "parameters": {
-        "mode": "manual",
-        "assignments": {
-          "assignments": [
-            {
-              "id": "etapa",
-              "name": "etapa",
-              "type": "string",
-              "value": "={{ $prevNode.name === 'Classificar Confirmação da Remarcação' ? 'confirmação da remarcação' : 'resposta ao lembrete' }}"
-            },
-            {
-              "id": "resposta",
-              "name": "resposta",
-              "type": "string",
-              "value": "={{ $prevNode.name === 'Classificar Confirmação da Remarcação' ? $('Normalizar Confirmação da Remarcação').item.json.resposta_confirmacao : $('Normalizar Resposta do Lembrete').item.json.resposta_cliente }}"
-            },
-            {
-              "id": "mensagem_cliente",
-              "name": "mensagem_cliente",
-              "type": "string",
-              "value": "={{ `Opa, me enrolei aqui pra entender sua resposta 😅 Seu horário de ${$('Processar Cada Agendamento').item.json.servico}${(b => b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : '')(String($('Processar Cada Agendamento').item.json.beneficiario ?? '').trim())} hoje às ${(dt => dt.minute === 0 ? `${dt.toFormat('H')}h` : `${dt.toFormat('H')}h${dt.toFormat('mm')}`)(DateTime.fromISO($('Processar Cada Agendamento').item.json.data).setZone('America/Sao_Paulo'))} continua marcado como estava — já chamei alguém da equipe pra confirmar isso direitinho com você.` }}"
-            },
-            {
-              "id": "mensagem_equipe",
-              "name": "mensagem_equipe",
-              "type": "string",
-              "value": "={{ `⚠️ Lembrete: a IA não conseguiu interpretar a ${$prevNode.name === 'Classificar Confirmação da Remarcação' ? 'confirmação da remarcação' : 'resposta ao lembrete'} de ${$('Processar Cada Agendamento').item.json.nome} (${$('Processar Cada Agendamento').item.json.telefone}) depois de 2 tentativas: \"${$prevNode.name === 'Classificar Confirmação da Remarcação' ? $('Normalizar Confirmação da Remarcação').item.json.resposta_confirmacao : $('Normalizar Resposta do Lembrete').item.json.resposta_cliente}\". Agendamento: ${$('Processar Cada Agendamento').item.json.servico}${(b => b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : '')(String($('Processar Cada Agendamento').item.json.beneficiario ?? '').trim())} hoje às ${(dt => dt.minute === 0 ? `${dt.toFormat('H')}h` : `${dt.toFormat('H')}h${dt.toFormat('mm')}`)(DateTime.fromISO($('Processar Cada Agendamento').item.json.data).setZone('America/Sao_Paulo'))} (event_id ${$('Processar Cada Agendamento').item.json.event_id}). O cliente foi avisado e o horário foi mantido — responda manualmente. Motivo: ${$json.error}` }}"
-            }
-          ]
-        },
-        "options": {}
-      }
-    },
-    {
-      "id": "7617f5e5-b1b0-4b1e-acfa-de93fc9f6242",
-      "name": "Avisar Cliente Sobre Falha da IA",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        3392,
-        800
-      ],
-      "webhookId": "b2e77e20-4de1-4eb6-aead-c42ee6629eb3",
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-        "textBody": "={{ $('Preparar Aviso de Falha da IA').item.json.mensagem_cliente }}",
-        "additionalFields": {}
-      }
-    },
-    {
-      "id": "94b0dd7d-779d-4fe0-b437-42cb760f8efc",
-      "name": "Notificar Equipe Sobre Falha da IA",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        3616,
-        800
-      ],
-      "webhookId": "24082cf8-8e1e-436f-8af2-47a5d0bff410",
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "5511975049937",
-        "textBody": "={{ $('Preparar Aviso de Falha da IA').item.json.mensagem_equipe }}",
-        "additionalFields": {}
-      }
-    },
-    {
-      "id": "c0e4d91f-4f1b-4015-9211-1cbfe2c4cc58",
-      "name": "Pedir Esclarecimento no WhatsApp",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        2496,
-        480
-      ],
-      "webhookId": "26dd6075-9e6c-4268-8ac8-2c310fc7bc72",
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-        "textBody": "={{ (() => { const a = $('Processar Cada Agendamento').item.json; const nome = a.nome || ''; const dt = DateTime.fromISO(a.data).setZone('America/Sao_Paulo'); const hora = dt.minute === 0 ? `${dt.toFormat('H')}h` : `${dt.toFormat('H')}h${dt.toFormat('mm')}`; const b = String(a.beneficiario ?? '').trim(); const para = b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : ''; const qual = `${a.servico}${para} de hoje às ${hora}`; const opcoes = [ `Desculpa` + (nome ? `, ${nome}` : '') + `, não entendi bem. Sobre o ${qual}: você quer confirmar, cancelar ou remarcar?`, `Não peguei direito` + (nome ? `, ${nome}` : '') + `! Esse lembrete é do ${qual} — confirma, cancela ou prefere remarcar?`, `Só pra eu confirmar` + (nome ? `, ${nome}` : '') + `: sobre o ${qual}, você quer manter, cancelar ou remarcar?` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
-        "additionalFields": {}
-      }
-    },
-    {
-      "id": "663bff9a-e069-4d0b-9238-addcbe07c335",
-      "name": "Sticky Note 80164296",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -48,
-        80
-      ],
-      "parameters": {
-        "content": "## 1. Buscar agendamentos de hoje\nSchedule Trigger (todo dia às 8h) + leitura da planilha de clientes, filtrando pela data de hoje; processa um agendamento por vez.",
-        "color": 4
-      }
-    },
-    {
-      "id": "a1670a99-34c7-4e49-9513-7b388ee830bc",
-      "name": "Sticky Note ad250f53",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -48,
-        272
-      ],
-      "parameters": {
-        "content": "## 2. Enviar lembrete e aguardar resposta\nBusca o cliente na planilha, envia o lembrete no WhatsApp e aguarda a resposta (Wait node, resume via webhook).",
-        "color": 5
-      }
-    },
-    {
-      "id": "ef13587d-289b-4e10-9cf0-2c25b03fe364",
-      "name": "Sticky Note c8220043",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -48,
-        480
-      ],
-      "parameters": {
-        "content": "## 3. Classificar a resposta\nAI Agent (Claude) classifica em confirmar / cancelar / remarcar.",
-        "color": 3
-      }
-    },
-    {
-      "id": "f7045dd3-1880-4a30-9762-c507a234aa52",
-      "name": "Sticky Note e9ca289b",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -48,
-        688
-      ],
-      "parameters": {
-        "content": "## 4. Executar a decisão\nConfirma, cancela o evento, ou busca novo horário e atualiza o evento (Update) e a planilha.",
-        "color": 7
-      }
     },
     {
       "id": "867b3c1b-7894-456e-a12a-407d97cd3222",
@@ -1496,7 +1680,6 @@
         912,
         1408
       ],
-      "onError": "continueRegularOutput",
       "parameters": {
         "operation": "executeQuery",
         "query": "UPDATE agendamentos SET status = 'concluido' WHERE google_event_id = $1 RETURNING id;",
@@ -1504,6 +1687,7 @@
           "queryReplacement": "={{ [$json.event_id] }}"
         }
       },
+      "onError": "continueRegularOutput",
       "credentials": {
         "postgres": {
           "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
@@ -1512,31 +1696,59 @@
       }
     },
     {
-      "id": "0306dfc0-9c0d-43b0-9e21-aaba97ce2696",
-      "name": "Ativar Indicador de Digitação",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
+      "id": "663bff9a-e069-4d0b-9238-addcbe07c335",
+      "name": "Sticky Note 80164296",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
       "position": [
-        2144,
-        780
+        -48,
+        80
       ],
-      "onError": "continueRegularOutput",
       "parameters": {
-        "method": "POST",
-        "url": "https://graph.facebook.com/v21.0/1367004446487242/messages",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "whatsAppApi",
-        "sendBody": true,
-        "contentType": "json",
-        "specifyBody": "json",
-        "jsonBody": "={{ { \"messaging_product\": \"whatsapp\", \"status\": \"read\", \"message_id\": $('Normalizar Resposta do Lembrete').item.json.message_id, \"typing_indicator\": { \"type\": \"text\" } } }}",
-        "options": {
-          "response": {
-            "response": {
-              "neverError": true
-            }
-          }
-        }
+        "content": "## 1. Buscar agendamentos de hoje\nSchedule Trigger (todo dia às 8h) + leitura da planilha de clientes, filtrando pela data de hoje; processa um agendamento por vez.",
+        "color": 4
+      }
+    },
+    {
+      "id": "a1670a99-34c7-4e49-9513-7b388ee830bc",
+      "name": "Sticky Note ad250f53",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        272
+      ],
+      "parameters": {
+        "content": "## 2. Enviar lembrete e aguardar resposta\nBusca o cliente na planilha, envia o lembrete no WhatsApp e aguarda a resposta (Wait node, resume via webhook).",
+        "color": 5
+      }
+    },
+    {
+      "id": "ef13587d-289b-4e10-9cf0-2c25b03fe364",
+      "name": "Sticky Note c8220043",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        480
+      ],
+      "parameters": {
+        "content": "## 3. Classificar a resposta\nAI Agent (Claude) classifica em confirmar / cancelar / remarcar.",
+        "color": 3
+      }
+    },
+    {
+      "id": "f7045dd3-1880-4a30-9762-c507a234aa52",
+      "name": "Sticky Note e9ca289b",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        688
+      ],
+      "parameters": {
+        "content": "## 4. Executar a decisão\nConfirma, cancela o evento, ou busca novo horário e atualiza o evento (Update) e a planilha.",
+        "color": 7
       }
     },
     {
@@ -1549,222 +1761,10 @@
         -420
       ],
       "parameters": {
-        "width": 660,
-        "height": 420,
+        "content": "## README — Lembrete, Cancelamento e Remarcação\n\n**Faz:** todo dia às 8h, avisa cada cliente com horário marcado para hoje, aguarda a\nresposta a ESSE lembrete e trata confirmar/cancelar/remarcar. Trigger separado às 22h marca\natendimentos passados como concluídos.\n\n**NÃO faz:** não recebe nem interpreta mensagens espontâneas do cliente fora do contexto de\num lembrete já enviado, não cria agendamentos novos do zero — isso é o workflow\n\"Agendamento via WhatsApp\".\n\n**Colunas da planilha:** lê nome/telefone/servico/data/event_id/status; escreve\nstatus/atualizado_em (remarcado/cancelado/concluido) e data (na remarcação) —\npreco/criado_em só são reescritos com o valor já existente, nunca alterados.\n\n**Regras de negócio:** horário de funcionamento na remarcação (seg-sáb, 9h-18h), data no\npassado, dedup de mensagem por message_id, lock de 30s por telefone, timeout de 10min com\nreverificação antes de avisar.\n\n**Tom compartilhado com o outro workflow:** confirmacao_texto segue as mesmas instruções de\nvariedade/acolhimento nos dois — mas a lógica e o escopo dos dois workflows são independentes.\n\nDocumentação completa: workflows/lembrete-cancelamento/README.md no repo.",
         "color": 2,
-        "content": "## README — Lembrete, Cancelamento e Remarcação\n\n**Faz:** todo dia às 8h, avisa cada cliente com horário marcado para hoje, aguarda a\nresposta a ESSE lembrete e trata confirmar/cancelar/remarcar. Trigger separado às 22h marca\natendimentos passados como concluídos.\n\n**NÃO faz:** não recebe nem interpreta mensagens espontâneas do cliente fora do contexto de\num lembrete já enviado, não cria agendamentos novos do zero — isso é o workflow\n\"Agendamento via WhatsApp\".\n\n**Colunas da planilha:** lê nome/telefone/servico/data/event_id/status; escreve\nstatus/atualizado_em (remarcado/cancelado/concluido) e data (na remarcação) —\npreco/criado_em só são reescritos com o valor já existente, nunca alterados.\n\n**Regras de negócio:** horário de funcionamento na remarcação (seg-sáb, 9h-18h), data no\npassado, dedup de mensagem por message_id, lock de 30s por telefone, timeout de 10min com\nreverificação antes de avisar.\n\n**Tom compartilhado com o outro workflow:** confirmacao_texto segue as mesmas instruções de\nvariedade/acolhimento nos dois — mas a lógica e o escopo dos dois workflows são independentes.\n\nDocumentação completa: workflows/lembrete-cancelamento/README.md no repo."
-      }
-    },
-    {
-      "id": "c67d7bcc-976b-4a3d-8221-d435fdadfc22",
-      "name": "Checar Encaminhamento Recente",
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1.1,
-      "position": [
-        3392,
-        1056
-      ],
-      "alwaysOutputData": true,
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "get",
-        "dataTableId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "LIsp5qJ88DxWRnOY"
-        },
-        "filters": {
-          "conditions": [
-            {
-              "keyName": "telefone",
-              "keyValue": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}"
-            }
-          ]
-        },
-        "limit": 1
-      }
-    },
-    {
-      "id": "30393899-297a-4699-aa56-f302940d6d66",
-      "name": "Já Encaminhou Nos Últimos 30 Min?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        3616,
-        1056
-      ],
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "combinator": "and",
-          "conditions": [
-            {
-              "leftValue": "={{ $json.encaminhado_em ? (DateTime.fromISO($json.encaminhado_em) > DateTime.now().minus({ minutes: 30 })) : false }}",
-              "operator": {
-                "type": "boolean",
-                "operation": "equals"
-              },
-              "rightValue": true
-            }
-          ]
-        },
-        "options": {}
-      }
-    },
-    {
-      "id": "17423a14-3416-40a4-9593-5854b63a9979",
-      "name": "Avisar Dúvida Já Encaminhada no WhatsApp",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        3840,
-        960
-      ],
-      "webhookId": "49ccedc3-6cc0-4941-8b4d-05cd057a8cd3",
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-        "textBody": "Já repassei sua dúvida pro responsável da Barbearia ZAP — aguarde o contato dele, por favor. 🙂",
-        "additionalFields": {}
-      }
-    },
-    {
-      "id": "0074ab20-fdd0-43d1-a300-4625e703a27a",
-      "name": "Registrar Encaminhamento de Dúvida",
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1.1,
-      "position": [
-        3840,
-        1152
-      ],
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "upsert",
-        "dataTableId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "LIsp5qJ88DxWRnOY"
-        },
-        "matchType": "allConditions",
-        "filters": {
-          "conditions": [
-            {
-              "keyName": "telefone",
-              "keyValue": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}"
-            }
-          ]
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "telefone": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-            "encaminhado_em": "={{ $now.toISO() }}"
-          },
-          "schema": [
-            {
-              "id": "telefone",
-              "displayName": "telefone",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "encaminhado_em",
-              "displayName": "encaminhado_em",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "canBeUsedToMatch": false
-            }
-          ]
-        },
-        "options": {}
-      }
-    },
-    {
-      "id": "48b909ed-73e9-4af7-91f4-29d3ab1a0a3b",
-      "name": "Encaminhar Dúvida ao Responsável no WhatsApp",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        4064,
-        1152
-      ],
-      "webhookId": "84bba5e0-122c-41ef-b6a9-bf1ff2cf9a79",
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "5511975049937",
-        "textBody": "=📩 Dúvida de cliente sobre o negócio (não é erro do sistema)\n\nCliente: {{ $('Processar Cada Agendamento').item.json.nome }} ({{ String($('Processar Cada Agendamento').item.json.telefone) }})\nMensagem: \"{{ $('Normalizar Resposta do Lembrete').item.json.resposta_cliente }}\"\nContexto: resposta ao lembrete do {{ $('Processar Cada Agendamento').item.json.servico }} de hoje às {{ DateTime.fromISO($('Processar Cada Agendamento').item.json.data).setZone('America/Sao_Paulo').toFormat('HH:mm') }} (o agendamento continua marcado).\n\nA IA não tem essa informação e avisou o cliente que você vai entrar em contato. Responder: https://wa.me/{{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-        "additionalFields": {}
-      }
-    },
-    {
-      "id": "266554fd-c9ff-4dc2-9d78-066d88c331c8",
-      "name": "Avisar Cliente Sobre Dúvida Encaminhada no WhatsApp",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        4288,
-        1152
-      ],
-      "webhookId": "1f4844da-e008-40e3-b783-e9e41c669313",
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-        "textBody": "Boa pergunta! Essa informação eu não tenho por aqui, mas já repassei sua dúvida pro responsável da Barbearia ZAP — ele vai entrar em contato com você em breve. 😊",
-        "additionalFields": {}
-      }
-    },
-    {
-      "id": "f28206ce-9656-4d0a-a320-d9af2b3dab58",
-      "name": "Recusar Assunto Fora do Escopo no WhatsApp",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        3392,
-        1312
-      ],
-      "webhookId": "5155409e-0d00-4379-af1d-62b69abb2c5c",
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-        "textBody": "Desculpe, só consigo ajudar com assuntos da Barbearia ZAP: serviços, preços e agendamentos. Se quiser marcar, remarcar ou cancelar um horário, é só me falar! 💈",
-        "additionalFields": {}
-      }
-    },
-    {
-      "id": "b1f3aae2-c659-42fa-a472-f9c6f58dc293",
-      "name": "Responder Informação da Barbearia no WhatsApp",
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        3392,
-        1504
-      ],
-      "webhookId": "a72cae8a-b5c5-46a9-b916-7a5fa4a9b2ee",
-      "onError": "continueRegularOutput",
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
-        "textBody": "={{ $('Classificar Resposta do Lembrete').item.json.output.confirmacao_texto }}",
-        "additionalFields": {}
+        "width": 660,
+        "height": 420
       }
     }
   ],
@@ -1774,6 +1774,17 @@
         [
           {
             "node": "Buscar Profissional Ativo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Profissional Ativo": {
+      "main": [
+        [
+          {
+            "node": "Buscar Agendamentos de Hoje (Planilha)",
             "type": "main",
             "index": 0
           }
@@ -1796,6 +1807,18 @@
         [
           {
             "node": "Processar Cada Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Cada Agendamento": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Enviar Lembrete no WhatsApp",
             "type": "main",
             "index": 0
           }
@@ -1871,6 +1894,17 @@
         ]
       ]
     },
+    "Normalizar Resposta do Lembrete": {
+      "main": [
+        [
+          {
+            "node": "Ativar Indicador de Digitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Reverificar Agendamento Antes do Timeout": {
       "main": [
         [
@@ -1911,17 +1945,6 @@
         ]
       ]
     },
-    "Normalizar Resposta do Lembrete": {
-      "main": [
-        [
-          {
-            "node": "Ativar Indicador de Digitação",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Ativar Indicador de Digitação": {
       "main": [
         [
@@ -1945,39 +1968,6 @@
         [
           {
             "node": "Preparar Aviso de Falha da IA",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Preparar Aviso de Falha da IA": {
-      "main": [
-        [
-          {
-            "node": "Avisar Cliente Sobre Falha da IA",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Avisar Cliente Sobre Falha da IA": {
-      "main": [
-        [
-          {
-            "node": "Notificar Equipe Sobre Falha da IA",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Notificar Equipe Sobre Falha da IA": {
-      "main": [
-        [
-          {
-            "node": "Processar Cada Agendamento",
             "type": "main",
             "index": 0
           }
@@ -2070,11 +2060,66 @@
         ]
       ]
     },
-    "Responder Informação da Barbearia no WhatsApp": {
+    "Preparar Aviso de Falha da IA": {
+      "main": [
+        [
+          {
+            "node": "Avisar Cliente Sobre Falha da IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Cliente Sobre Falha da IA": {
+      "main": [
+        [
+          {
+            "node": "Notificar Equipe Sobre Falha da IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Equipe Sobre Falha da IA": {
       "main": [
         [
           {
             "node": "Processar Cada Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Confirmação Final no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Processar Cada Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancelar Evento no Calendar": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Status na Planilha (Cancelar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Duração dos Serviços": {
+      "main": [
+        [
+          {
+            "node": "Validar Horário de Funcionamento",
             "type": "main",
             "index": 0
           }
@@ -2086,6 +2131,39 @@
         [
           {
             "node": "Já Encaminhou Nos Últimos 30 Min?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recusar Assunto Fora do Escopo no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Processar Cada Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder Informação da Barbearia no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Processar Cada Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedir Esclarecimento no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Processar Cada Agendamento",
             "type": "main",
             "index": 0
           }
@@ -2104,6 +2182,17 @@
         [
           {
             "node": "Registrar Encaminhamento de Dúvida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Dúvida Já Encaminhada no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Processar Cada Agendamento",
             "type": "main",
             "index": 0
           }
@@ -2143,67 +2232,11 @@
         ]
       ]
     },
-    "Avisar Dúvida Já Encaminhada no WhatsApp": {
+    "Validar Horário de Funcionamento": {
       "main": [
         [
           {
-            "node": "Processar Cada Agendamento",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Recusar Assunto Fora do Escopo no WhatsApp": {
-      "main": [
-        [
-          {
-            "node": "Processar Cada Agendamento",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Buscar Duração dos Serviços": {
-      "main": [
-        [
-          {
-            "node": "Validar Horário de Funcionamento",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Enviar Confirmação Final no WhatsApp": {
-      "main": [
-        [
-          {
-            "node": "Processar Cada Agendamento",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Processar Cada Agendamento": {
-      "main": [
-        [],
-        [
-          {
-            "node": "Enviar Lembrete no WhatsApp",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Cancelar Evento no Calendar": {
-      "main": [
-        [
-          {
-            "node": "Atualizar Status na Planilha (Cancelar)",
+            "node": "Horário Dentro do Expediente?",
             "type": "main",
             "index": 0
           }
@@ -2232,17 +2265,6 @@
         ]
       ]
     },
-    "Validar Horário de Funcionamento": {
-      "main": [
-        [
-          {
-            "node": "Horário Dentro do Expediente?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Horário Dentro do Expediente?": {
       "main": [
         [
@@ -2261,22 +2283,22 @@
         ]
       ]
     },
-    "Avisar Horário Fora do Expediente no WhatsApp": {
+    "Verificar Novo Horário Disponível": {
       "main": [
         [
           {
-            "node": "Processar Cada Agendamento",
+            "node": "Novo Horário Disponível?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Verificar Novo Horário Disponível": {
+    "Avisar Horário Fora do Expediente no WhatsApp": {
       "main": [
         [
           {
-            "node": "Novo Horário Disponível?",
+            "node": "Processar Cada Agendamento",
             "type": "main",
             "index": 0
           }
@@ -2306,6 +2328,17 @@
         [
           {
             "node": "Registrar Espera de Lembrete (Confirmação da Remarcação)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedir Outro Horário no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Processar Cada Agendamento",
             "type": "main",
             "index": 0
           }
@@ -2381,23 +2414,12 @@
         ]
       ]
     },
-    "Modelo Claude para Confirmação da Remarcação": {
-      "ai_languageModel": [
+    "Avisar Timeout da Confirmação no WhatsApp": {
+      "main": [
         [
           {
-            "node": "Classificar Confirmação da Remarcação",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Parser Estruturado de Confirmação da Remarcação": {
-      "ai_outputParser": [
-        [
-          {
-            "node": "Classificar Confirmação da Remarcação",
-            "type": "ai_outputParser",
+            "node": "Processar Cada Agendamento",
+            "type": "main",
             "index": 0
           }
         ]
@@ -2416,6 +2438,28 @@
           {
             "node": "Preparar Aviso de Falha da IA",
             "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modelo Claude para Confirmação da Remarcação": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classificar Confirmação da Remarcação",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser Estruturado de Confirmação da Remarcação": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Classificar Confirmação da Remarcação",
+            "type": "ai_outputParser",
             "index": 0
           }
         ]
@@ -2450,6 +2494,17 @@
         ]
       ]
     },
+    "Avisar Remarcação Não Confirmada no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Processar Cada Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Atualizar Data na Planilha": {
       "main": [
         [
@@ -2462,50 +2517,6 @@
       ]
     },
     "Enviar Confirmação Final da Remarcação no WhatsApp": {
-      "main": [
-        [
-          {
-            "node": "Processar Cada Agendamento",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Avisar Remarcação Não Confirmada no WhatsApp": {
-      "main": [
-        [
-          {
-            "node": "Processar Cada Agendamento",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Avisar Timeout da Confirmação no WhatsApp": {
-      "main": [
-        [
-          {
-            "node": "Processar Cada Agendamento",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Pedir Outro Horário no WhatsApp": {
-      "main": [
-        [
-          {
-            "node": "Processar Cada Agendamento",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Pedir Esclarecimento no WhatsApp": {
       "main": [
         [
           {
@@ -2543,17 +2554,6 @@
         [
           {
             "node": "Marcar Como Concluído",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Buscar Profissional Ativo": {
-      "main": [
-        [
-          {
-            "node": "Buscar Agendamentos de Hoje (Planilha)",
             "type": "main",
             "index": 0
           }

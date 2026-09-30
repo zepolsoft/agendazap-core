@@ -395,3 +395,82 @@ workflow testada, resultado por cenário e evidência da execução)._
   incluiu `binaryMode: separate` nos settings. Nenhuma query, expressão, prompt ou código
   mudou. Por isso o JSON do repo e a instância diferem nesses pontos de forma; o parser e o
   agente não estão entre eles.
+  - _Complemento (rodada 6):_ na reexportação apareceu mais uma mudança do mesmo autosave que
+    não foi citada acima: ele também **reposicionou os 85 nodes no canvas** (na versão da
+    importação, `a85d413b`, as posições eram idênticas às do repo). Posição é só layout, não
+    afeta a execução. O JSON do repo foi reexportado na rodada 6 e agora inclui esse layout.
+
+### Rodada 6 — Guard-rails G2 e G3 (30/09/2026)
+
+- **Workflow:** "Lembrete, Cancelamento e Remarcação (Supabase)" (`0mPYXZesloutZbek`),
+  desativado. Mesmo protocolo do G1: alteração real e temporária do parser, com autorização
+  explícita, desfeita logo depois de cada teste.
+- **Como:**
+  1. Antes de alterar, os dois parsers ("Parser Estruturado de Classificação" e "Parser
+     Estruturado de Confirmação da Remarcação") foram comparados com
+     `workflows/lembrete-cancelamento-remarcacao/lembrete-cancelamento.json`: idênticos byte a
+     byte. O workflow inteiro foi salvo como referência (versão
+     `bd29f821-9c53-4304-932b-edbc73c5ef2f`, a mesma das rodadas 3 e 4).
+  2. **G2:** "Parser Estruturado de Classificação" trocado pelo mesmo schema impossível do G1
+     (`required: ["impossivel"]`, `impossivel: {"not": {}}`). Execução 1645 com **dois**
+     agendamentos no lote, para ver o loop seguir; resposta "confirmo, estarei aí". Parser
+     restaurado (versão `b34c5822-319c-4af5-8465-0ebdac197f30`) e conferido antes do G3.
+  3. **G3:** "Parser Estruturado de Confirmação da Remarcação" trocado pelo mesmo schema. Dois
+     agendamentos no lote; resposta ao lembrete "pode remarcar pra hoje às 17h?" (o primeiro
+     parser funcionando normalmente, `decisao: remarcar`), `Verificar Novo Horário Disponível`
+     fixado em `available: true` e resposta à proposta "sim". Parser restaurado (versão
+     `2a3b6190-5d6b-4eba-b9ab-4969c1cde701`).
+  - Pin em todos os nodes de WhatsApp, Google Calendar, Postgres, Data Tables e HTTP; IA
+    rodando de verdade.
+- **Resultado:** ✅ G2 e G3 aprovados.
+
+| # | Esperado | Obtido | Evidência |
+|---|---|---|---|
+| G2 | Parser 2x por lembrete; cliente avisado; equipe notificada; loop segue para o próximo agendamento; nada confirmado/cancelado | Para cada um dos 2 agendamentos (5511900000501 e 5511900000502): modelo e parser rodaram 2 vezes, o agente saiu pela saída de erro (`Model output doesn't fit required format`) → `Preparar Aviso de Falha da IA` (`etapa: resposta ao lembrete`; mensagem ao cliente dizendo que o horário continua marcado) → `Avisar Cliente Sobre Falha da IA` → `Notificar Equipe Sobre Falha da IA` ("...depois de 2 tentativas: \"confirmo, estarei aí\"... event_id evt_g2a/evt_g2b") → `Processar Cada Agendamento`, que passou para o segundo agendamento e depois terminou. `Confirmar, Cancelar ou Remarcar?`, `Enviar Confirmação Final` e `Cancelar Evento no Calendar` não executaram. Execução com status `success` | exec. 1645 |
+| G3 | Mesmo fallback; `Atualizar Evento` **não** executa; loop segue | Para cada um dos 2 agendamentos (5511900000603 e 5511900000604): classificação `remarcar` 17h → `Propor Remarcação` → "sim" → modelo e parser da confirmação rodaram 2 vezes, saída de erro → `Preparar Aviso de Falha da IA` (`etapa: confirmação da remarcação`; horário original mantido, 16h e 15h) → `Avisar Cliente Sobre Falha da IA` → `Notificar Equipe Sobre Falha da IA` → loop. `Cliente Confirmou a Remarcação?`, `Atualizar Evento no Calendar` e `Atualizar Data na Planilha` não executaram. Execução com status `success` | exec. 1647 |
+
+**Conferência da restauração (feita antes de marcar G2 e G3 como aprovados)**
+
+- Cada parser depois do teste × JSON do repo: **idêntico byte a byte** — única chave
+  `jsonSchemaExample`, mesma string (257 bytes no de classificação, 159 no de confirmação,
+  incluindo espaços e emoji), sem sobra de `schemaType`/`inputSchema`. Conferido após o G2 e
+  de novo após o G3 (os dois parsers).
+- Workflow inteiro depois × snapshot de antes do G2: lista de nodes idêntica byte a byte,
+  conexões e settings idênticos, continua desativado.
+- Contra o repo, a única diferença do workflow inteiro era a ordem das chaves do sticky note
+  "Sticky Note README" (mesmo conteúdo), que já existia antes dos testes. Resolvida pela
+  reexportação abaixo.
+
+**Observações desta rodada**
+
+- **Execução 1646 descartada:** a primeira tentativa do G3 pediu remarcação para 18h, que fica
+  fora do expediente; o fluxo parou corretamente em `Avisar Horário Fora do Expediente no
+  WhatsApp` e o agente de confirmação nem chegou a rodar. Não conta como evidência do G3; foi
+  refeita com 17h e telefones novos (exec. 1647).
+- **Sem erro no final:** diferente do G1, as duas execuções terminam com `success`. É o
+  comportamento do workflow: no Lembrete a falha da IA notifica a equipe por WhatsApp e segue o
+  loop, sem node de "parar com erro". Por isso o Error Workflow não entra no G2/G3.
+- **Memória da conversa:** nos agentes que falharam, `memory.saves: 0`, ou seja, a tentativa
+  que falhou não ficou gravada no histórico do cliente.
+- **Reexportação:** depois do G3, os dois workflows foram reexportados da instância para o
+  repo (credenciais Postgres de volta ao placeholder, demais credenciais omitidas, como antes).
+  - Agendamento: agora inclui o que o autosave `889ca256` gravou (valores padrão normalizados
+    em 25 nodes, `binaryMode: separate` e o layout novo dos 85 nodes). Conexões e nomes de node
+    iguais aos anteriores.
+  - Lembrete: esse workflow nunca passou por autosave, então o conteúdo não mudou; o arquivo
+    só mudou de formatação (ordem de chaves do JSON). Ele **não** tem `binaryMode` nos
+    settings.
+
+### Grupo A — encerramento
+
+Com a rodada 6, os cenários do Grupo A deste repo foram executados: 1–8, 10–12, 25a, 27, 30,
+31a, 31e (Agendamento), 13–16, 18, 19 (Lembrete), E1–E24 (28 casos, nos dois workflows) e
+G1–G3. Único não aprovado: o **cenário 8**, bug herdado do prompt de produção (a IA não avisa
+sobre um agendamento ativo já existente), registrado na rodada 1 e fora do escopo desta
+migração.
+
+O **cenário 24** (situações esperadas não disparam erro) não teve rodada própria. A evidência
+dele é indireta: as execuções de horário ocupado e fora do expediente (cenários 4, 5, 18 e
+25a-b, e a exec. 1646 descartada do G3) terminaram todas com `status: success`. O que o Grupo A **não** cobre (SQL real, `queryReplacement`, calendário
+dinâmico avaliado, espera real dos Wait, Error Workflow, falhas reais de `UPDATE`) fica para o
+Grupo B.
