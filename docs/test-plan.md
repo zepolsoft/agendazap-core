@@ -474,3 +474,73 @@ dele é indireta: as execuções de horário ocupado e fora do expediente (cená
 25a-b, e a exec. 1646 descartada do G3) terminaram todas com `status: success`. O que o Grupo A **não** cobre (SQL real, `queryReplacement`, calendário
 dinâmico avaliado, espera real dos Wait, Error Workflow, falhas reais de `UPDATE`) fica para o
 Grupo B.
+
+## Teste real contra Supabase (sem pin no Postgres)
+
+### Rodada 7 — primeiro SQL real (30/09/2026)
+
+- **Workflow:** "Agendamento via WhatsApp (Supabase)" (`ny0fqlw8ojzmId7C`), versão
+  `05a38b1c-d51f-4c62-82de-c1a5c73dd08d`, desativado e sem alteração.
+- **Como:** `test_workflow` com **só os 9 nodes Postgres sem pin**, rodando de verdade contra o
+  Supabase. WhatsApp, Google Calendar, Data Tables e HTTP continuaram fixados (nenhuma mensagem
+  real, nenhum evento real). IA rodando de verdade. `Verificar Disponibilidade` fixado em
+  `available: true` e `Criar Evento no Calendar` fixado com ids fictícios (`evt_real_200`,
+  `evt_real_201`).
+- **Telefones:** 5511900000200 (passos 1 e 3) e 5511900000201 (passo 2, um segundo cliente no
+  mesmo horário), nenhum usado antes.
+- **Consulta e limpeza do banco:** sem `psql` local nem MCP do Supabase, então foi criado um
+  workflow auxiliar temporário ("TEMP - Consulta Supabase (agendazap-core, teste real)",
+  `J2liPsCnxpEbbVo0`: gatilho manual + um node Postgres `executeQuery` com a credencial real),
+  arquivado ao final. Execuções 1648, 1651, 1655, 1656 e 1657.
+- **Estado inicial do banco (exec. 1648):** 2 profissionais ativos (Carlos, Larissa), os 3
+  serviços do seed, 0 agendamentos.
+
+| # | Passo | Resultado real | Evidência |
+|---|---|---|---|
+| R1 | Criar agendamento: "Oi, quero marcar um Corte Masculino amanhã às 15h" → "sim, pode confirmar" | ✅ `Buscar Profissional Ativo` real devolveu Carlos (`3bac4287-…`, calendário do PROF-01 do seed); `Buscar Serviços e Preços` real devolveu os 3 serviços com `preco` como texto (`"50.00"`), igual aos pins usados antes; `Buscar Agendamentos Ativos do Cliente` com 0 linhas → "Nenhum agendamento ativo". Na confirmação, o `INSERT` real gravou a linha `e3f04614-…`. Conferida no banco: `servico_id` resolvido pelo nome (Corte Masculino), `cliente_nome: Rafael Teste`, `beneficiario: Eu mesmo`, `data_hora_inicio 2026-10-01 18:00Z` / `fim 18:30Z` (= 15h–15h30 em São Paulo), `status: agendado`, `google_event_id: evt_real_200`. A query de leitura do workflow devolve `event_id`, `status`, `data` (`2026-10-01T15:00:00-03:00`), `beneficiario`, `servico` — os nomes que os nodes de Code esperam | exec. 1649, 1650; banco: 1651 |
+| R2 | Conflito proposital: outro cliente (5511900000201), mesmo profissional (Carlos, conferido na execução), mesmo horário, com o Calendar fixado como livre | ⚠️ **O banco barrou; o workflow não trata o erro.** O `INSERT` falhou com `conflicting key value violates exclusion constraint "agendamentos_sem_conflito"`. "Salvar Cliente na Planilha" não tem `onError`, então a execução parou ali com `status: error`. `Confirmar Agendamento no WhatsApp` não executou e **nenhuma mensagem foi enviada ao cliente**. Nenhuma linha foi gravada | exec. 1652, 1653 |
+| R3 | Cancelar: "preciso cancelar meu corte de amanhã" (5511900000200) | ✅ `Formatar Agendamentos Ativos` montou a lista a partir da linha real (`[evt_real_200] Corte Masculino — quinta-feira, 01/10 às 15:00 — para: Eu mesmo`); `intencao: cancelar`, `agendamento_alvo: evt_real_200`; `Buscar Agendamento para Cancelar` real → `Cancelar Evento no Calendar` (pin) → `UPDATE` real → `Confirmar Cancelamento no WhatsApp`. Conferido no banco: `status: cancelado`, `atualizado_em` atualizado pelo trigger | exec. 1654; banco: 1655 |
+
+**Limpeza:** `DELETE FROM agendamentos WHERE cliente_telefone IN ('5511900000200',
+'5511900000201')` apagou 1 linha (`e3f04614-…`, a do R1; o R2 não gravou nada) — exec. 1656.
+Conferência depois (exec. 1657): 0 agendamentos, 2 profissionais, 3 serviços — igual ao
+estado inicial.
+
+**O que este teste prova (e o Grupo A não provava)**
+
+- O SQL das 9 queries roda no Supabase real. Foram executadas de verdade: `Buscar Profissional
+  Ativo`, `Buscar Serviços e Preços`, `Buscar Agendamentos Ativos do Cliente`, `Buscar Agendamento
+  para Cancelar`, o `INSERT` e o `UPDATE` de cancelamento. Com isso, os `queryReplacement` com `$1..$9` e as expressions que os
+  alimentam também foram avaliados de verdade.
+- O formato de `data` com `-03:00` sai do SQL como esperado, e o `timestamptz` com offset é
+  gravado no instante certo.
+- A resolução de `servico_id` pelo nome funcionou para "Corte Masculino" (a decisão nome ×
+  `servico_id` continua em aberto; este teste não a muda).
+- A exclusion constraint funciona no banco real.
+
+**Achados (registrados, não corrigidos)**
+
+1. **Conflito no `INSERT` não é tratado (R2).** Em produção, isso significaria:
+   - o cliente não recebe nenhuma resposta;
+   - o evento no Google Calendar **já teria sido criado** ("Criar Evento no Calendar" roda
+     antes do `INSERT`) e ficaria órfão, sem linha no banco;
+   - a memória da IA desse telefone já gravou "Prontinho, Bruno! Seu Corte Masculino ficou
+     agendado…" (`memory.saves: 1`), então numa próxima mensagem a IA acharia que o horário
+     existe;
+   - o único aviso seria o Error Workflow para a equipe (só em execução de produção; não
+     observado aqui).
+   A constraint impede o double-booking no banco, mas a experiência do cliente nesse caso
+   quebra. Na prática o caso só aparece se o Calendar não mostrar o conflito (corrida entre
+   duas conversas, ou evento apagado no Calendar), porque normalmente `Verificar
+   Disponibilidade` barra antes.
+2. **Profissional ativo não determinístico.** Há 2 profissionais ativos com o **mesmo
+   `criado_em`**: o seed (`db/002_seed_exemplo.sql`) insere os dois no mesmo `INSERT`, e o
+   `now()` é o da transação. `Buscar Profissional Ativo` usa `ORDER BY criado_em LIMIT 1`, então
+   o desempate fica a critério do Postgres. Nas 5 execuções deste teste veio sempre Carlos, mas
+   nada garante isso. Com dois profissionais, o workflow ainda escolhe um só; a escolha por
+   profissional é assunto do multi-profissional, não desta rodada.
+
+**O que continua sem prova real:** Google Calendar (inclusive a expression do calendário
+dinâmico, que não é avaliada em node fixado), WhatsApp, Data Tables, a espera real dos Wait, o
+Error Workflow, o workflow de Lembrete contra o banco real e o `UPDATE` de remarcação
+(`Atualizar Linha na Planilha`), que não foi exercitado.
