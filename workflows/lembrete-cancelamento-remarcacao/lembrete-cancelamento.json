@@ -31,7 +31,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT id AS profissional_id, google_calendar_id, nome AS profissional_nome\nFROM profissionais\nWHERE ativo = true\nORDER BY criado_em\nLIMIT 1;",
+        "query": "SELECT id AS profissional_id, google_calendar_id, nome AS profissional_nome\nFROM profissionais\nWHERE ativo = true\nORDER BY criado_em, id\nLIMIT 1;",
         "options": {}
       },
       "executeOnce": true,
