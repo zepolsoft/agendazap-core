@@ -21,7 +21,7 @@ agendazap-core/
 │   ├── lembrete-cancelamento-remarcacao/      # export do workflow n8n "Lembrete, Cancelamento e Remarcação"
 │   └── notificacao-erros/                     # export do workflow n8n "Notificação de Erros"
 └── docs/
-    └── arquitetura.md            # decisões de arquitetura e notas do projeto
+    └── migracao-supabase.md      # mapeamento node a node da migração + decisões em aberto
 ```
 
 ## Banco de dados
@@ -37,11 +37,16 @@ Veja `db/001_initial_schema.sql` para o schema completo e comentado.
 
 ## Workflows (n8n)
 
-Os workflows partem dos 3 workflows já em produção:
+Os JSONs em `workflows/` são cópias adaptadas dos 3 workflows já em produção no repo
+[`automacao-pmes-whatsapp`](https://github.com/zepolsoft/automacao-pmes-whatsapp), prontas para
+importar no n8n (desativadas):
 
-1. **Agendamento via WhatsApp**
-2. **Lembrete, Cancelamento e Remarcação**
-3. **Notificação de Erros**
+1. **[Agendamento via WhatsApp](workflows/agendamento-whatsapp/)**
+2. **[Lembrete, Cancelamento e Remarcação](workflows/lembrete-cancelamento-remarcacao/)**
+3. **[Notificação de Erros](workflows/notificacao-erros/)** — sem alteração (não usa Sheets/Calendar)
 
-As regras de negócio e prompts da IA são mantidos; apenas os nós de dados
-(Google Sheets/Calendar) são trocados por nós Postgres/Supabase.
+As regras de negócio e os prompts da IA foram mantidos 100% intactos; só os nós de dados (Google
+Sheets → Postgres, Google Calendar apontando para um calendário fixo → calendário dinâmico por
+profissional) foram trocados. Veja **[`docs/migracao-supabase.md`](docs/migracao-supabase.md)**
+para o mapeamento completo node a node, o que foi preservado, e uma decisão em aberto sobre nomes
+de serviço que precisa de definição antes de ir para produção.
