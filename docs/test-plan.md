@@ -163,7 +163,8 @@ workflow testada, resultado por cenário e evidência da execução)._
   devolve `numeric`. "Buscar Profissional Ativo" com o `google_calendar_id` real do PROF-01 do seed
   e um `profissional_id` **fictício** (o seed não fixa UUIDs e o valor real não foi consultado no
   banco).
-- **Resultado:** 7 cenários passaram, 1 divergiu do esperado (cenário 8).
+- **Resultado:** 7 cenários passaram; o cenário 8 falhou e fica registrado como **bug herdado,
+  fora do escopo desta migração** (ver observações).
 
 | # | Mensagem(ns) | Telefone | Resultado | Evidência |
 |---|---|---|---|---|
@@ -174,14 +175,17 @@ workflow testada, resultado por cenário e evidência da execução)._
 | 5 | (a) "quero um Corte Masculino hoje às 9h" (já passado); (b) "...amanhã às 20h"; (c) "quero Corte + Barba amanhã às 17h30" (terminaria 18h20) | 5511900000105, 5511900000115, 5511900000125 | ✅ Nos três a IA deixou as datas vazias, explicou o motivo e pediu outro horário → `Responder Dúvida no WhatsApp`; nada criado | exec. 1561, 1562, 1563 |
 | 6 | "quero marcar um Corte Masculino amanhã às 15h" → "pensando bem, melhor às 16h" | 5511900000106 | ✅ Nova proposta para 16h–16h30, `confirmado: false` → `Propor Horário no WhatsApp`; nada criado | exec. 1564, 1565 |
 | 7 | "quero agendar uma barba" → "sexta às 10h" | 5511900000107 | ✅ 1ª pergunta dia e horário; 2ª junta os dados: `Barba`, 02/10 10h–10h20, propõe | exec. 1566, 1568 |
-| 8 | Cliente com `Corte Masculino` ativo no sábado 03/10 às 10h: (a) "quero marcar uma Barba na sexta às 14h"; (b) "quero marcar um Corte Masculino sábado às 11h" | 5511900000108, 5511900000118 | ❌ Nas duas a IA recebeu o agendamento ativo na lista (`[evt_ativo_108] Corte Masculino — sábado, 03/10 ... às 10:00`), mas propôs o novo horário direto (`Propor Horário no WhatsApp`), sem avisar que já existe agendamento nem perguntar se quer remarcar ou marcar outro | exec. 1567, 1569 |
+| 8 | Cliente com `Corte Masculino` ativo no sábado 03/10 às 10h: (a) "quero marcar uma Barba na sexta às 14h"; (b) "quero marcar um Corte Masculino sábado às 11h" | 5511900000108, 5511900000118 | ❌ **Bug herdado, fora do escopo.** Nas duas a IA recebeu o agendamento ativo na lista (`[evt_ativo_108] Corte Masculino — sábado, 03/10 ... às 10:00`), mas propôs o novo horário direto (`Propor Horário no WhatsApp`), sem avisar que já existe agendamento nem perguntar se quer remarcar ou marcar outro | exec. 1567, 1569 |
 
 **Observações desta rodada**
 
-- **Cenário 8:** o prompt do agente não tem regra mandando avisar sobre agendamento já existente ao
-  marcar um novo, e ele é idêntico ao de produção — a divergência não vem da troca de Sheets por
-  Postgres. Falta conferir se o mesmo cenário passa em produção ou se o esperado do roteiro está
-  desatualizado. Nada foi alterado.
+- **Cenário 8 — bug herdado, fora do escopo desta migração.** O prompt do agente não tem regra
+  mandando avisar sobre agendamento já existente ao marcar um novo. Esse prompt e toda a lógica de
+  negócio (nodes de Code) são idênticos aos de produção — a migração só trocou a camada de dados —,
+  então o mesmo input produziria a mesma falha em produção. Isso é conclusão por construção: o
+  cenário não foi executado no workflow de produção nesta rodada. Não houve tentativa de correção,
+  porque o prompt da IA não muda no escopo deste projeto; a correção, se for feita, é no repo de
+  produção (`automacao-pmes-whatsapp`) e depois replicada aqui.
 - **O que o pin não prova:** node fixado não avalia os próprios parâmetros. Esta rodada não
   exercitou o SQL, os `queryReplacement`, nem as expressions
   `$('Buscar Profissional Ativo').item.json.google_calendar_id` dos nodes de Calendar — isso só
