@@ -844,3 +844,126 @@ Sobre Erro no Banco` → volta para `Processar Cada Agendamento`.
 > - a volta ao loop.
 >
 > A estrutura é a mesma do fallback de IA, que foi executado no G2 e G3 (rodada 6).
+
+### Rodada 10 — auditoria dos workflows contra o schema relacional (30/09/2026)
+
+Auditoria só de leitura, sem alteração nos dois workflows. Três camadas: o JSON do repo contra
+`db/001_initial_schema.sql`, o Supabase real e o workflow ao vivo. Os achados estão no fim; nenhum
+foi corrigido.
+
+**Camada 2 — Supabase real.** Dois workflows auxiliares temporários, com gatilho manual e só
+leitura, ambos arquivados ao final:
+- "TEMP - Conferência schema Supabase" (`nmx6PcSI0I7MmWUL`), exec. 1675;
+- "TEMP - Conferência EXPLAIN Lembrete" (`qZyH7yTokfHes7pK`), exec. 1676.
+
+| Consulta | Resultado |
+|---|---|
+| `information_schema.columns` das 4 tabelas (tipo, `udt_name` para enum/array, `is_nullable`, `column_default`) | ✅ Idêntico ao `001`: 13 colunas em `agendamentos`, 12 em `profissionais`, 4 em `profissionais_servicos`, 7 em `servicos`. `servico_id`/`profissional_id`/`cliente_nome`/`cliente_telefone`/`data_hora_*` NOT NULL; `status` default `'agendado'`; `beneficiario`, `google_event_id`, `observacoes` e `profissionais.google_calendar_id` aceitam NULL |
+| `pg_enum` | ✅ `categoria_publico` = masculino, feminino, infantil, todos · `dia_semana` = dom…sab · `status_agendamento` = agendado, confirmado, remarcado, cancelado, concluido, no_show |
+| `pg_constraint` | ✅ PKs, as 4 FKs (as de `profissionais_servicos` com `ON DELETE CASCADE`), os 5 CHECKs e `agendamentos_sem_conflito` = `EXCLUDE USING gist (profissional_id WITH =, tstzrange(data_hora_inicio, data_hora_fim) WITH &&) WHERE (status <> 'cancelado')` |
+| `pg_trigger` + `pg_get_functiondef('set_atualizado_em')` | ✅ `trg_profissionais_atualizado_em`, `trg_servicos_atualizado_em`, `trg_agendamentos_atualizado_em` (BEFORE UPDATE, `new.atualizado_em = now()`). `profissionais_servicos` não tem `atualizado_em` nem trigger — igual ao `001` |
+| `pg_indexes` + `pg_extension` | ✅ Os 5 índices do `001` + PKs + o índice GiST da constraint. Extensões `btree_gist 1.7` e `pgcrypto 1.3` presentes. **Não há índice em `google_event_id`** (ver achado 4) |
+| `current_setting('TimeZone')` | Sessão do Postgres em **UTC** (ver achado 1) |
+| Linhas de teste: `cliente_telefone LIKE '551190000%' OR LIKE '5511091000%' OR cliente_nome ILIKE '%teste%' OR google_event_id LIKE 'evt%'` | ✅ Nenhuma. `count(*)` de `agendamentos` = 0 |
+| Órfãos: `LEFT JOIN` de `agendamentos` → `servicos` e → `profissionais`; de `profissionais_servicos` → as duas | ✅ 0 / 0 / 0 |
+| `google_event_id` duplicado (`GROUP BY … HAVING count(*) > 1`) | ✅ 0 |
+| Seed | ✅ Carlos (`3bac4287-…`, PROF-01, `93f64202…@group.calendar.google.com`, seg–sáb, 09:00–19:00) e Larissa (`4c0ac211-…`, PROF-02, `c3cf9382…`, ter–sáb, 10:00–20:00), ambos ativos e com calendário; os 3 serviços (Barba 20 min/35, Corte + Barba 50/75, Corte Masculino 30/50, `masculino`, ativos); 6 vínculos em `profissionais_servicos` |
+| `SELECT 1 WHERE false` (comportamento do node) | Node Postgres sem `alwaysOutputData` com 0 linhas **não emite item** (`main: [[]]`) (ver achado 5) |
+| `EXPLAIN (FORMAT JSON, VERBOSE)`, sem `ANALYZE`, das queries do Lembrete que nunca rodaram contra o banco real: Buscar Agendamentos de Hoje, Reverificar Agendamento, Buscar Todos os Agendamentos, Marcar Como Concluído | ✅ As 4 planejadas sem erro contra o schema real, incluindo o cast `'concluido'::status_agendamento`. `EXPLAIN` sem `ANALYZE` não executa, então o `UPDATE` não gravou nada |
+| `'2026-10-01T15:00:00'::timestamptz` × `'2026-10-01T15:00:00-03:00'::timestamptz`, vistos em São Paulo | Sem offset = **12:00**; com offset = 15:00 (ver achado 1) |
+
+**Camada 3 — workflow ao vivo.**
+- Agendamento (`9cb4ab1f`) e Lembrete (`76407613`): os 10 + 9 nodes Postgres, incluindo "Buscar
+  Profissional Ativo", são idênticos ao JSON do repo, credenciais à parte (na instância, todos
+  com "Postgres account"). Nenhum outro node, conexão ou setting diverge. Os dois estão
+  desativados, sem versão publicada.
+- Execuções mais recentes (1670 e 1671): as queries reais devolveram os campos esperados
+  (`profissional_id`/`google_calendar_id`; `servico`/`duracao_minutos`/`preco`;
+  `event_id`/`status`/`data`/`beneficiario`/`servico`; `data_hora_inicio`/`data_hora_fim`). O
+  único erro foi o conflito proposital da rodada 8, tratado pela saída de erro.
+- **Cobertura real por node Postgres** (rodadas 7, 8 e checklist):
+  - Rodaram de verdade no Agendamento: Buscar Profissional Ativo, Buscar Serviços e Preços,
+    Buscar Agendamentos Ativos do Cliente, Buscar Agendamento para Remarcar, Buscar Agendamento
+    para Cancelar, Salvar Cliente (sucesso e conflito), Atualizar Linha (só no caminho de
+    conflito), Atualizar Linha (Cancelar) e Buscar Horário Original.
+  - Rodaram de verdade no Lembrete: Buscar Profissional Ativo, Buscar Duração dos Serviços,
+    Atualizar Data (só no caminho de conflito) e Buscar Horário Original.
+  - Nunca rodaram contra o banco real: "Buscar Agendamentos do Cliente (Consultar)" (texto
+    idêntico ao de Remarcar/Cancelar, que rodaram); "Atualizar Status (Cancelar)" do Lembrete
+    (texto idêntico ao "Atualizar Linha (Cancelar)" do Agendamento, que rodou); e os 4 que
+    passaram pelo `EXPLAIN` acima.
+  - Os `UPDATE`s de remarcação nunca rodaram no caminho de **sucesso**, só no de conflito. Ali
+    o Postgres chegou a avaliar a constraint, o que prova que a query e os tipos dos parâmetros
+    são aceitos.
+
+**Camada 1 — o que bate.**
+- Todas as colunas referenciadas existem com os tipos certos.
+- Os `$1…$9` estão na ordem das colunas: INSERT = `profissional_id`, nome do serviço, `cliente_nome`,
+  `cliente_telefone`, `beneficiario`, início, fim, `google_event_id`, `observacoes`; UPDATE de
+  remarcação = serviço, início, fim, `event_id`; UPDATE do Lembrete = início, fim, `event_id`.
+- Os literais de enum (`'agendado'`, `'remarcado'`, `'cancelado'`, `'concluido'`) são válidos.
+- Os `AS` batem com a tabela de mapeamento do `migracao-supabase.md`.
+- Os JOINs são `agendamentos.servico_id = servicos.id`, `INNER`, seguros pela FK NOT NULL.
+- As leituras de agendamentos **não** filtram `servicos.ativo`, e está certo: agendamentos
+  existentes aparecem mesmo que o serviço seja desativado. Só a resolução de `servico_id` no
+  INSERT/UPDATE exige `ativo = true`.
+- Todo INSERT preenche `servico_id`, e nenhum INSERT/UPDATE reescreve `preco` ou `criado_em`.
+
+**Achados (registrados, não corrigidos)**
+
+1. **Início do agendamento gravado sem normalizar o fuso.** Afeta o INSERT (`$6`), o UPDATE de
+   remarcação do Agendamento (`$2`) e o UPDATE do Lembrete (`$1`): o horário de início vai cru,
+   do jeito que a IA devolveu. O horário de fim vem do Code, sempre com `-03:00`.
+   - A sessão do Postgres está em UTC, então um início sem offset seria gravado **3 horas
+     errado** (15:00 vira 12:00 em São Paulo, confirmado acima), com o fim certo. O intervalo
+     ficaria errado e a checagem de conflito também.
+   - Os dois `jsonSchemaExample` (agendamento e lembrete) mostram datas **sem** offset. O prompt
+     do agendamento pede `-03:00`; o do lembrete pede só "ISO 8601".
+   - Em todas as execuções observadas a IA mandou `-03:00`, então o problema nunca apareceu.
+   - Correção sugerida, só na expression dos 3 nodes Postgres: `DateTime.fromISO(x, { zone:
+     'America/Sao_Paulo' }).toISO()` no lugar do valor cru. Mantém o instante quando há offset e
+     assume São Paulo quando não há.
+2. **Os agendamentos lidos não trazem o calendário do profissional.** As leituras de
+   agendamentos do cliente e a do Lembrete não trazem `profissional_id` nem o
+   `google_calendar_id` do agendamento. Cancelar, remarcar, restaurar e desfazer usam o
+   calendário do "profissional ativo". Hoje funciona, porque só o Carlos é usado. Quebra se o
+   Carlos for desativado ou houver agendamento com outro profissional: a ação vai para o
+   calendário errado. É a simplificação v1 já documentada, mas o efeito sobre essas ações não
+   está escrito no doc.
+3. **`status` `confirmado` e `no_show` nunca são gravados**, e todo filtro de "ativo" usa só
+   `agendado`/`remarcado`: Filtrar Data de Hoje, Formatar Agendamentos Ativos, Filtrar
+   Agendamento Ativo, Formatar Resposta da Consulta e Buscar Todos os Agendamentos. A confirmação
+   do lembrete não é gravada no banco. Um agendamento marcado `confirmado` à mão (ou por uma
+   versão futura) deixaria de receber lembrete, de aparecer na consulta, de poder ser cancelado
+   ou remarcado e de ser concluído às 22h. Sugestão: incluir `confirmado` nos filtros, ou
+   registrar que o valor não é usado.
+4. **`google_event_id` não é único nem indexado** (confirmado no banco), mas todos os
+   UPDATE/SELECT de um agendamento específico usam essa coluna. Um id repetido atualizaria duas
+   linhas. Sugestão, que é mudança de schema e precisa de decisão: `CREATE UNIQUE INDEX … ON
+   agendamentos (google_event_id) WHERE google_event_id IS NOT NULL`.
+5. **Zero linhas interrompem o fluxo em silêncio.** O node Postgres com 0 linhas não emite item
+   (confirmado acima). Se a linha sumir entre a leitura e a escrita (cenário 22), estes nodes não
+   entregam nada adiante:
+   - `Atualizar Linha na Planilha (Cancelar)`: o cliente fica sem confirmação.
+   - No Lembrete, `Reverificar Agendamento`, `Atualizar Status (Cancelar)`, `Atualizar Data` e
+     `Buscar Horário Original (Remarcação)`: a iteração não volta ao "Processar Cada
+     Agendamento".
+   Pelo comportamento do loop do n8n, os lembretes seguintes do lote provavelmente não seriam
+   processados. O comportamento de 0 linhas foi confirmado; o efeito no loop, não. Probabilidade
+   baixa, impacto alto no Lembrete.
+6. **"Buscar Agendamentos de Hoje" sem `WHERE`.** Lê a tabela inteira (todo o histórico, todos
+   os profissionais) e filtra no n8n. O `EXPLAIN` mostra `Seq Scan`. Funciona, mas cresce com o
+   histórico. Sugestão: filtrar no SQL pelo dia de hoje em São Paulo e por
+   `status IN ('agendado','remarcado')`.
+7. **Expediente do banco ignorado.** O Code usa 9h–18h, segunda a sábado, fixo; o banco diz
+   Carlos 09:00–19:00 (seg–sáb) e Larissa 10:00–20:00 (ter–sáb). Hoje o workflow recusa 18h–19h
+   que o Carlos atende. `profissionais_servicos` e `categoria_atendida` também não são
+   consultados. É a mesma simplificação v1, mas o doc não cita os horários.
+8. **"Buscar Profissional Ativo" não exige calendário.** Não filtra `google_calendar_id IS NOT
+   NULL`, e a coluna aceita NULL. Um profissional ativo sem calendário seria escolhido e
+   quebraria todos os nodes de Calendar. Sugestão: `AND google_calendar_id IS NOT NULL`.
+9. **Offset `-03:00` fixo nas leituras.** O `to_char(... AT TIME ZONE 'America/Sao_Paulo') ||
+   '-03:00'` está certo hoje, porque não há horário de verão desde 2019, mas ficaria errado se
+   ele voltasse.
+10. **Doc desatualizado:** o SQL de "Buscar Profissional Ativo" no `migracao-supabase.md` ainda
+    mostra `ORDER BY criado_em`, sem `, id` (já apontado na auditoria anterior).
