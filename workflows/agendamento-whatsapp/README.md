@@ -9,6 +9,11 @@ detalhamento completo do que mudou, node a node, e as decisões em aberto.
 cancelar/consultar/dúvida via IA, checa disponibilidade real no Google Calendar do profissional
 ativo, efetiva a ação no Postgres (tabela `agendamentos`) e responde o cliente.
 
+**Na instância n8n:** workflow `ny0fqlw8ojzmId7C`, criado **desativado**, com as credenciais reais
+da instância já vinculadas (no JSON deste repo elas ficam como placeholder ou omitidas) e Error
+Workflow apontando para o "Notificação de Erros" de produção. Não ativar enquanto o trigger for o
+do WhatsApp: a ativação registra o webhook na Meta.
+
 **Antes de importar no n8n:**
 1. Rode `db/001_initial_schema.sql` e `db/002_seed_exemplo.sql` (na raiz do repo) no seu projeto
    Supabase, se ainda não tiver rodado.

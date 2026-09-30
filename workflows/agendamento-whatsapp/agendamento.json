@@ -2,7 +2,7 @@
   "name": "Agendamento via WhatsApp (Supabase)",
   "nodes": [
     {
-      "id": "e33dcb56-e469-4ec7-b2db-cba2107ed33d",
+      "id": "e8400018-38bf-4f54-af2f-b1f867ea6016",
       "name": "Receber Mensagem WhatsApp",
       "type": "n8n-nodes-base.whatsAppTrigger",
       "typeVersion": 1,
@@ -15,10 +15,11 @@
           "messages"
         ],
         "options": {}
-      }
+      },
+      "webhookId": "15600388-12a1-4b4f-97c3-9ac5c8e3f5b0"
     },
     {
-      "id": "3e1fcb99-d05e-496e-ae23-123f97f762a8",
+      "id": "fdd78800-7533-4fdd-8759-e8691315c41a",
       "name": "Filtrar Apenas Mensagens",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -60,7 +61,7 @@
       }
     },
     {
-      "id": "04225259-734f-46b7-adc6-ab9bbb39c076",
+      "id": "5cdc1660-4b4d-41ba-8ae3-d85c44a0a5c8",
       "name": "Normalizar Dados da Mensagem",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
@@ -101,7 +102,7 @@
       }
     },
     {
-      "id": "a1b2c3d4-1111-4aaa-8bbb-111111111111",
+      "id": "45e87603-8e32-4602-9c99-ee99de912a57",
       "name": "Checar Mensagem Duplicada",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
@@ -132,7 +133,7 @@
       }
     },
     {
-      "id": "a1b2c3d4-2222-4aaa-8bbb-222222222222",
+      "id": "83cd2245-bc8c-4961-86ca-65b43e7bd871",
       "name": "Mensagem Já Processada?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -165,7 +166,7 @@
       }
     },
     {
-      "id": "a1b2c3d4-3333-4aaa-8bbb-333333333333",
+      "id": "b3e29a5c-a459-4a73-a17f-551cf5228734",
       "name": "Ignorar Mensagem Duplicada",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -176,7 +177,7 @@
       "parameters": {}
     },
     {
-      "id": "a1b2c3d4-4444-4aaa-8bbb-444444444444",
+      "id": "dfff29fd-eeb9-4d0d-87be-cfe72ca1e19d",
       "name": "Registrar Mensagem Processada",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
@@ -222,7 +223,7 @@
       }
     },
     {
-      "id": "a1b2c3d4-5555-4aaa-8bbb-555555555555",
+      "id": "2a08c61a-ad70-4ebb-af6a-193335fe5a6d",
       "name": "Checar Lock do Telefone",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
@@ -253,7 +254,7 @@
       }
     },
     {
-      "id": "a1b2c3d4-6666-4aaa-8bbb-666666666666",
+      "id": "b1a6c27d-3220-4296-81a2-3a3d345eef5b",
       "name": "Telefone Ocupado?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -285,7 +286,7 @@
       }
     },
     {
-      "id": "a1b2c3d4-7777-4aaa-8bbb-777777777777",
+      "id": "210ad09d-159b-47df-a737-67d02efd9685",
       "name": "Ignorar Mensagem (Telefone Ocupado)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -296,7 +297,7 @@
       "parameters": {}
     },
     {
-      "id": "a1b2c3d4-8888-4aaa-8bbb-888888888888",
+      "id": "c0e687a4-8007-4b1f-accc-b1a4984c2072",
       "name": "Registrar Lock do Telefone",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
@@ -352,7 +353,7 @@
       }
     },
     {
-      "id": "c982e961-cde8-490e-9819-d4222e80368d",
+      "id": "4afdef3f-d158-4168-a5a3-df0c49b76932",
       "name": "Verificar Espera de Lembrete",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
@@ -383,7 +384,7 @@
       }
     },
     {
-      "id": "e77f8e4f-138d-4e01-90d7-8916b37d6a9a",
+      "id": "557f5fce-0f7e-4220-804c-10cdd5a95dea",
       "name": "Há Espera de Lembrete Ativa?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -415,7 +416,7 @@
       }
     },
     {
-      "id": "ce480745-64f2-4320-97c1-f2e6968961f4",
+      "id": "4d02ee02-7ba9-4517-8054-32b704201cb8",
       "name": "Encaminhar Mensagem para Lembrete",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -435,7 +436,7 @@
       }
     },
     {
-      "id": "654987ba-c5e0-46a1-881f-de3b4acda409",
+      "id": "7b3c3f19-b1eb-4773-bdf8-ac0d5ba74cbb",
       "name": "Mensagem Encaminhada para Lembrete",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -446,7 +447,7 @@
       "parameters": {}
     },
     {
-      "id": "87b59fbb-0fc3-4d99-b4f8-bce8a5492fca",
+      "id": "c712ef46-0fce-479c-8a49-2f8bccd8fe8f",
       "name": "Ativar Indicador de Digitação",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -474,7 +475,7 @@
       }
     },
     {
-      "id": "ffe16522-a011-4b6d-938f-17c7ef6ee104",
+      "id": "96ba0e70-3677-4478-9a83-18ae92616e30",
       "name": "Buscar Profissional Ativo",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -497,7 +498,7 @@
       }
     },
     {
-      "id": "f0404783-1c64-4dee-a8b4-f14d3c9bf0ca",
+      "id": "9d7f6681-99a5-4b2f-a8e5-d525b87cb6c8",
       "name": "Buscar Serviços e Preços",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -518,7 +519,7 @@
       }
     },
     {
-      "id": "7c7767de-4c21-47cc-9d09-57cc0aaf3e1f",
+      "id": "7f42937f-ca35-4961-8119-5a7f94927ecf",
       "name": "Formatar Lista de Serviços",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -533,7 +534,7 @@
       }
     },
     {
-      "id": "7de161ce-e57c-497a-af7f-505ea43aa7d3",
+      "id": "25a09b71-8de6-406c-8367-471843e6f615",
       "name": "Buscar Eventos dos Próximos Dias",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
@@ -561,7 +562,7 @@
       }
     },
     {
-      "id": "441da387-b624-4547-b8f3-8702b08fd424",
+      "id": "24b52d52-50dd-4614-af8a-218cfeb49c06",
       "name": "Calcular Horários Livres",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -574,7 +575,7 @@
       }
     },
     {
-      "id": "f89d6e53-34b2-4933-bdbd-d806e866d792",
+      "id": "111670b9-7b15-4d3b-87e7-a1cc3d8a58fc",
       "name": "Buscar Agendamentos Ativos do Cliente",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -600,7 +601,7 @@
       }
     },
     {
-      "id": "99725172-201a-4f7e-88f6-9e8d35ee7033",
+      "id": "e4439336-6ac5-43f1-908e-9d2a146fc13f",
       "name": "Formatar Agendamentos Ativos",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -613,7 +614,7 @@
       }
     },
     {
-      "id": "a89565cf-c6b8-4bdd-acd6-5bf261298776",
+      "id": "64ba1938-d688-47b7-b7b4-b44d356e8f3c",
       "name": "Avisar Cliente Sobre Falha da IA",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -621,7 +622,7 @@
         1200,
         1300
       ],
-      "webhookId": "17c08ceb-8872-482b-bfa0-5558cc937a22",
+      "webhookId": "b9830e8b-075e-4199-b316-1e2de130500b",
       "onError": "continueRegularOutput",
       "parameters": {
         "operation": "send",
@@ -632,7 +633,7 @@
       }
     },
     {
-      "id": "c7c485b5-8a19-447e-bd0e-b631ff5874ac",
+      "id": "35c133eb-e393-4100-83e6-fdd9289baee9",
       "name": "Escalar Falha da IA para a Equipe",
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
@@ -646,7 +647,7 @@
       }
     },
     {
-      "id": "cc46c976-8f47-453b-97e6-e8e709bbcb3e",
+      "id": "5c33137e-4b3e-45e7-b1f8-34fbcce3282f",
       "name": "Interpretar Intenção do Cliente",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
@@ -668,7 +669,7 @@
       }
     },
     {
-      "id": "a7b8c9d0-6e7f-4a8b-9c0d-3e4f5a6b7c8d",
+      "id": "93ef0e06-0850-490e-9b2b-cb8d849baa2e",
       "name": "Corrigir Falsa Confirmação em Dúvida",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -683,7 +684,7 @@
       }
     },
     {
-      "id": "83773e21-8701-4c19-bdec-ade87c3cfb8f",
+      "id": "5c8c4b3d-17bf-4d0d-bfdf-b85e709f239b",
       "name": "Modelo Claude",
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
@@ -702,7 +703,7 @@
       }
     },
     {
-      "id": "afea7b23-184d-4bfa-b3e6-37652593ae44",
+      "id": "b15211c3-207d-47a5-9a2f-e3e03bf90437",
       "name": "Parser Estruturado de Agendamento",
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
@@ -715,7 +716,7 @@
       }
     },
     {
-      "id": "e68001e9-7e71-4ec1-af75-65efadfbb397",
+      "id": "e76e6d27-0510-4c79-886b-146b9c105a8d",
       "name": "Simple Memory",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.4,
@@ -729,7 +730,7 @@
       }
     },
     {
-      "id": "58785ad7-1d0f-4b43-927d-e952944d2844",
+      "id": "c2805552-a695-4708-a7c0-17696fbbd2cc",
       "name": "Qual a Intenção do Cliente?",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
@@ -882,7 +883,7 @@
       }
     },
     {
-      "id": "6d02a817-a51f-4875-a3ae-1049dc8e0a5d",
+      "id": "09f72fad-40a4-409e-a125-a381cb69a9ba",
       "name": "Tem Dados Completos Para Agendar?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -934,7 +935,7 @@
       }
     },
     {
-      "id": "9a1e0f31-1c9a-4d6b-8c3e-01a2b3c4d5e6",
+      "id": "4a48d47b-9496-4b7e-a1d0-84bccdfbfd51",
       "name": "Validar Horário de Funcionamento",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -949,7 +950,7 @@
       }
     },
     {
-      "id": "b2c3d4e5-2f3a-4b5c-9d6e-7f8091a2b3c4",
+      "id": "dae96bfc-e113-479e-a076-790079c5c49f",
       "name": "Horário Dentro do Expediente?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -982,7 +983,7 @@
       }
     },
     {
-      "id": "f6a7b8c9-5d6e-4f7a-8b9c-2d3e4f5a6b7c",
+      "id": "d3f9c555-81c5-4c4f-bec4-fe3ee2959758",
       "name": "Avisar Horário Fora do Expediente no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -996,10 +997,11 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ (nome ? `${nome}, esse` : `Esse`) + ` horário já passou ou está fora do nosso expediente (funcionamos de segunda a sábado, das 9h às 18h). Pode me dizer outro dia ou horário?`, `Esse horário não rola` + (nome ? `, ${nome}` : '') + ` — nosso expediente é de segunda a sábado, 9h às 18h. Qual outro horário funciona pra você?`, `Ops, estamos fechados nesse horário (atendemos seg-sáb, 9h às 18h)` + (nome ? `, ${nome}` : '') + `. Me diz outro dia ou horário que já verifico!` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "a8c39a59-36d2-4573-92ac-0b067b46ecf8"
     },
     {
-      "id": "d4e5f6a7-3b4c-4d5e-8f9a-0b1c2d3e4f5a",
+      "id": "0847a807-5b28-4d7d-855d-1d0116ceb331",
       "name": "Validar Horário de Funcionamento (Remarcar)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1014,7 +1016,7 @@
       }
     },
     {
-      "id": "e5f6a7b8-4c5d-4e6f-9a0b-1c2d3e4f5a6b",
+      "id": "f4407f6e-7c29-411b-af03-257925034aab",
       "name": "Horário Dentro do Expediente? (Remarcar)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -1047,7 +1049,7 @@
       }
     },
     {
-      "id": "82c93033-312e-4671-839c-1ea3d7ce0fe8",
+      "id": "32b717fd-d51f-4d89-9213-df4f2680419c",
       "name": "Verificar Disponibilidade",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
@@ -1068,7 +1070,7 @@
       }
     },
     {
-      "id": "393c9956-2dbf-4f95-92d8-583c65f8b807",
+      "id": "b916c614-b4f8-48e4-9669-e6f617ffcae5",
       "name": "Horário Disponível?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -1101,7 +1103,7 @@
       }
     },
     {
-      "id": "a4b5c6d7-4444-4eee-9fff-444444444444",
+      "id": "6cd8dcc1-0229-4606-8895-e9cc9873db3e",
       "name": "Cliente Confirmou o Horário? (Agendar)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -1131,7 +1133,7 @@
       }
     },
     {
-      "id": "a4b5c6d7-5555-4eee-9fff-555555555555",
+      "id": "b27cced7-6358-4b55-83d5-ada921ee7847",
       "name": "Cliente Confirmou o Horário? (Remarcar)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -1161,7 +1163,7 @@
       }
     },
     {
-      "id": "a4b5c6d7-6666-4eee-9fff-666666666666",
+      "id": "201cd723-25cc-476d-8289-41ff1839213a",
       "name": "Propor Horário no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -1175,10 +1177,11 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "8bbfd959-f435-4305-ad32-cb1ee557981a"
     },
     {
-      "id": "007393cf-ea79-4191-837a-12632b79b04e",
+      "id": "99eaebd5-0256-4343-a5fa-b194b874a9eb",
       "name": "Criar Evento no Calendar",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
@@ -1201,7 +1204,7 @@
       }
     },
     {
-      "id": "8f83ef0d-907a-4f39-bcda-0db254646308",
+      "id": "a6e13314-5b68-4ead-ba42-3108cf1eda46",
       "name": "Salvar Cliente na Planilha",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -1224,7 +1227,7 @@
       }
     },
     {
-      "id": "48640630-ce9a-469f-88ca-dbcbedfa70be",
+      "id": "4e7e41cb-1f77-497c-b934-40fcf56b5dd5",
       "name": "Confirmar Agendamento no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -1238,10 +1241,11 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "61381782-b182-4e21-8564-103779ad76c1"
     },
     {
-      "id": "208f6d39-f75d-435a-bedf-57fdbcf51ffd",
+      "id": "1f35f963-f3d5-4c68-8efa-cdfcb90abd59",
       "name": "Sugerir Outro Horário no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -1255,10 +1259,11 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ (nome ? `Poxa, ${nome}, esse horário já ficou ocupado! ` : `Esse horário já ficou ocupado! `) + `Consegue me dizer outro dia ou horário que funcione pra você?`, `Ih, alguém acabou de pegar esse horário` + (nome ? `, ${nome}` : '') + `! Tem outro dia ou horário em mente?`, (nome ? `${nome}, esse` : `Esse`) + ` horário não está mais livre. Qual outro você prefere? Já verifico a disponibilidade certinho.` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "44036fe1-3a21-4755-a661-02644d17b782"
     },
     {
-      "id": "2705c760-d110-4511-b645-18b278771771",
+      "id": "dc463d14-63ef-4216-bd5c-d6b26ab1cb56",
       "name": "Responder Dúvida no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -1272,10 +1277,11 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "b9b79706-3de2-4203-a2fa-33493568f3c2"
     },
     {
-      "id": "25cd6299-0427-43f8-86c1-b2b5bd462dc9",
+      "id": "2b1917c0-0373-4638-a286-99dfc6af678d",
       "name": "Buscar Agendamento para Remarcar",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -1299,7 +1305,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "f6a7b8c9-2222-4ddd-9eee-222222222222",
+      "id": "2c9ea342-012e-45f9-b01b-93a9fbc56f4b",
       "name": "Filtrar Agendamento Ativo (Remarcar)",
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.3,
@@ -1340,7 +1346,7 @@
       }
     },
     {
-      "id": "3c9a6c0c-a0c6-4654-a302-15b5b39f64c4",
+      "id": "b84be4f2-07d7-4356-b643-05ba5f053afc",
       "name": "Identificar Agendamento Escolhido (Remarcar)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1353,7 +1359,7 @@
       }
     },
     {
-      "id": "84f3287e-1f1b-4fde-9666-30af3bc8a7e7",
+      "id": "949bdb9b-a6c2-4f2c-959e-a6a0e06fe619",
       "name": "Precisa Escolher Qual Agendamento? (Remarcar)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -1385,7 +1391,7 @@
       }
     },
     {
-      "id": "831c6efb-4e5c-4702-a4b6-09d3b9759417",
+      "id": "ccfff861-a8fb-4652-8a3f-1bdf3367836a",
       "name": "Perguntar Qual Agendamento no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -1393,7 +1399,7 @@
         2400,
         800
       ],
-      "webhookId": "8b278f62-64c5-4f0a-921c-64147bae9273",
+      "webhookId": "9dc7dc3a-29e0-4eee-a97e-211ab718bb44",
       "parameters": {
         "operation": "send",
         "phoneNumberId": "1367004446487242",
@@ -1403,7 +1409,7 @@
       }
     },
     {
-      "id": "bd1be247-3b0f-44de-a6da-62f7d340be6c",
+      "id": "e9d804ac-fd8c-4cf1-b540-f2f61c7c3ff2",
       "name": "Encontrou Agendamento Para Remarcar?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -1434,7 +1440,7 @@
       }
     },
     {
-      "id": "e5f6a7b8-1111-4ccc-9ddd-111111111111",
+      "id": "412e6a04-ddaa-432c-b76c-1e05c72813ad",
       "name": "Tem Novo Horário Para Remarcar?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -1465,7 +1471,7 @@
       }
     },
     {
-      "id": "c9d0e1f2-7a8b-4c9d-8e0f-4a5b6c7d8e9f",
+      "id": "a26c4f9e-b763-497f-adaf-a7ee12574fff",
       "name": "Redirecionar para Fluxo de Agendar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1480,7 +1486,7 @@
       }
     },
     {
-      "id": "3ca67be9-db1e-457b-9255-4f9c9e3c8081",
+      "id": "27798b24-22a9-4854-9a2e-23cbfa14a4ab",
       "name": "Listar Eventos no Novo Horário (Remarcar)",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
@@ -1504,7 +1510,7 @@
       }
     },
     {
-      "id": "e1f2a3b4-5c6d-4e7f-8a9b-0c1d2e3f4a5b",
+      "id": "13a4385d-85ac-45c3-8d6b-42979f6089ac",
       "name": "Verificar Disponibilidade para Remarcar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1519,7 +1525,7 @@
       }
     },
     {
-      "id": "25baa78f-334c-4ba8-a09a-45c5001172f5",
+      "id": "efeb744e-ffd4-4a2b-b688-c6c8eb0fc2c8",
       "name": "Novo Horário Disponível?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -1551,7 +1557,7 @@
       }
     },
     {
-      "id": "de94ffef-35e3-4900-bca9-6b6c07c55203",
+      "id": "0569407f-039a-456f-adb1-5539081ffbac",
       "name": "Atualizar Evento no Calendar",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
@@ -1576,7 +1582,7 @@
       }
     },
     {
-      "id": "21769843-d303-40f6-9022-93c98b9abdf7",
+      "id": "4f28ec81-9951-454c-993c-8defd683b140",
       "name": "Atualizar Linha na Planilha",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -1599,7 +1605,7 @@
       }
     },
     {
-      "id": "b59c3775-d174-4e22-82a6-7102e3758686",
+      "id": "efb867f7-fc99-480c-b869-fe459761a82d",
       "name": "Confirmar Remarcação no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -1613,10 +1619,11 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "597df3f3-9906-4fda-9a58-cfbcd211f7d4"
     },
     {
-      "id": "9ea7f467-d79c-4414-b5ff-2b8abc5183a2",
+      "id": "fc944ed0-d4b8-4cdf-9c14-d2e31953159a",
       "name": "Avisar Sem Agendamento Ativo no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -1630,10 +1637,11 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ `Não encontrei nenhum agendamento ativo pra esse número` + (nome ? `, ${nome}` : '') + `. Quer marcar um horário novo?`, (nome ? `${nome}, não` : `Não`) + ` achei nenhum horário marcado aqui pra você. Vamos agendar um?`, `Por aqui não consta nenhum agendamento seu no momento` + (nome ? `, ${nome}` : '') + `. Posso te ajudar a marcar um horário?` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "81c64927-279c-4da0-9a26-790df84208d2"
     },
     {
-      "id": "d4af93d3-0a36-4123-9764-b7b55768ea06",
+      "id": "87b225d6-c326-4778-9393-36759598a61c",
       "name": "Buscar Agendamento para Cancelar",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -1657,7 +1665,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "f6a7b8c9-3333-4ddd-9eee-333333333333",
+      "id": "50d0c391-3299-4348-a4b7-ff8dfe35fb51",
       "name": "Filtrar Agendamento Ativo (Cancelar)",
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.3,
@@ -1698,7 +1706,7 @@
       }
     },
     {
-      "id": "21118f6f-6dad-4f90-a4c2-27a9a8bc8348",
+      "id": "928301ee-8b34-4b53-80fc-a9cb363c4421",
       "name": "Identificar Agendamento Escolhido (Cancelar)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1711,7 +1719,7 @@
       }
     },
     {
-      "id": "225137b2-6274-4a8a-9b04-d25ffc6e2f2d",
+      "id": "75730f56-8b75-402c-80c4-c8fd87923e8b",
       "name": "Precisa Escolher Qual Agendamento? (Cancelar)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -1743,7 +1751,7 @@
       }
     },
     {
-      "id": "9265861c-5760-42e1-9d63-b2efc0d57070",
+      "id": "4f8a2786-0c02-4690-878d-2eb342e642da",
       "name": "Encontrou Agendamento Para Cancelar?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -1774,7 +1782,7 @@
       }
     },
     {
-      "id": "b63c060a-ee63-4871-ad08-511a7186d659",
+      "id": "69a8d8bb-1129-417c-bbc8-66ff7264d1e3",
       "name": "Cancelar Evento no Calendar",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
@@ -1795,7 +1803,7 @@
       }
     },
     {
-      "id": "4c77f91a-7b2b-471f-9e3a-a17808a4d60e",
+      "id": "fbad7f9b-6d99-4ef1-8f01-52bada295624",
       "name": "Atualizar Linha na Planilha (Cancelar)",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -1818,7 +1826,7 @@
       }
     },
     {
-      "id": "0f2798b3-9ee9-4709-8969-a3f87644409e",
+      "id": "a38a0655-2764-4da7-b71d-33133e8b3b2b",
       "name": "Confirmar Cancelamento no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -1832,10 +1840,11 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const zona = 'America/Sao_Paulo'; const dt = DateTime.fromISO(String(r.data), { zone: zona }); const dif = dt.startOf('day').diff($now.setZone(zona).startOf('day'), 'days').days; const hora = dt.toFormat(dt.minute ? \"H'h'mm\" : \"H'h'\"); const quando = dif === 0 ? `de hoje, às ${hora}` : dif === 1 ? `de amanhã, às ${hora}` : `de ${dt.setLocale('pt-BR').toFormat(\"cccc, 'dia' d 'de' LLLL\")}, às ${hora}`; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const b = String(r.beneficiario ?? '').trim(); const para = b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : ''; const opcoes = [ `Pronto${nome ? `, ${nome}` : ''}! Cancelei o ${r.servico}${para} ${quando}. Quando quiser remarcar, é só chamar.`, `Tudo certo, o ${r.servico}${para} ${quando} foi cancelado. Se quiser marcar de novo, é só me chamar!`, `Cancelado${nome ? `, ${nome}` : ''}: ${r.servico}${para} ${quando}. Fico à disposição pra quando quiser voltar!` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "04269168-f0bf-4c6a-8e38-588a94bc1e8d"
     },
     {
-      "id": "c1d2e3f4-1111-4aaa-9bbb-111111111111",
+      "id": "3af31f9d-0bf0-4f71-8172-d493c9fbecb5",
       "name": "Buscar Agendamentos do Cliente (Consultar)",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -1859,7 +1868,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "c1d2e3f4-2222-4aaa-9bbb-222222222222",
+      "id": "ac5146eb-58dc-480e-81b7-b89b67184637",
       "name": "Formatar Resposta da Consulta",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1874,7 +1883,7 @@
       }
     },
     {
-      "id": "c1d2e3f4-3333-4aaa-9bbb-333333333333",
+      "id": "5dfcb7f8-9cd7-4eb1-8e24-fabe88a94704",
       "name": "Responder Consulta no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -1888,10 +1897,11 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $json.mensagem_consulta }}",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "11020e6d-a361-40f1-8527-2f50e97b4aa0"
     },
     {
-      "id": "94e1f3a3-9ba3-4cb2-b621-96610228fcc4",
+      "id": "513a76d9-3068-4227-bf5d-de307a7bae7a",
       "name": "Sticky Note b7531c55",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -1905,7 +1915,7 @@
       }
     },
     {
-      "id": "d1af1977-74ed-42e2-a96f-98619e48b894",
+      "id": "efe4819d-d164-4dfd-9156-921bb8ecd14a",
       "name": "Sticky Note 2fcbabac",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -1919,7 +1929,7 @@
       }
     },
     {
-      "id": "67bfa38e-f145-4da3-af4d-c258b86de731",
+      "id": "53970f5f-780d-4e30-bb03-83e44c284ea0",
       "name": "Sticky Note ca9531d3",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -1933,7 +1943,7 @@
       }
     },
     {
-      "id": "27db20da-8d34-4c60-b9a9-c2a3f96d8fa3",
+      "id": "febd7a5a-e684-44cd-947b-acfd6a6237ff",
       "name": "Sticky Note Remarcar Cancelar",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -1947,7 +1957,7 @@
       }
     },
     {
-      "id": "d0c5f7a1-4a1b-4a1b-8c2d-a1b2c3d4e5f6",
+      "id": "061bc866-bcf5-4901-8400-c68cda02ac96",
       "name": "Sticky Note README",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -1963,7 +1973,7 @@
       }
     },
     {
-      "id": "817b64f5-19fc-4a3e-a712-16f2adcb15e8",
+      "id": "2a3e5b5b-a141-499e-a6d6-32d228b78794",
       "name": "Checar Encaminhamento Recente",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
@@ -1991,7 +2001,7 @@
       }
     },
     {
-      "id": "0e872372-1c69-4a21-b903-3330eff33264",
+      "id": "a7df8025-3325-4928-a023-f10f653e08be",
       "name": "Já Encaminhou Nos Últimos 30 Min?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
@@ -2023,7 +2033,7 @@
       }
     },
     {
-      "id": "d16e3042-742b-4333-b23f-67aa23c9812f",
+      "id": "5831a385-4e18-4224-ab62-7379d1b81e7e",
       "name": "Avisar Dúvida Já Encaminhada no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -2037,10 +2047,11 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "Já repassei sua dúvida pro responsável da Barbearia ZAP — aguarde o contato dele, por favor. 🙂",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "3a85e614-2104-48de-bb00-d176695e88d0"
     },
     {
-      "id": "0d1b5a05-57a8-4a5f-91ab-97ed652ce9a1",
+      "id": "c6ccd41b-c6cc-4876-aac1-b74d5bb3a346",
       "name": "Registrar Encaminhamento de Dúvida",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
@@ -2095,7 +2106,7 @@
       }
     },
     {
-      "id": "6e4f3aff-c1c7-4c11-aa4c-610fd5141276",
+      "id": "f17d2468-227e-49bd-ad08-1aec5658c513",
       "name": "Encaminhar Dúvida ao Responsável no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -2110,10 +2121,11 @@
         "recipientPhoneNumber": "5511975049937",
         "textBody": "=📩 Dúvida de cliente sobre o negócio (não é erro do sistema)\n\nCliente: {{ $('Normalizar Dados da Mensagem').item.json.nome }} ({{ $('Normalizar Dados da Mensagem').item.json.telefone }})\nMensagem: \"{{ $('Normalizar Dados da Mensagem').item.json.mensagem }}\"\n\nA IA não tem essa informação e avisou o cliente que você vai entrar em contato. Responder: https://wa.me/{{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "89c8bd2d-eb60-4803-809e-2177c05ad970"
     },
     {
-      "id": "90fbd543-cd4e-49b1-ba50-5dc114a113c5",
+      "id": "c8972928-3145-4b1f-b398-64807c94bfa2",
       "name": "Avisar Cliente Sobre Dúvida Encaminhada no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -2127,10 +2139,11 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "Boa pergunta! Essa informação eu não tenho por aqui, mas já repassei sua dúvida pro responsável da Barbearia ZAP — ele vai entrar em contato com você em breve. 😊",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "3b12bf53-4b2e-4fa4-8ba1-e1cd7253c318"
     },
     {
-      "id": "7037adf2-1324-4e5b-a28b-0d108fa3353e",
+      "id": "a14ea7aa-d72c-4710-ae66-6055e6cf2487",
       "name": "Recusar Assunto Fora do Escopo no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
@@ -2144,7 +2157,8 @@
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "Desculpe, só consigo ajudar com assuntos da Barbearia ZAP: serviços, preços e agendamentos. Se quiser marcar, remarcar ou cancelar um horário, é só me falar! 💈",
         "additionalFields": {}
-      }
+      },
+      "webhookId": "c76b05d7-92c4-46f6-a59b-b9a709f9cf73"
     }
   ],
   "connections": {
@@ -3013,8 +3027,7 @@
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": true,
-    "binaryMode": "separate",
-    "timeSavedMode": "fixed",
+    "errorWorkflow": "ZxJfBbFmiD5Hqp5o",
     "timezone": "America/Sao_Paulo",
     "callerPolicy": "workflowsFromSameOwner"
   }
