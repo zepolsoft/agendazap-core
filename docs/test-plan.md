@@ -52,17 +52,15 @@ Regras que valem para todo cenário:
 
 ## Como rodar o Grupo B (integração)
 
-**Ainda não existe ambiente isolado.** Para montar (a decidir):
+Ambiente isolado ainda não está de pé para o Grupo B completo (cenários que dependem do trigger
+real do WhatsApp — 23, 29, 32). O plano confirmado para montá-lo e executar cada cenário está na
+seção "Grupo B — Plano de execução confirmado" abaixo; cenários que só precisam de Postgres e
+Calendar reais (sem precisar do Webhook/trigger), como o 33, já foram validados via
+`test_workflow` direto no Supabase/Calendar real — ver "Cenário 33 — conflito de horário no banco"
+mais abaixo.
 
-- Cópia **desativada** dos dois workflows, com o trigger do WhatsApp trocado por um Webhook (para
-  injetar payloads reais do WhatsApp via `execute_workflow`), apontando para um **projeto
-  Supabase de teste** (ou um schema/linhas isoladas com telefones fictícios), um **calendário de
-  teste** e **Data Tables de teste** (dedup, lock, esperas).
-- Envio de WhatsApp da cópia para um número de teste (ou desabilitado), nunca para clientes.
-- Cenários que dependem do WhatsApp real (reenvio da Meta, mídia real) exigem uma pessoa mandando
-  mensagem de um celular para o número de teste.
-
-Até esse ambiente existir, o Grupo B fica **não executado** — não marcar como aprovado.
+Até o ambiente do Webhook existir, os cenários 23, 29 e 32 ficam **não executados** — não marcar
+como aprovados.
 
 ---
 
@@ -160,9 +158,12 @@ Decisões tomadas antes de começar a rodar o Grupo B:
    Checklist de cutover (remover Webhook/Set, recolocar o WhatsApp Trigger, restaurar a
    referência, só então ativar) vai para `docs/migracao-supabase.md`.
 2. **Execução dos cenários:**
-   - 9, 17, 20, 22, 26, 33, 34, 21: `test_workflow`, fixando só envio de WhatsApp e indicador de
+   - 9, 17, 20, 22, 26, 34, 21: `test_workflow`, fixando só envio de WhatsApp e indicador de
      digitação — banco, Calendar e Data Tables reais. (`execute_workflow` não aceita pin, por isso
-     não serve aqui.)
+     não serve aqui.) O cenário 33 **já foi validado** dessa mesma forma na rodada 8 (ver "Cenário
+     33 — conflito de horário no banco" mais abaixo) — não precisa repetir, só o 34 (combinação de
+     serviço sem item exato) segue pendente, e depende da decisão em aberto em
+     `docs/migracao-supabase.md`.
    - 23 e 29 (Error Workflow): exigem execução de produção de verdade — a cópia do Agendamento
      (já com o Webhook) é **publicada só durante esses dois cenários e despublicada em seguida**.
      Monitorar a aba Executions enquanto estiver publicada; não deixar publicada além do
