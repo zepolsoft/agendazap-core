@@ -1888,6 +1888,74 @@
       },
       "onError": "continueRegularOutput",
       "webhookId": "a0f9519b-e1a8-454d-8067-715235852474"
+    },
+    {
+      "id": "79ff14ee-32ad-4d8e-98a6-fa45f6fa97e4",
+      "name": "Preparar Aviso de Erro no Banco",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3616,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "mensagem_cliente",
+              "name": "mensagem_cliente",
+              "type": "string",
+              "value": "={{ (() => { const a = $('Processar Cada Agendamento').item.json; const nome = a.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir a remarcação do seu ${a.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}"
+            },
+            {
+              "id": "mensagem_equipe",
+              "name": "mensagem_equipe",
+              "type": "string",
+              "value": "={{ (() => { const a = $('Processar Cada Agendamento').item.json; const zona = 'America/Sao_Paulo'; const fmt = iso => { const dt = DateTime.fromISO(String(iso ?? ''), { zone: zona }); return dt.isValid ? dt.setLocale('pt-BR').toFormat(\"dd/MM 'às' HH:mm\") : 'não informado'; }; const novo = $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio; const erro = ($json.message ?? JSON.stringify($json)) + ($json.error?.description ? ' — ' + $json.error.description : ''); return `⚠️ Lembrete: erro no banco ao remarcar o agendamento de ${a.nome} (${a.telefone}). Horário atual: ${a.servico} em ${fmt(a.data)} (event_id ${a.event_id}); novo horário pedido: ${fmt(novo)}. O evento no Calendar pode já ter sido movido para o novo horário, mas o banco não foi atualizado — confira os dois e resolva manualmente. O cliente foi avisado de que a equipe vai entrar em contato. Erro: ${erro}`; })() }}"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "3ecb29b2-afc5-4bb4-b645-380048a91aa6",
+      "name": "Avisar Cliente Sobre Erro no Banco",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3840,
+        0
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "={{ $('Preparar Aviso de Erro no Banco').item.json.mensagem_cliente }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "00626865-a009-4e81-b957-0e322bf9c0d7"
+    },
+    {
+      "id": "d4ab5762-fbbf-4132-8d07-c793fd7a1e38",
+      "name": "Notificar Equipe Sobre Erro no Banco",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        4064,
+        0
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "5511975049937",
+        "textBody": "={{ $('Preparar Aviso de Erro no Banco').item.json.mensagem_equipe }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "35f5e2b1-2ae5-4cdc-8dd8-3a3330ee0278"
     }
   ],
   "connections": {
@@ -2700,7 +2768,7 @@
         ],
         [
           {
-            "node": "Enviar Confirmação Final da Remarcação no WhatsApp",
+            "node": "Preparar Aviso de Erro no Banco",
             "type": "main",
             "index": 0
           }
@@ -2741,6 +2809,39 @@
       ]
     },
     "Avisar Horário Recém-Ocupado no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Processar Cada Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Aviso de Erro no Banco": {
+      "main": [
+        [
+          {
+            "node": "Avisar Cliente Sobre Erro no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Cliente Sobre Erro no Banco": {
+      "main": [
+        [
+          {
+            "node": "Notificar Equipe Sobre Erro no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Equipe Sobre Erro no Banco": {
       "main": [
         [
           {

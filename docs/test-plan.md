@@ -639,8 +639,8 @@ tag `teste`) tem 3 autosaves da interface hoje às 09h38 UTC, feitos pelo usuár
 ### Pendências abertas
 
 - ~~Cenário 33: tratar o erro do `INSERT`/`UPDATE` no Postgres (achado R2 da rodada 7).~~
-  **Corrigido na rodada 8.** Sobrou o ponto registrado lá: no Lembrete, erro de banco que não seja
-  o conflito continua sem aviso nenhum.
+  **Corrigido na rodada 8.** O ponto que tinha sobrado (no Lembrete, erro de banco que não seja o
+  conflito ficava sem aviso nenhum) foi fechado na rodada 9, só com validação estrutural.
 - Cenário 8: bug herdado do prompt de produção.
 - Decisão nome do serviço × `servico_id`.
 - Grupo B inteiro, incluindo o Error Workflow real (cenário 29) e o workflow de Lembrete contra o
@@ -744,4 +744,50 @@ resto exato):
 - No Lembrete, um erro de banco que **não** seja o conflito continua como antes: segue para
   "Enviar Confirmação Final da Remarcação" sem avisar ninguém. Correção sugerida, fora do escopo
   desta rodada: ligar esse ramo ao fallback de loop do projeto (avisar cliente e equipe, voltar
-  ao loop), como já é feito para falha da IA.
+  ao loop), como já é feito para falha da IA. **→ Fechada na rodada 9.**
+
+### Rodada 9 — erro de banco que não é conflito, no Lembrete (30/09/2026)
+
+**O que mudou.** Só no Lembrete (`0mPYXZesloutZbek`, versão
+`76407613-dbf2-4647-8e3d-baa25a10a73e`, 72 → 75 nodes). O ramo "não" de `Horário Foi Ocupado?
+(Remarcação)` deixou de ir para "Enviar Confirmação Final da Remarcação" e passou a seguir o
+mesmo padrão do fallback de IA:
+
+`Preparar Aviso de Erro no Banco` → `Avisar Cliente Sobre Erro no Banco` → `Notificar Equipe
+Sobre Erro no Banco` → volta para `Processar Cada Agendamento`.
+
+- **Sem Stop and Error:** o workflow roda em loop, e parar cortaria os lembretes dos outros
+  clientes do lote.
+- **Mensagem ao cliente:** "Opa, {nome}, tive um probleminha técnico aqui pra concluir a
+  remarcação do seu {serviço} 😕 Nossa equipe já foi avisada e vai falar com você em instantes
+  pra deixar seu horário certinho." Não confirma nem nega a remarcação, porque nesse ponto o
+  estado é incerto.
+- **Mensagem à equipe** (mesmo número do fallback de IA):
+  - cliente, telefone, serviço, horário atual, `event_id` e o novo horário pedido;
+  - o aviso de que o evento no Calendar **pode já ter sido movido** para o novo horário ("Atualizar
+    Evento no Calendar" roda antes do `UPDATE`) enquanto o banco ficou no antigo, e que é preciso
+    conferir os dois;
+  - o erro (`message` + `error.description`).
+- Os dois WhatsApp novos têm `onError: continueRegularOutput`, como todos os WhatsApp desse
+  workflow: se o envio falhar, o loop segue.
+
+**Conferência de escopo** (instância × JSON do repo de antes da mudança):
+- Lembrete: 3 nodes novos, nenhum node existente alterado, 1 conexão trocada (a descrita acima),
+  settings iguais.
+- Agendamento: idêntico, na mesma versão `9cb4ab1f-b717-4bfe-a11b-e13a247ae0c0`.
+
+**Validação: só estrutural.**
+- `validate_workflow` do Lembrete: `valid: true`, 75 nodes, sem aviso. Os textos longos foram
+  abreviados, como na rodada 8.
+- `validate_node_config` dos 3 nodes novos, com os parâmetros exatos do JSON exportado (as
+  mensagens inteiras): todos `valid: true`.
+
+> ⚠️ **Não testado com erro real.** Esse ramo não foi executado. Provocar com segurança um erro de
+> banco que não seja o conflito exigiria mexer no schema ou nos dados. Ficam sem prova de
+> execução:
+> - as expressions das duas mensagens (em especial o `$json.message` / `$json.error.description`
+>   de um erro diferente do conflito);
+> - o envio dos dois WhatsApp;
+> - a volta ao loop.
+>
+> A estrutura é a mesma do fallback de IA, que foi executado no G2 e G3 (rodada 6).
