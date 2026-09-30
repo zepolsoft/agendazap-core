@@ -101,6 +101,11 @@ precisaram ser reescritas.
 **Este é o ponto que precisa de uma decisão sua antes de considerar a migração pronta para
 produção.**
 
+> **Bloqueio conhecido:** enquanto esta decisão não for tomada, não execute testes sem pin no
+> Postgres (Grupo B do `docs/test-plan.md`) nem use esta versão em produção de verdade. Testes com
+> pin (Grupo A) podem rodar normalmente, porque o retorno do Postgres é fixado e não passa pela
+> resolução de `servico_id` descrita abaixo.
+
 Hoje a IA extrai o serviço como texto livre (`"corte e barba"`, `"baixo"` → mapeado para "Corte
 Baixo na Máquina" pelo próprio prompt, etc.), e a planilha aceitava qualquer texto — não havia
 integridade referencial. No banco relacional, `agendamentos.servico_id` é uma FK **obrigatória**
