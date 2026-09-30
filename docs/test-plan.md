@@ -533,6 +533,9 @@ estado inicial.
    quebra. Na prática o caso só aparece se o Calendar não mostrar o conflito (corrida entre
    duas conversas, ou evento apagado no Calendar), porque normalmente `Verificar
    Disponibilidade` barra antes.
+   **✅ Corrigido depois, na rodada 8 (cenário 33).** Evidência: exec. 1664 (mesmo cenário do R2,
+   agora com o Calendar real), 1666 (memória), 1670 e 1671 (remarcação). O registro acima foi
+   mantido como estava.
 2. **Profissional ativo não determinístico.** Há 2 profissionais ativos com o **mesmo
    `criado_em`**: o seed (`db/002_seed_exemplo.sql`) insere os dois no mesmo `INSERT`, e o
    `now()` é o da transação. `Buscar Profissional Ativo` usa `ORDER BY criado_em LIMIT 1`, então
@@ -635,8 +638,9 @@ tag `teste`) tem 3 autosaves da interface hoje às 09h38 UTC, feitos pelo usuár
 
 ### Pendências abertas
 
-- Cenário 33 (proposto): tratar o erro do `INSERT`/`UPDATE` no Postgres (achado R2 da rodada 7),
-  deixado para a próxima sessão. Ainda não entrou nos cenários do Grupo B.
+- ~~Cenário 33: tratar o erro do `INSERT`/`UPDATE` no Postgres (achado R2 da rodada 7).~~
+  **Corrigido na rodada 8.** Sobrou o ponto registrado lá: no Lembrete, erro de banco que não seja
+  o conflito continua sem aviso nenhum.
 - Cenário 8: bug herdado do prompt de produção.
 - Decisão nome do serviço × `servico_id`.
 - Grupo B inteiro, incluindo o Error Workflow real (cenário 29) e o workflow de Lembrete contra o
@@ -644,3 +648,100 @@ tag `teste`) tem 3 autosaves da interface hoje às 09h38 UTC, feitos pelo usuár
 - Achado 2 da rodada 7 (profissional não determinístico): **corrigido** depois da rodada, com
   `ORDER BY criado_em, id` nos dois workflows (commit `7c5860b`). O registro da rodada 7
   foi mantido como estava.
+
+## Cenário 33 — conflito de horário no banco (30/09/2026)
+
+| # | Cenário | Esperado |
+|---|---|---|
+| 33 | `INSERT`/`UPDATE` em `agendamentos` barrado pela constraint `agendamentos_sem_conflito` (corrida entre duas conversas pelo mesmo horário) | O cliente recebe aviso de que o horário acabou de ser ocupado e é convidado a escolher outro. O Calendar é desfeito: o evento recém-criado é apagado ou, na remarcação, volta ao horário original. Não sobra linha extra no banco, e a IA não fica achando que o agendamento existe. Qualquer outro erro de banco continua escalando (Error Workflow), exceto no Lembrete, que roda em loop |
+
+### Rodada 8 — correção e validação real (30/09/2026)
+
+**O que mudou.** Só o tratamento do erro nos três nodes que gravam horário. Prompts, AI Agents e
+nodes de Code existentes não foram tocados.
+
+- **Agendamento** (`ny0fqlw8ojzmId7C`, versão `9cb4ab1f-b717-4bfe-a11b-e13a247ae0c0`, 85 → 97
+  nodes):
+  - "Salvar Cliente na Planilha" (`INSERT`) e "Atualizar Linha na Planilha" (`UPDATE` da
+    remarcação) passaram a `onError: continueErrorOutput`. O caminho de sucesso (saída 0) ficou
+    igual.
+  - Saída de erro → `Horário Foi Ocupado? (Agendar | Remarcar)`, que testa se o erro contém
+    `agendamentos_sem_conflito`.
+    - **Agendar, com conflito:** `Desfazer Evento Criado no Calendar` (apaga o evento que
+      "Criar Evento no Calendar" acabou de criar) → `Preparar Aviso de Horário Ocupado (Agendar)`
+      → `Avisar Horário Recém-Ocupado no WhatsApp` → `Corrigir Memória da Conversa (Agendar)`.
+    - **Remarcar, com conflito:** `Buscar Horário Original (Remarcar)` (a linha não mudou, porque
+      o `UPDATE` falhou) → `Restaurar Evento no Calendar (Remarcar)` (volta o evento, que
+      "Atualizar Evento no Calendar" já tinha movido) → aviso → `Corrigir Memória da Conversa
+      (Remarcar)`. Aqui desfazer não é apagar, senão o cliente perderia o agendamento válido.
+    - **Outro erro (os dois caminhos):** `Escalar Erro ao Gravar Agendamento no Banco` (Stop and
+      Error com `message` + `error.description`), que dispara o Error Workflow como antes.
+  - A correção da memória usa um *Chat Memory Manager* (inserir mensagem `ai`) ligado à mesma
+    "Simple Memory" do agente (chave = telefone). A mensagem inserida é o texto real enviado ao
+    cliente.
+  - Os dois nodes de Calendar novos têm `onError: continueRegularOutput`: se o desfazer falhar, o
+    cliente ainda recebe a resposta (nesse caso pode sobrar evento no Calendar).
+- **Lembrete** (`0mPYXZesloutZbek`, versão `81776412-92ad-4b32-b209-128e83004a23`, 67 → 72 nodes):
+  - "Atualizar Data na Planilha" passou de `continueRegularOutput` a `continueErrorOutput`. Antes,
+    um conflito era **engolido**: o fluxo seguia para "Enviar Confirmação Final da Remarcação"
+    e dizia "Remarcado!", com o Calendar já movido e o banco no horário antigo.
+  - Com conflito: `Buscar Horário Original (Remarcação)` → `Restaurar Evento no Calendar` →
+    `Preparar Aviso de Horário Ocupado` → `Avisar Horário Recém-Ocupado no WhatsApp` → volta ao
+    loop.
+  - **Outro erro:** vai para "Enviar Confirmação Final da Remarcação", exatamente o caminho de
+    antes. Não foi usado Stop and Error porque o workflow roda em loop e isso interromperia os
+    lembretes dos outros clientes (regra da skill `n8n-node-conventions`). Pendência registrada
+    abaixo.
+  - Memória: não precisa de correção. A IA do Lembrete só guardou a *proposta* ("posso
+    confirmar?"), nunca "remarcado", e a IA da confirmação não tem memória.
+
+**Como foi validado.** `test_workflow` com **Postgres e Google Calendar reais** (calendário
+PROF-01 do Carlos, que não é o da produção; a produção usa o calendário principal da conta) e IA
+real. WhatsApp, Data Tables e HTTP continuaram fixados. A corrida entre duas conversas foi
+simulada fixando só as **leituras** de disponibilidade do Calendar ("livre"). Conferência de
+banco e Calendar por um workflow auxiliar temporário ("TEMP - Conferência cenário 33",
+`2vgoSLOBJucY3FYr`), arquivado no final. Telefones fictícios: 5511900000220 (Ana), 221 (Bruno) e
+222 (Carla). Linha de base (exec. 1660): 0 agendamentos, nenhum evento em 01 e 02/10.
+
+| Passo | O que aconteceu | Evidência |
+|---|---|---|
+| Ana agenda 01/10 11h | Evento real `shmfsdg…` + `INSERT`; confirmação ao cliente pela saída 0 (caminho de sucesso intacto) | exec. 1661, 1662 |
+| **Bruno, mesmo horário** (o R2 da rodada 7) | Evento real `09i4k13…` criado → `INSERT` **barrado** → saída de erro → `Horário Foi Ocupado?` = sim → `Desfazer Evento` apagou `09i4k13…` (`success: true`) → aviso: "Poxa, Bruno Teste, o horário de Corte Masculino quinta-feira, dia 1 de outubro, às 11h acabou de ser preenchido por outra pessoa, então não consegui marcar pra você 😕 Me diz outro dia ou horário que eu verifico na hora!" → memória corrigida. Execução `success` | exec. 1663, **1664** |
+| Conferência | Banco: só a linha da Ana. Calendar: só o evento da Ana. **Nenhum evento órfão, nenhuma linha extra** | exec. 1665 |
+| Bruno manda "poxa, então pode ser amanhã às 15h?" | O histórico que a "Simple Memory" entregou à IA contém, depois do "Prontinho… Agendado", a mensagem inserida "Poxa… não consegui marcar". A IA tratou 15h como proposta nova (`confirmado: false`). Leitura real do Calendar: 11h–11h30 ocupado | exec. 1666 |
+| Carla agenda 01/10 14h | Evento real `b1taclv…` + `INSERT` | exec. 1667, 1668 |
+| **Ana remarca para 14h pelo Agendamento** | "Atualizar Evento" moveu o evento real da Ana para 14h → `UPDATE` **barrado** → `Buscar Horário Original` = 11h → `Restaurar Evento` devolveu para 11h–11h30 → aviso: "…o novo horário que você pediu, na quinta-feira, dia 1 de outubro, às 14h, acabou de ser ocupado… Seu Corte Masculino continua marcado na quinta-feira, dia 1 de outubro, às 11h. Quer tentar outro dia ou horário?" → memória corrigida | exec. 1669, **1670** |
+| **Ana remarca para 14h pelo Lembrete** ("hoje não vou conseguir, pode passar pra amanhã às 14h?" → "sim") | Classificação real `remarcar` 14h → confirmação real → "Atualizar Evento" moveu o evento real para 14h → `UPDATE` **barrado** → horário original 11h → `Restaurar Evento` para 11h–11h30 → aviso → loop terminou. **"Enviar Confirmação Final da Remarcação" não executou** (antes da correção, teria dito "Remarcado!") | exec. **1671** |
+| Conferência final | Banco: Ana 11h e Carla 14h. Calendar: os mesmos dois eventos, nos mesmos horários | exec. 1672 |
+
+**Limpeza.** Apagadas as 2 linhas (Ana e Carla) e os 2 eventos no Calendar (exec. 1673). O Bruno
+não tinha deixado nada. Conferência (exec. 1674): 0 agendamentos, 0 linhas dos telefones de teste,
+2 profissionais, 3 serviços, calendário vazio em 01 e 02/10, igual à linha de base.
+
+**Ajustes feitos durante a validação** (depois da exec. 1664, antes das demais):
+- O item de erro do Postgres vem como `{ message, error: { description, … } }`. A mensagem do Stop
+  and Error foi ajustada para usar `message` + `error.description`; a primeira versão usava
+  `error.message` e teria gerado "[object Object]".
+- Texto das mensagens: artigo antes do dia da semana ("na quinta-feira"). As execuções 1670 e 1671
+  já usam o texto final; a mensagem do caminho "Agendar" foi ajustada depois da 1664 e não foi
+  reexecutada.
+
+**Validação estrutural.** `validate_workflow` com o JSON exportado (textos longos abreviados, o
+resto exato):
+- Lembrete: `valid: true`, 72 nodes, sem aviso.
+- Agendamento: `valid: true`, 97 nodes, com 2 avisos `SUBNODE_NOT_CONNECTED` nos dois *Chat Memory
+  Manager*. O validador os classifica como subnode de memória, mas eles são nodes principais que
+  *recebem* a memória por `ai_memory`. A exec. 1666 mostra que estão ligados e gravam na memória
+  certa; o aviso é falso positivo.
+
+**O que não foi testado**
+- O ramo "outro erro" (Stop and Error / Error Workflow): não há como provocar de forma segura um
+  erro de banco diferente do conflito sem mexer no schema.
+- Falha do próprio desfazer no Calendar (ex.: evento já apagado).
+- O envio real do aviso por WhatsApp (fixado, como em todas as rodadas).
+
+**Pendência nova**
+- No Lembrete, um erro de banco que **não** seja o conflito continua como antes: segue para
+  "Enviar Confirmação Final da Remarcação" sem avisar ninguém. Correção sugerida, fora do escopo
+  desta rodada: ligar esse ramo ao fallback de loop do projeto (avisar cliente e equipe, voltar
+  ao loop), como já é feito para falha da IA.

@@ -1564,7 +1564,7 @@
           "queryReplacement": "={{ [\n  $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio,\n  $('Validar Horário de Funcionamento').item.json.output.novo_horario_fim,\n  $('Processar Cada Agendamento').item.json.event_id\n] }}"
         }
       },
-      "onError": "continueRegularOutput",
+      "onError": "continueErrorOutput",
       "credentials": {
         "postgres": {
           "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
@@ -1766,6 +1766,128 @@
         "width": 660,
         "height": 420
       }
+    },
+    {
+      "id": "d84aef62-5c23-4336-a61a-a61d43ee5a2d",
+      "name": "Horário Foi Ocupado? (Remarcação)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3392,
+        180
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ JSON.stringify($json).includes('agendamentos_sem_conflito') }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "d6ee7bcd-83a7-4502-90ab-71c8e3067ae0",
+      "name": "Buscar Horário Original (Remarcação)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3616,
+        180
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  to_char(data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_inicio,\n  to_char(data_hora_fim AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_fim\nFROM agendamentos\nWHERE google_event_id = $1\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [$('Processar Cada Agendamento').item.json.event_id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Supabase - agendazap-core"
+        }
+      }
+    },
+    {
+      "id": "7d7a2770-4573-4394-a846-261405a1dca0",
+      "name": "Restaurar Evento no Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        3840,
+        180
+      ],
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Buscar Profissional Ativo').item.json.google_calendar_id }}"
+        },
+        "eventId": "={{ $('Processar Cada Agendamento').item.json.event_id }}",
+        "updateFields": {
+          "start": "={{ $json.data_hora_inicio }}",
+          "end": "={{ $json.data_hora_fim }}"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "1e43cde4-d1cd-49b6-8b30-50ec9487aaa6",
+      "name": "Preparar Aviso de Horário Ocupado",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4064,
+        180
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "mensagem_cliente",
+              "name": "mensagem_cliente",
+              "type": "string",
+              "value": "={{ (() => { const a = $('Processar Cada Agendamento').item.json; const nome = a.nome || ''; const zona = 'America/Sao_Paulo'; const fmt = iso => { const dt = DateTime.fromISO(iso, { zone: zona }).setLocale('pt-BR'); const dif = dt.startOf('day').diff($now.setZone(zona).startOf('day'), 'days').days; const hora = dt.toFormat(dt.minute ? \"H'h'mm\" : \"H'h'\"); return dif === 0 ? `hoje, às ${hora}` : `${dt.weekday >= 6 ? 'no' : 'na'} ${dt.toFormat(\"cccc, 'dia' d 'de' LLLL\")}, às ${hora}`; }; const novo = $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio; const original = $('Buscar Horário Original (Remarcação)').item.json.data_hora_inicio; return `Poxa${nome ? `, ${nome}` : ''}, o novo horário que você pediu, ${fmt(novo)}, acabou de ser ocupado por outra pessoa, então não consegui remarcar 😕 Seu ${a.servico} continua marcado ${fmt(original)}. Se quiser tentar outro dia ou horário, é só me dizer!`; })() }}"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "d1343754-9cd5-4eee-87ab-80b8fe06e209",
+      "name": "Avisar Horário Recém-Ocupado no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        4288,
+        180
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "={{ $json.mensagem_cliente }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "a0f9519b-e1a8-454d-8067-715235852474"
     }
   ],
   "connections": {
@@ -2513,6 +2635,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Horário Foi Ocupado? (Remarcação)",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -2554,6 +2683,68 @@
         [
           {
             "node": "Marcar Como Concluído",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Horário Foi Ocupado? (Remarcação)": {
+      "main": [
+        [
+          {
+            "node": "Buscar Horário Original (Remarcação)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Confirmação Final da Remarcação no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Horário Original (Remarcação)": {
+      "main": [
+        [
+          {
+            "node": "Restaurar Evento no Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restaurar Evento no Calendar": {
+      "main": [
+        [
+          {
+            "node": "Preparar Aviso de Horário Ocupado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Aviso de Horário Ocupado": {
+      "main": [
+        [
+          {
+            "node": "Avisar Horário Recém-Ocupado no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Horário Recém-Ocupado no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Processar Cada Agendamento",
             "type": "main",
             "index": 0
           }
