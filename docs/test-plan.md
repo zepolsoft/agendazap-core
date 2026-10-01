@@ -1827,6 +1827,13 @@ nodes temporários. O JSON do Lembrete não mudou.
   - A equipe é avisada pelo Error Workflow.
   - Correção análoga à do R16-1: reaproveitar "Buscar Horário Original (Remarcar)" → "Restaurar
     Evento" e o aviso neutro antes do Stop and Error.
+
+**Decisão (01/10/2026):** José decidiu ir ao ar com R17-1 em aberto, em vez de esperar a próxima
+janela de crédito da sessão local. Motivo: é raro (exige remarcação + erro de banco que não seja
+conflito, simultaneamente) e já tem rede de segurança parcial — a equipe é alertada pelo Error
+Workflow nesse caso, só o cliente que não recebe aviso e o evento no Calendar não é restaurado.
+Não é falha silenciosa nem corrupção de dado sem nenhum alerta. Corrigir assim que a sessão local
+tiver crédito de novo, com o mesmo padrão da correção do R16-1.
   - Só ocorre com erro de banco real na remarcação (indisponibilidade ou credencial), raro.
 - **Pendências já conhecidas, que continuam:**
   - Decisão de `servico_id`, adiada para depois do cutover.
