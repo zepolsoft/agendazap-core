@@ -224,8 +224,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        1584,
-        1840
+        2032,
+        1744
       ],
       "alwaysOutputData": true
     },
@@ -257,8 +257,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        1808,
-        1840
+        2256,
+        1744
       ]
     },
     {
@@ -268,8 +268,8 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        2032,
-        1936
+        2480,
+        1840
       ]
     },
     {
@@ -323,8 +323,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        2032,
-        1744
+        2480,
+        1648
       ]
     },
     {
@@ -350,8 +350,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        2256,
-        1744
+        1584,
+        1840
       ],
       "alwaysOutputData": true
     },
@@ -383,8 +383,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        2480,
-        1744
+        1808,
+        1840
       ]
     },
     {
@@ -401,8 +401,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        2704,
-        1824
+        2032,
+        2032
       ],
       "onError": "continueErrorOutput"
     },
@@ -440,8 +440,8 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        2928,
-        1840
+        2480,
+        2032
       ]
     },
     {
@@ -2568,6 +2568,61 @@
         "includeOtherFields": false,
         "options": {}
       }
+    },
+    {
+      "id": "e6c8eaab-2b44-42d6-8145-9d6f409792de",
+      "name": "Registrar Lock do Telefone (Encaminhamento)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2256,
+        2032
+      ],
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "IIzfVI1CvTwlAiSb"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telefone",
+              "keyValue": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "bloqueado_em": "={{ $now.toISO() }}"
+          },
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bloqueado_em",
+              "displayName": "bloqueado_em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      }
     }
   ],
   "connections": {
@@ -2622,17 +2677,6 @@
         ]
       ]
     },
-    "Registrar Mensagem Processada": {
-      "main": [
-        [
-          {
-            "node": "Checar Lock do Telefone",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Checar Lock do Telefone": {
       "main": [
         [
@@ -2662,17 +2706,6 @@
         ]
       ]
     },
-    "Registrar Lock do Telefone": {
-      "main": [
-        [
-          {
-            "node": "Verificar Espera de Lembrete",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Verificar Espera de Lembrete": {
       "main": [
         [
@@ -2695,7 +2728,7 @@
         ],
         [
           {
-            "node": "Ativar Indicador de Digitação",
+            "node": "Checar Lock do Telefone",
             "type": "main",
             "index": 0
           }
@@ -2706,14 +2739,14 @@
       "main": [
         [
           {
-            "node": "Mensagem Encaminhada para Lembrete",
+            "node": "Registrar Lock do Telefone (Encaminhamento)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Ativar Indicador de Digitação",
+            "node": "Checar Lock do Telefone",
             "type": "main",
             "index": 0
           }
@@ -3632,6 +3665,39 @@
         [
           {
             "node": "Filtrar Apenas Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Mensagem Processada": {
+      "main": [
+        [
+          {
+            "node": "Verificar Espera de Lembrete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Lock do Telefone": {
+      "main": [
+        [
+          {
+            "node": "Ativar Indicador de Digitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Lock do Telefone (Encaminhamento)": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Encaminhada para Lembrete",
             "type": "main",
             "index": 0
           }

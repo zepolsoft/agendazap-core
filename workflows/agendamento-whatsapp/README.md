@@ -32,6 +32,11 @@ do WhatsApp: a ativação registra o webhook na Meta.
 > curta e monitorada (`docs/test-plan.md`). **Antes de qualquer cutover**, reverta a troca
 > seguindo o checklist "Reverter o trigger temporário" em `docs/migracao-supabase.md`.
 
+> **Diferença de comportamento em relação à produção (rodada 15):** a espera de lembrete é
+> checada **antes** do lock do telefone (dedup → espera → lock). Uma resposta ao lembrete é
+> encaminhada mesmo que chegue menos de 10 s depois de outra mensagem do cliente. Ver
+> `docs/migracao-supabase.md`, seção 6.
+
 **Antes de importar no n8n:**
 1. Rode `db/001_initial_schema.sql` e `db/002_seed_exemplo.sql` (na raiz do repo) no seu projeto
    Supabase, se ainda não tiver rodado.

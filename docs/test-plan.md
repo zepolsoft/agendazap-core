@@ -1376,8 +1376,7 @@ os envios desativados:
 
 Limpeza: exec. 1749.
 
-**Achado R14-1 (novo, não corrigido). O Lembrete reativa um agendamento cancelado fora do
-WhatsApp.**
+**Achado R14-1 (novo). O Lembrete reativa um agendamento cancelado fora do WhatsApp.**
 - **Causa:**
   - Depois que o cliente responde ao lembrete, nenhum node relê o `status` da linha. O item vem da
     leitura das 8h.
@@ -1399,6 +1398,8 @@ WhatsApp.**
   - acrescentar `AND status IN ('agendado','remarcado')` aos `UPDATE`s do Lembrete. O caminho de
     0 linhas da rodada 12 já trata o "não".
 
+**→ Corrigido na rodada 15.**
+
 #### Cenário 21 — resposta ao lembrete enquanto o Agendamento processa outra mensagem (tel. …021) — ❌ achado R14-2
 
 | Passo | Resultado | Evidência |
@@ -1413,7 +1414,7 @@ O lock é por tempo (10 s a partir do início da mensagem anterior) e nunca é l
 "enquanto o Agendamento processa" equivale a "menos de 10 s depois da mensagem anterior", e a
 execução em série reproduz o caso fielmente.
 
-**Achado R14-2 (novo, não corrigido). Resposta ao lembrete descartada pelo lock do telefone.**
+**Achado R14-2 (novo). Resposta ao lembrete descartada pelo lock do telefone.**
 - **Causa:** a ordem no Agendamento é dedup → lock → "Verificar Espera de Lembrete". Uma resposta
   ao lembrete que chegue até 10 s depois de qualquer outra mensagem do mesmo cliente cai no lock
   antes de ser reconhecida como resposta.
@@ -1427,6 +1428,8 @@ execução em série reproduz o caso fielmente.
 - **Correção sugerida, não aplicada:** checar a espera de lembrete **antes** do lock (ou ignorar o
   lock quando há espera ativa). O Lembrete processa uma resposta por vez pelo próprio Wait, então
   não precisa do lock do Agendamento.
+
+**→ Corrigido na rodada 15.**
 
 **Observações (sem efeito nesta rodada, não alteradas)**
 - **Espera fica depois do fim da conversa do Lembrete.** A linha de `esperas_lembrete` não é
@@ -1453,7 +1456,8 @@ execução em série reproduz o caso fielmente.
   - nenhum cancelamento por fora deve acontecer durante a espera (R14-1).
   - Depois da retomada, todos os envios saem de verdade, e para esse número isso é o esperado.
 - **R14-1 bloqueia o cutover** (corrompe dado de agendamento). **R14-2** degrada a experiência do
-  cliente sem corromper dado. Os dois precisam de decisão antes de produção.
+  cliente sem corromper dado. Os dois precisam de decisão antes de produção. **→ Os dois foram
+  corrigidos na rodada 15**, e os cuidados do cenário 32 acima deixam de ser necessários.
 
 #### Estado ao parar
 
@@ -1463,3 +1467,111 @@ execução em série reproduz o caso fielmente.
   `get_data_table_rows` com os filtros de prefixo.
 - Os 3 workflows auxiliares (`Ah3qwYMSzsxapIYR`, `Yb9R9S0za5l32vqe`, `mTeBVPh18sAB6Y0q`)
   continuam na instância, **desativados**, para retomar 22, 26 e 34. Arquivar no fim da rodada.
+
+### Rodada 15 — correção dos achados R14-1 e R14-2 (01/10/2026)
+
+**O que mudou.** Só os dois achados. Detalhe do comportamento novo em `docs/migracao-supabase.md`,
+seção 6.
+
+- **Lembrete** (`0mPYXZesloutZbek`): versão `9b9f1dd9…` → `88fa0d8f-abfd-4b83-b71d-0f7c0809ac22`,
+  81 → 86 nodes. Versão atual: `e259b886…`, restaurada a partir da `88fa0d8f…` depois dos testes,
+  com conteúdo idêntico.
+  - Novos: "Reler Agendamento Após Resposta" e "Reler Agendamento Após Confirmação" (Postgres
+    `SELECT a.status … WHERE google_event_id = $1`, `alwaysOutputData`,
+    `onError: continueRegularOutput`, o mesmo padrão de "Reverificar Agendamento Antes do
+    Timeout").
+  - Novos: "Agendamento Ainda Ativo?" e "Agendamento Ainda Ativo? (Confirmação)" (If:
+    `$json.error ? true : ['agendado', 'remarcado'].includes($json.status)`).
+  - Novo: "Avisar Agendamento Inativo no WhatsApp", compartilhado pelos dois Ifs, que depois volta
+    ao "Processar Cada Agendamento". O texto segue a skill `whatsapp-message-style`, em duas
+    variantes sorteadas como as do timeout.
+  - Religação: "Normalizar Resposta do Lembrete" → Reler → If → (sim) "Ativar Indicador de
+    Digitação". "Normalizar Confirmação da Remarcação" → Reler → If → (sim) "Classificar
+    Confirmação da Remarcação".
+  - "Classificar Confirmação da Remarcação": no `text`, `$json.resposta_confirmacao` virou
+    `$('Normalizar Confirmação da Remarcação').item.json.resposta_confirmacao`. O resto do prompt
+    é igual.
+  - "Atualizar Status na Planilha (Cancelar)" e "Atualizar Data na Planilha": acrescentado
+    `AND status IN ('agendado', 'remarcado')` ao `WHERE`.
+- **Agendamento** (`ny0fqlw8ojzmId7C`): versão `08ab4750…` → `82b0043b-1ff6-4ba0-af49-0ef3f42b8af8`,
+  104 → 105 nodes.
+  - Nova ordem: "Registrar Mensagem Processada" → "Verificar Espera de Lembrete" → "Há Espera de
+    Lembrete Ativa?".
+    - Sim: "Encaminhar Mensagem para Lembrete" → "Registrar Lock do Telefone (Encaminhamento)"
+      (novo, mesma configuração do "Registrar Lock do Telefone") → "Mensagem Encaminhada para
+      Lembrete".
+    - Não: "Checar Lock do Telefone" → "Telefone Ocupado?" → "Registrar Lock do Telefone" →
+      "Ativar Indicador de Digitação".
+  - A saída de erro de "Encaminhar Mensagem para Lembrete" passou de "Ativar Indicador de
+    Digitação" para "Checar Lock do Telefone".
+  - Só mudaram as posições dos 8 nodes do trecho e as 6 ligações. Nenhum parâmetro mudou.
+
+**Como foi validado.**
+- `validate_node_config` nos nodes novos e nos `UPDATE`s alterados: todos `valid: true`.
+- `update_workflow`: no Lembrete, nenhum aviso. No Agendamento, só os 2 `SUBNODE_NOT_CONNECTED`
+  pré-existentes.
+- `validate_workflow` com cada workflow inteiro convertido para SDK, com textos longos abreviados
+  como nas rodadas 8, 9 e 13. Lembrete: `valid: true`, 80 nodes, sem os stickies e a memória.
+  Agendamento: `valid: true`, 100 nodes, sem os stickies, só os 2 avisos de sempre.
+- Conferência de escopo contra os snapshots (instância antes × depois): nodes adicionados,
+  parâmetros e ligações exatamente como descrito acima. Settings iguais.
+
+**Harness.** Os testes do Lembrete passam por Wait retomado, então segui o protocolo da rodada 14:
+- **Snapshot:** a versão `88fa0d8f…`, já com a correção.
+- **Durante os testes:** `setNodeDisabled` nos **25** nodes que chamam a Meta (os 23 `whatsApp`
+  originais, o novo "Avisar Agendamento Inativo" e o HTTP "Ativar Indicador de Digitação").
+- **Depois:** `restore_workflow_version` para `88fa0d8f…`. O resultado tem nodes, conexões e
+  settings byte a byte idênticos ao snapshot, e nenhum node desativado.
+- **Agendamento:** sem Wait, então nele valem os pins de WhatsApp e do indicador.
+- **Auxiliares:**
+  - O auxiliar de cancelamento por outro canal (`mTeBVPh18sAB6Y0q`) passou a receber o telefone
+    pelo pin do trigger.
+  - Novo auxiliar temporário "TEMP - Verificações rodada 15" (`AhkzPENfsVhCG5fj`): renderiza o
+    texto do aviso, que fica desativado nos testes, e roda os dois `UPDATE`s novos contra uma
+    linha de teste já cancelada.
+
+**Testes reais** (Postgres, Calendar, Data Tables e IA reais; telefones novos para não herdar
+memória da IA)
+
+| Teste | Resultado | Evidência |
+|---|---|---|
+| **T1a — cenário 20 refeito, cancelamento antes da resposta (…040).** Agendar hoje 17h; Lembrete; cancelar por outro canal; cliente: "hoje não vou conseguir, pode remarcar pra amanhã às 15h?" | Encaminhada pelo Agendamento → "Reler Agendamento Após Resposta" = `{status: cancelado}` → "Agendamento Ainda Ativo?" = **não** → "Avisar Agendamento Inativo" → loop encerrado. **Não rodaram** IA, "Atualizar Evento no Calendar" nem `UPDATE` | agendar 1764, 1765 (conferência 1766); Lembrete **1767**; cancelamento 1768; resposta 1769 |
+| **Segunda camada**, contra a linha cancelada do T1a | `UPDATE` de remarcação: `{id: null, linhas_atualizadas: 0}`. `UPDATE` de cancelamento: `{success: true}`, sem `id`, então "Cancelamento Gravado no Banco?" seria **não**. A linha continuou `cancelado`, 17:00, com `atualizado_em` igual ao do cancelamento. Texto do aviso: "Oi Quarenta Teste! Conferi aqui e seu horário de Corte Masculino de hoje às 17h não está mais ativo, então não alterei nada. Se quiser marcar um novo horário, é só me dizer o dia e a hora que você prefere! 😊" e a variante 2 | exec. **1770** |
+| **T1b — cenário 20, cancelamento entre a proposta e o "sim" (…041).** Agendar 17h; Lembrete; pedido de remarcação; cancelar por outro canal; "sim" | 1ª releitura `agendado` → IA `remarcar` 02/10 15:00 → proposta → 2ª espera. Depois do cancelamento e do "sim": "Reler Agendamento Após Confirmação" = `cancelado` → If = **não** → "Avisar Agendamento Inativo" → loop encerrado. **Não rodaram** "Classificar Confirmação", "Atualizar Evento no Calendar" nem "Atualizar Data". Conferência: linha `cancelado` às **17:00** (não movida); nenhum evento | agendar 1772, 1773; Lembrete **1774**; pedido 1775; cancelamento 1776; "sim" 1777; conferência **1778** |
+| **T3 — caminho feliz da remarcação (…045)**, regressão da referência nova em "Classificar Confirmação" e do `UPDATE` com filtro | 2ª releitura `agendado` → "Classificar Confirmação" `confirmado: true` → Calendar movido para 02/10 15:00–15:30 → "Atualizar Data" **`linhas_atualizadas: 1`** → "Remarcação Gravada no Banco?" = sim → confirmação final (desativada) | agendar 1785, 1786 (conferência 1787); Lembrete **1788**; pedido 1789; "sim" 1790 |
+| **T4 — cenário 21 refeito (…043).** Disparados juntos e executados em série: (A) dúvida no Agendamento; (L) Lembrete; (B) "Confirmado, estarei aí!" | A, sem espera, passou pelo lock e o registrou às 15:20:14.558, sendo respondida normalmente (`duvida`). B chegou às 15:20:22.05, **7,5 s** depois → "Verificar Espera de Lembrete" achou a espera → "Encaminhar" → "Workflow was started" → "Registrar Lock do Telefone (Encaminhamento)" às 15:20:22.278. O Lembrete processou B: releitura `agendado` → IA `confirmar` → confirmação final (desativada). Antes da correção, B teria caído em "Ignorar Mensagem (Telefone Ocupado)" (rodada 14, exec. 1755) | A 1795; L **1796**; B **1797** |
+| **T5 — colisão com o lock (…043).** (B2) "Ah, e dá pra pagar no pix?" 0,5 s depois de B, com o Lembrete ainda processando B | A espera continuava ativa → "Encaminhar" → **`409 "The execution \"1796\" is running already."`** → saída de erro → "Checar Lock do Telefone" (lock de B, de 0,3 s antes) → "Telefone Ocupado?" = sim → "Ignorar Mensagem (Telefone Ocupado)". B2 **não** rodou no Agendamento em paralelo ao Lembrete | exec. **1798** |
+| **T6 — cenário 9 sem lembrete (…044)**, regressão do lock no caminho novo | 1ª mensagem: sem espera → lock → fluxo normal com IA (exec. `success`, 6 s). 2ª, 6 s depois: sem espera → "Telefone Ocupado?" = sim → "Ignorar" | exec. 1800, **1801** |
+
+Limpezas: exec. 1771, 1779, 1784, 1791, 1799, 1802.
+
+Houve uma tentativa interrompida do T3 com o telefone …042 (exec. 1780–1783). A sessão parou antes
+do "sim", e a execução 1782 terminou sozinha no timeout de 10 min da 2ª espera (14:09:09Z),
+passando só por nodes de envio desativados. Ela foi limpa (1784) e o T3 refeito com o …045.
+
+**Comportamento aceito.** No T5, B2 é descartada sem resposta, a mesma semântica do lock no
+cenário 9. A diferença é que agora isso só acontece com uma mensagem que chega enquanto o Lembrete
+ainda processa a anterior, e não mais com a própria resposta ao lembrete.
+
+**O que não foi testado**
+- Erro de banco (não 0 linhas) nas duas releituras. Pelo desenho, o If segue e o erro é tratado
+  adiante pelo caminho de erro de banco existente.
+- A corrida entre a releitura e o `UPDATE` dentro do workflow, que é a segunda camada. Os `UPDATE`s
+  foram provados isoladamente (exec. 1770). Os caminhos de 0 linhas que eles alimentam são os da
+  rodada 12.
+- Timeout da 2ª espera com o agendamento cancelado durante a espera: "Avisar Timeout da
+  Confirmação" diz que manteve o horário original, sem reler o status. É texto impreciso, mas não
+  grava nada; registrado como observação, não alterado.
+
+**Estado final**
+- Agendamento (`82b0043b…`) e Lembrete (`e259b886…`, conteúdo = `88fa0d8f…`) estão **desativados**
+  e sem versão publicada. Nenhuma execução `waiting` ou `running`.
+- Banco e Calendar (01 a 08/10) sem dados de teste (exec. 1803). As 4 Data Tables sem linhas
+  `5511091000%` / `wamid.GB-%`.
+- JSONs reexportados: Agendamento com 105 nodes, Lembrete com 86. Credenciais Postgres como
+  placeholder, as do WhatsApp omitidas, e o path do webhook como `SUBSTITUA_PELO_PATH_ALEATORIO`.
+- Auxiliares que continuam na instância, desativados, para os cenários 22, 26 e 34: conferência
+  (`Ah3qwYMSzsxapIYR`), limpeza (`Yb9R9S0za5l32vqe`) e cancelamento por outro canal
+  (`mTeBVPh18sAB6Y0q`). O "TEMP - Verificações rodada 15" (`AhkzPENfsVhCG5fj`) foi arquivado.
+
+**Próximo passo.** Cenários 22, 26 e 34, que ficaram pendentes da rodada 14. Depois, 23, 29 e 32.

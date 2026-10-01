@@ -1050,7 +1050,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE agendamentos SET status = 'cancelado' WHERE google_event_id = $1 RETURNING id;",
+        "query": "UPDATE agendamentos SET status = 'cancelado' WHERE google_event_id = $1 AND status IN ('agendado', 'remarcado') RETURNING id;",
         "options": {
           "queryReplacement": "={{ [$('Processar Cada Agendamento').item.json.event_id] }}"
         }
@@ -1432,7 +1432,7 @@
       ],
       "parameters": {
         "promptType": "define",
-        "text": "=Nome do cliente: {{ $('Processar Cada Agendamento').item.json.nome }}\nMensagem que você (atendente) acabou de enviar perguntando se pode confirmar a remarcação: {{ $('Classificar Resposta do Lembrete').item.json.output.confirmacao_texto }}\nNovo horário proposto (ISO): {{ $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio }}\nResposta do cliente a essa pergunta: {{ $json.resposta_confirmacao }}",
+        "text": "=Nome do cliente: {{ $('Processar Cada Agendamento').item.json.nome }}\nMensagem que você (atendente) acabou de enviar perguntando se pode confirmar a remarcação: {{ $('Classificar Resposta do Lembrete').item.json.output.confirmacao_texto }}\nNovo horário proposto (ISO): {{ $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio }}\nResposta do cliente a essa pergunta: {{ $('Normalizar Confirmação da Remarcação').item.json.resposta_confirmacao }}",
         "hasOutputParser": true,
         "options": {
           "systemMessage": "Você avalia se a resposta do cliente confirma ou não uma proposta de remarcação de horário que o atendente acabou de enviar pelo WhatsApp (mostrada acima como \"mensagem que você enviou\").\n\nRetorne:\n- confirmado: true se a resposta for afirmativa (ex.: \"sim\", \"pode\", \"confirma\", \"isso mesmo\", \"perfeito\", \"ok\", \"blz\", ou um emoji positivo como \"👍\") — trate reações curtas e informais como confirmação, já que o cliente está respondendo a uma pergunta direta de sim/não.\n- confirmado: false se a resposta for negativa (ex.: \"não\", \"deixa pra lá\", \"não quero mais\") OU se for algo completamente diferente/ambíguo que não responde à pergunta feita.\n\nconfirmacao_texto: mensagem curta, natural e calorosa em português, como um atendente de verdade estivesse digitando no WhatsApp:\n- Se confirmado = true: confirme definitivamente a remarcação, em tom caloroso (ex.: \"Prontinho! Remarcado. Até lá! 😊\").\n- Se confirmado = false: tranquilize o cliente de forma gentil, deixando claro que o horário ORIGINAL continua confirmado, sem remarcar nada (ex.: \"Sem problema! Mantive seu horário como estava.\").\nNunca repita sempre a mesma frase de abertura — varie a cada resposta."
@@ -1561,7 +1561,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "WITH atualizado AS (\n  UPDATE agendamentos\n  SET data_hora_inicio = $1, data_hora_fim = $2, status = 'remarcado'\n  WHERE google_event_id = $3\n  RETURNING id\n)\nSELECT\n  (SELECT id FROM atualizado LIMIT 1) AS id,\n  (SELECT count(*) FROM atualizado)::int AS linhas_atualizadas;",
+        "query": "WITH atualizado AS (\n  UPDATE agendamentos\n  SET data_hora_inicio = $1, data_hora_fim = $2, status = 'remarcado'\n  WHERE google_event_id = $3 AND status IN ('agendado', 'remarcado')\n  RETURNING id\n)\nSELECT\n  (SELECT id FROM atualizado LIMIT 1) AS id,\n  (SELECT count(*) FROM atualizado)::int AS linhas_atualizadas;",
         "options": {
           "queryReplacement": "={{ [\n  DateTime.fromISO($('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio, { zone: 'America/Sao_Paulo' }).toISO(),\n  $('Validar Horário de Funcionamento').item.json.output.novo_horario_fim,\n  $('Processar Cada Agendamento').item.json.event_id\n] }}"
         }
@@ -2128,6 +2128,141 @@
       },
       "onError": "continueRegularOutput",
       "webhookId": "56a646f1-b074-4c9c-82c7-1948640e826b"
+    },
+    {
+      "id": "f4104dbb-92e1-4f52-ba9c-4e30dbd4b9e5",
+      "name": "Reler Agendamento Após Resposta",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1680,
+        -140
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT a.status\nFROM agendamentos a\nWHERE a.google_event_id = $1\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [$('Processar Cada Agendamento').item.json.event_id] }}"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Supabase - agendazap-core"
+        }
+      }
+    },
+    {
+      "id": "a6ce42f2-fbc0-4313-a2a6-1bccd3c8a0e6",
+      "name": "Agendamento Ainda Ativo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1888,
+        -140
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "agendamento-ativo",
+              "leftValue": "={{ $json.error ? true : ['agendado', 'remarcado'].includes($json.status) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "4de38051-9e3d-4764-901b-153d3df67c6c",
+      "name": "Avisar Agendamento Inativo no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2096,
+        -140
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "={{ (() => { const nome = $('Processar Cada Agendamento').item.json.nome || ''; const servico = $('Processar Cada Agendamento').item.json.servico; const horario = $('Processar Cada Agendamento').item.json.data ? (dt => dt.minute === 0 ? `${dt.toFormat('H')}h` : `${dt.toFormat('H')}h${dt.toFormat('mm')}`)(DateTime.fromISO($('Processar Cada Agendamento').item.json.data).setZone('America/Sao_Paulo')) : ''; const opcoes = [ `Oi` + (nome ? ` ${nome}` : '') + `! Conferi aqui e seu horário de ${servico} de hoje às ${horario} não está mais ativo, então não alterei nada. Se quiser marcar um novo horário, é só me dizer o dia e a hora que você prefere! 😊`, (nome ? `${nome}, ` : ``) + `vi aqui que seu ${servico} de hoje às ${horario} já não está mais ativo, então deixei tudo como está. Quer marcar outro horário? Me diz o dia e a hora que fica melhor pra você.` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "b8cf2c11-76cf-47dc-817d-698c61b9149a"
+    },
+    {
+      "id": "26733781-c459-4727-ba1f-ca8a3002accc",
+      "name": "Reler Agendamento Após Confirmação",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3616,
+        300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT a.status\nFROM agendamentos a\nWHERE a.google_event_id = $1\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [$('Processar Cada Agendamento').item.json.event_id] }}"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Supabase - agendazap-core"
+        }
+      }
+    },
+    {
+      "id": "15eddb7a-c058-470f-87a0-10d439e935ce",
+      "name": "Agendamento Ainda Ativo? (Confirmação)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3840,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "agendamento-ativo",
+              "leftValue": "={{ $json.error ? true : ['agendado', 'remarcado'].includes($json.status) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
     }
   ],
   "connections": {
@@ -2250,17 +2385,6 @@
         [
           {
             "node": "Reverificar Agendamento Antes do Timeout",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Normalizar Resposta do Lembrete": {
-      "main": [
-        [
-          {
-            "node": "Ativar Indicador de Digitação",
             "type": "main",
             "index": 0
           }
@@ -2754,17 +2878,6 @@
         ]
       ]
     },
-    "Normalizar Confirmação da Remarcação": {
-      "main": [
-        [
-          {
-            "node": "Classificar Confirmação da Remarcação",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Avisar Timeout da Confirmação no WhatsApp": {
       "main": [
         [
@@ -3105,6 +3218,97 @@
         [
           {
             "node": "Processar Cada Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Resposta do Lembrete": {
+      "main": [
+        [
+          {
+            "node": "Reler Agendamento Após Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reler Agendamento Após Resposta": {
+      "main": [
+        [
+          {
+            "node": "Agendamento Ainda Ativo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendamento Ainda Ativo?": {
+      "main": [
+        [
+          {
+            "node": "Ativar Indicador de Digitação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Avisar Agendamento Inativo no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Agendamento Inativo no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Processar Cada Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Confirmação da Remarcação": {
+      "main": [
+        [
+          {
+            "node": "Reler Agendamento Após Confirmação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reler Agendamento Após Confirmação": {
+      "main": [
+        [
+          {
+            "node": "Agendamento Ainda Ativo? (Confirmação)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendamento Ainda Ativo? (Confirmação)": {
+      "main": [
+        [
+          {
+            "node": "Classificar Confirmação da Remarcação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Avisar Agendamento Inativo no WhatsApp",
             "type": "main",
             "index": 0
           }

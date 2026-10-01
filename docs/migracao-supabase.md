@@ -133,6 +133,50 @@ Duas diferenças em relação ao Sheets, que guardava texto e nunca "falhava":
 
   Detalhes e testes em `docs/test-plan.md`, rodadas 11 e 12.
 
+### 6. Concorrência com o lembrete (rodada 15)
+
+Duas mudanças de comportamento em relação à produção, para corrigir os achados R14-1 e R14-2 do
+Grupo B:
+
+- **Lembrete relê o status depois de cada Wait (R14-1).** Antes, depois que o cliente respondia
+  ao lembrete, o Lembrete usava a linha lida às 8h. Um agendamento cancelado por outro canal
+  durante a espera podia ser remarcado e voltar a `remarcado`, sem evento visível no Calendar.
+  - Agora, logo depois de "Normalizar Resposta do Lembrete" e de "Normalizar Confirmação da
+    Remarcação", os nodes "Reler Agendamento Após Resposta" e "Reler Agendamento Após
+    Confirmação" leem o `status` (`SELECT`, com `alwaysOutputData` e
+    `onError: continueRegularOutput`).
+  - Os Ifs "Agendamento Ainda Ativo?" e "Agendamento Ainda Ativo? (Confirmação)" só seguem se o
+    status for `agendado` ou `remarcado`.
+  - Se não for (linha cancelada, concluída ou apagada), "Avisar Agendamento Inativo no WhatsApp"
+    diz ao cliente que o horário não está mais ativo, que nada foi alterado, e convida a marcar
+    outro. Depois volta ao loop, sem Calendar, sem banco e sem avisar a equipe, porque é um
+    estado esperado e não um erro.
+  - Se a releitura der **erro** de banco, o If deixa seguir, para não afirmar ao cliente algo que
+    não foi verificado. O erro real é tratado adiante pelo caminho de erro de banco que já
+    existe.
+  - Segunda camada: os `UPDATE`s do Lembrete ("Atualizar Status na Planilha (Cancelar)" e
+    "Atualizar Data na Planilha") passaram a exigir `AND status IN ('agendado', 'remarcado')`. Na
+    corrida entre a releitura e o `UPDATE`, o resultado é 0 linhas. Isso cai nos caminhos de 0
+    linhas da rodada 12 (aviso neutro ao cliente e notificação à equipe), porque nesse ponto o
+    Calendar já foi alterado.
+  - Para encaixar a releitura, "Classificar Confirmação da Remarcação" lê a resposta por
+    `$('Normalizar Confirmação da Remarcação').item.json.resposta_confirmacao` em vez de
+    `$json.resposta_confirmacao`. O texto do prompt não mudou.
+- **Espera do lembrete antes do lock do telefone (R14-2).** A ordem no Agendamento era dedup →
+  lock → espera. Uma resposta ao lembrete que chegasse até 10 s depois de outra mensagem do
+  cliente era descartada.
+  - Agora a ordem é dedup → "Verificar Espera de Lembrete" → (sem espera) lock.
+  - A resposta ao lembrete é encaminhada sem passar pelo lock.
+  - Depois de um encaminhamento bem-sucedido, "Registrar Lock do Telefone (Encaminhamento)"
+    grava o lock.
+  - Se o encaminhamento falhar (por exemplo, `409 "execution is running already"`, quando o
+    Lembrete ainda processa a mensagem anterior), a mensagem cai no lock normal e é ignorada.
+    Assim ela nunca roda no Agendamento ao mesmo tempo que o Lembrete.
+  - A versão de produção (Sheets) tem a mesma ordem dedup → lock → espera; isso foi conferido
+    numa execução real de produção. Se ela também sofre do R14-1 não foi verificado.
+
+Detalhes e testes em `docs/test-plan.md`, rodada 15.
+
 ## Decisão em aberto: nome do serviço vs. `servico_id`
 
 **Este é o ponto que precisa de uma decisão sua antes de considerar a migração pronta para
