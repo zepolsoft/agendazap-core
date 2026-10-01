@@ -220,6 +220,22 @@ pra produção:
 
 Não escolhi nenhuma dessas sozinho porque são trade-offs de produto, não só técnicos.
 
+**Comportamento real confirmado (rodada 16, cenário 34; detalhes em `docs/test-plan.md`):**
+- Na conversa real, pedindo "corte, barba e sobrancelha", a IA **não** gerou um nome fora do
+  catálogo. Ela respondeu que sobrancelha não existe e propôs só "Corte + Barba". O `INSERT`
+  resolveu o `servico_id` normalmente.
+- Forçando o nome inexistente "Corte + Barba + Sobrancelha" na saída da IA (pin só nesse node), o
+  `INSERT` falhou com `null value in column "servico_id" … violates not-null constraint`. A
+  execução terminou no Stop and Error "Escalar Erro ao Gravar Agendamento no Banco", que em
+  produção dispara o Error Workflow para a equipe.
+- Efeitos colaterais desse caminho, que valem para **qualquer** erro de `INSERT` que não seja
+  conflito, não só para o serviço:
+  - o evento já criado no Calendar **fica órfão**, porque "Desfazer Evento Criado no Calendar" só
+    roda no caminho de conflito;
+  - o cliente **não recebe nenhuma mensagem**.
+  - Registrado como achado R16-1 no `docs/test-plan.md`, sem correção. Vale considerar junto com
+    esta decisão.
+
 ## Como importar e testar
 
 1. No n8n, importe os 3 arquivos JSON de `workflows/*/`. Eles chegam **desativados** por padrão.

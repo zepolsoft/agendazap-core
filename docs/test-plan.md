@@ -1575,3 +1575,104 @@ ainda processa a anterior, e não mais com a própria resposta ao lembrete.
   (`mTeBVPh18sAB6Y0q`). O "TEMP - Verificações rodada 15" (`AhkzPENfsVhCG5fj`) foi arquivado.
 
 **Próximo passo.** Cenários 22, 26 e 34, que ficaram pendentes da rodada 14. Depois, 23, 29 e 32.
+
+### Rodada 16 — Grupo B, cenários 22, 26 e 34 (01/10/2026)
+
+**Escopo.** Os três cenários do Grupo B que ficaram pendentes da rodada 14 e não passam por Wait.
+- Agendamento (`82b0043b…`) via `test_workflow`. Postgres, Calendar, Data Tables e IA reais; só os
+  envios de WhatsApp e o indicador de digitação fixados.
+- Um telefone novo da faixa de teste por cenário, com limpeza entre um e outro.
+- Nenhum workflow principal foi alterado nesta rodada.
+- Auxiliares da rodada 14 reaproveitados: conferência `Ah3qwYMSzsxapIYR` e limpeza
+  `Yb9R9S0za5l32vqe`. O de "outro canal" (`mTeBVPh18sAB6Y0q`) foi adaptado para só **apagar a
+  linha** (`DELETE … WHERE cliente_telefone = $1`, com o node do Calendar desativado).
+- Linha de base: 0 agendamentos, nenhum evento de 01 a 08/10, Data Tables sem linhas de teste
+  (exec. 1804).
+
+**Resultado: 22 comportamento confirmado (sem fallback, como já documentado), 26 ✅, 34
+comportamento confirmado, aguardando decisão (+ achado R16-1).**
+
+#### Cenário 22 — linha apagada no Postgres e cliente tenta remarcar (tel. …022) — comportamento confirmado
+
+| Passo | Resultado | Evidência |
+|---|---|---|
+| Agendar amanhã 10h → "sim" | Linha `agendado` e evento `54rsnuuj…` em 02/10 10:00 | exec. 1805, 1806; conferência 1807 |
+| Apagar a linha à mão (Calendar intacto) | `DELETE` devolveu a linha (`54rsnuuj…`, `agendado`) | exec. 1808 |
+| Cliente: "Preciso remarcar meu corte de amanhã pras 14h, pode ser?" | IA: `remarcar`, 02/10 14:00, `confirmado: false` → "Buscar Agendamento para Remarcar" com 0 linhas → "Identificar Agendamento Escolhido (Remarcar)" `{agendamentos_ativos: 0}` → "Encontrou?" = não → "Precisa Escolher?" = não → **"Redirecionar para Fluxo de Agendar"** → disponibilidade ok → "Propor Horário": "Claro, Vintedois! Ficaria pra amanhã às 14h — posso confirmar essa mudança?" | exec. 1809 |
+| Cliente: "sim" | Mesmo caminho, com `confirmado: true` → **"Criar Evento no Calendar"** (novo evento `digbav7i…`, 14:00) → `INSERT` (linha nova) → "Confirmar Agendamento": "Combinado, Vintedois! Remarcado seu corte masculino pra amanhã às 14h. Até lá! 😊" | exec. 1810 |
+| Conferência | **1** linha (14:00, `digbav7i…`) e **2 eventos**: o de 14:00 e o **órfão de 10:00** (`54rsnuuj…`), que nenhum fluxo vai apagar nem lembrar | exec. **1811** |
+
+Comportamento real:
+- Nenhum erro, e o cliente recebe resposta normal. Ele é informado de que foi "remarcado", mas na
+  prática foi criado um agendamento novo.
+- O evento antigo continua no Calendar. Para o profissional, o horário das 10h segue ocupado por
+  esse cliente, e o Agendamento vai considerar 10h indisponível.
+- É o "evento duplicado" previsto na tabela do Grupo B. O fallback pelo Calendar, buscando o
+  evento pelo telefone na descrição quando o banco não tem a linha, continua não implementado.
+  Não alterado.
+
+Limpeza: exec. 1812, que apagou os 2 eventos e a linha.
+
+#### Cenário 26 — mesma mensagem entregue duas vezes (tel. …026) — ✅
+
+| Passo | Resultado | Evidência |
+|---|---|---|
+| "Quero marcar … amanhã às 11h" | Proposta 11h | exec. 1813 |
+| "Sim, pode marcar" (`wamid.GB-r16-26-2`) | "Registrar Mensagem Processada" às 15:41:02.30, no início → … → evento `mgt9g7fv…` + `INSERT` | exec. 1814 |
+| **Mesmo payload de novo**, mesmo `message_id`, logo depois | Webhook → "Extrair Mensagem do Webhook" (body intacto) → "Normalizar" → "Checar Mensagem Duplicada" achou a linha `wamid.GB-r16-26-2` → "Mensagem Já Processada?" = sim → **"Ignorar Mensagem Duplicada"**. Nada além disso rodou: lock, espera, IA e banco ficaram de fora. A execução durou 65 ms | exec. **1815** |
+| Conferência | **1** linha e **1** evento (02/10 11:00) | exec. **1816** |
+
+Primeiro teste do dedup passando pelo trigger Webhook da rodada 13. Ressalvas:
+- Os dois disparos foram injetados pelo `test_workflow` no node Webhook. Não houve `POST` HTTP de
+  verdade: com o workflow desativado não há URL ativa, e a URL de teste exige o editor escutando.
+  O que vem depois do Webhook (Set, dedup) rodou de verdade. A chamada HTTP real fica para os
+  cenários 23 e 29, com o workflow publicado.
+- O dedup grava o `message_id` no início da execução, então também cobre uma reentrega que chegue
+  enquanto a 1ª ainda está processando.
+
+Limpeza: exec. 1817.
+
+#### Cenário 34 — serviço combinado sem item exato (tel. …034 e …035) — comportamento confirmado, aguardando decisão
+
+**Não aprovado.** Depende da decisão em aberto "nome do serviço vs. `servico_id`"
+(`docs/migracao-supabase.md`).
+
+| Passo | Resultado | Evidência |
+|---|---|---|
+| **34a**, conversa real (…034): "Quero fazer corte, barba e sobrancelha amanhã às 15h" | IA: `servico: "Corte + Barba"`, 15:00–15:50, e no texto: "Sobrancelha a gente não tem aqui na Barbearia ZAP, mas corte + barba amanhã às 15h tá livre — posso confirmar só esses dois serviços pra você?" | exec. 1818 |
+| "Pode ser, confirma só corte e barba então" | `INSERT` ok: `servico_id` de "Corte + Barba" resolvido, linha 15:00–15:50 | exec. 1819; conferência 1820 |
+| **34b**, nome fora do catálogo forçado (…035): fixada **só** a saída de "Interpretar Intenção do Cliente" com `servico: "Corte + Barba + Sobrancelha"`, `confirmado: true`, 02/10 16:00–16:50 | "Validar Horário" (`duracao_minutos: null`, usou o fim da IA) → disponibilidade ok → **"Criar Evento no Calendar"** (evento `c4ij7f1v…`) → `INSERT` **falhou**: `null value in column "servico_id" of relation "agendamentos" violates not-null constraint` → "Horário Foi Ocupado? (Agendar)" = não → **"Escalar Erro ao Gravar Agendamento no Banco"** (Stop and Error). Execução `error`. "Confirmar Agendamento" e "Desfazer Evento" não rodaram | exec. **1822** |
+| Conferência | 0 linhas e **1 evento órfão** (`c4ij7f1v…`, 02/10 16:00) | exec. **1823** |
+
+Comportamento real:
+- Na conversa, a IA se limitou ao catálogo e não produziu nome inexistente.
+- Se um nome inexistente chegar ao `INSERT`, a falha é a prevista (`servico_id` nulo, `NOT NULL`).
+  Em produção o Error Workflow avisaria a equipe; em execução manual ele não dispara.
+
+**Achado R16-1 (novo, não corrigido). Erro de `INSERT` que não é conflito deixa evento órfão e o
+cliente sem resposta.**
+- No caminho "Horário Foi Ocupado? (Agendar)" = não, o fluxo vai direto ao Stop and Error.
+- O evento já criado no Calendar não é desfeito, porque "Desfazer Evento" só existe no caminho de
+  conflito, da rodada 8.
+- O cliente não recebe nenhuma mensagem. A equipe é avisada pelo Error Workflow, só em produção.
+- Vale para qualquer erro de `INSERT` que não seja conflito, não só para `servico_id`.
+- Sugestão, sem aplicar:
+  - desfazer o evento também nesse caminho;
+  - mandar ao cliente o mesmo aviso neutro usado nos outros erros de banco (rodadas 11 e 12);
+  - só então seguir para o Stop and Error.
+- Não bloqueia 23, 29 e 32. O 23 provoca justamente um erro de banco no Agendamento e vai mostrar
+  esse caminho em produção.
+
+Limpezas: exec. 1821 (…034) e 1824 (…035, incluindo o evento órfão).
+
+#### Estado final
+
+- Agendamento (`82b0043b…`) e Lembrete (`e259b886…`) estão **desativados**, sem versão publicada e
+  sem alteração nesta rodada. Nenhuma execução `waiting` ou `running`.
+- Banco e Calendar (01 a 08/10) sem dados de teste (exec. 1825). As 4 Data Tables sem linhas
+  `5511091000%` / `wamid.GB-%`.
+- Os 3 auxiliares da rodada 14 foram **arquivados**: `Ah3qwYMSzsxapIYR`, `Yb9R9S0za5l32vqe` e
+  `mTeBVPh18sAB6Y0q`.
+
+**Próximo passo.** Grupo B fica só com 23, 29 e 32: 23 e 29 com publicação curta e monitorada do
+Agendamento; 32 com o Lembrete manual para o número real `5511975049937`.
