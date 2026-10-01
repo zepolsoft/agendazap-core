@@ -3,23 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "updates": [
-          "messages"
-        ],
-        "options": {}
-      },
-      "id": "e8400018-38bf-4f54-af2f-b1f867ea6016",
-      "name": "Receber Mensagem WhatsApp",
-      "type": "n8n-nodes-base.whatsAppTrigger",
-      "typeVersion": 1,
-      "position": [
-        240,
-        1936
-      ],
-      "webhookId": "15600388-12a1-4b4f-97c3-9ac5c8e3f5b0"
-    },
-    {
-      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -410,7 +393,7 @@
         "url": "={{ $json.resume_url }}",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ $('Receber Mensagem WhatsApp').item.json }}",
+        "jsonBody": "={{ $('Extrair Mensagem do Webhook').item.json }}",
         "options": {}
       },
       "id": "4d02ee02-7ba9-4517-8054-32b704201cb8",
@@ -2551,20 +2534,43 @@
       "parameters": {
         "errorMessage": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const c = $('Normalizar Dados da Mensagem').item.json; const novo = $('Interpretar Intenção do Cliente').item.json.output.data_hora_inicio; return `Remarcação de ${c.nome} (${c.telefone}) não concluída: o novo horário pedido (${novo}) bateu com outro agendamento no banco, e o evento ${r.event_id} já tinha sido movido para esse horário no Calendar. Não foi possível restaurá-lo porque nenhuma linha em agendamentos tem esse google_event_id (a linha pode ter sido apagada). Horário original lido antes: ${r.servico} em ${r.data}. O cliente foi avisado de que a equipe vai entrar em contato — confira o banco e o Calendar e resolva manualmente.`; })() }}"
       }
+    },
+    {
+      "id": "4c33761b-a746-4652-ac66-7f71235e40e9",
+      "name": "Receber Mensagem (Webhook Temporário)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        1936
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "SUBSTITUA_PELO_PATH_ALEATORIO",
+        "authentication": "none",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "webhookId": "e7a7f1c1-e316-43cd-a7ff-6b2e7cf8ca3a"
+    },
+    {
+      "id": "9361b827-220c-4e79-a392-dabb28ad9408",
+      "name": "Extrair Mensagem do Webhook",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        1936
+      ],
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.body }}",
+        "includeOtherFields": false,
+        "options": {}
+      }
     }
   ],
   "connections": {
-    "Receber Mensagem WhatsApp": {
-      "main": [
-        [
-          {
-            "node": "Filtrar Apenas Mensagens",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Filtrar Apenas Mensagens": {
       "main": [
         [
@@ -3604,6 +3610,28 @@
         [
           {
             "node": "Escalar Remarcação Sem Horário Original no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receber Mensagem (Webhook Temporário)": {
+      "main": [
+        [
+          {
+            "node": "Extrair Mensagem do Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Mensagem do Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Apenas Mensagens",
             "type": "main",
             "index": 0
           }

@@ -195,10 +195,9 @@ Decisões tomadas antes de começar a rodar o Grupo B:
 ### Pendências antes de executar
 
 - ~~Número de teste do cenário 32~~ **Confirmado**: `5511975049937` (01/10/2026).
-- **Troca do trigger do Agendamento**: depende do MCP do n8n para editar o workflow na instância
-  (`https://n8n-n8n.wg1izd.easypanel.host`). Esse conector não está disponível nesta sessão —
-  assim que estiver, a troca do trigger é o primeiro passo antes de rodar qualquer cenário do
-  Grupo B.
+- ~~Troca do trigger do Agendamento~~ **Feita na rodada 13** (01/10/2026): Webhook temporário +
+  Set "Extrair Mensagem do Webhook". O workflow continua desativado; o checklist para reverter
+  está em `docs/migracao-supabase.md`.
 
 ## Registro de execuções
 
@@ -1209,3 +1208,82 @@ remarcação, esta rodada), a memória da IA não é corrigida, ao contrário do
 rodada 8. Se o cliente mandar outra mensagem antes de a equipe responder, a IA pode achar que o
 cancelamento ou a remarcação deu certo. Para corrigir, bastaria um *Chat Memory Manager* com o
 texto enviado, como em "Corrigir Memória da Conversa (Remarcar)".
+
+### Rodada 13 — troca temporária do trigger do Agendamento para o Grupo B (01/10/2026)
+
+**O que mudou.** Só o item 1 do "Grupo B — Plano de execução confirmado", no Agendamento
+(`ny0fqlw8ojzmId7C`, versão `f130a17d…` (rodada 12) → `08ab4750-f103-4cac-a139-3f17f5acf498`,
+103 → 104 nodes). Nenhum outro node, conexão ou setting mudou.
+- **Saiu** o WhatsApp Trigger "Receber Mensagem WhatsApp" (`whatsAppTrigger` v1, `webhookId`
+  `15600388-12a1-4b4f-97c3-9ac5c8e3f5b0`). A definição exata para recolocar está no checklist de
+  `docs/migracao-supabase.md`.
+- **Entrou** "Receber Mensagem (Webhook Temporário)" (`webhook` v2.1):
+  - `POST`, path aleatório (UUID v4), `authentication: none`, `responseMode: onReceived` (200 na
+    hora, sem esperar o fluxo);
+  - `webhookId` gerado pelo n8n.
+  - O path real fica **só na instância**. O repo é público, então no JSON exportado ele aparece
+    como `SUBSTITUA_PELO_PATH_ALEATORIO`. A URL está na aba do node e no `triggerInfo` do
+    `get_workflow_details`.
+- **Entrou** "Extrair Mensagem do Webhook" (`set` v3.4, a mesma versão dos outros Sets do
+  workflow): `mode: raw`, `jsonOutput = {{ $json.body }}`, `includeOtherFields: false`. A saída
+  é o `body` como raiz do item. Ligação: Webhook → Set → "Filtrar Apenas Mensagens", o mesmo
+  destino do trigger antigo.
+- "Encaminhar Mensagem para Lembrete": `jsonBody` de `$('Receber Mensagem WhatsApp').item.json`
+  para `$('Extrair Mensagem do Webhook').item.json`. Era a única referência ao trigger pelo nome
+  no workflow.
+- O **Lembrete** não mudou: versão `9b9f1dd9…` (rodada 12), com os dois Schedule originais
+  ("Disparar Lembrete Diário às 8h" e "Marcar Atendimentos Concluídos às 22h").
+
+**Contrato do payload.** O Webhook espera no `body` o mesmo shape que o WhatsApp Trigger
+entregava: `{ messaging_product, metadata, contacts, messages }`. Não é o envelope bruto da Meta
+(`{ object, entry: [{ changes: [{ value }] }] }`). É assim que os cenários do Grupo B devem montar
+o `POST`. Se algum dia a Meta for apontada para essa URL, o Set teria que desembrulhar
+`entry[0].changes[0].value`. Isso não faz parte do plano: no cutover volta o WhatsApp Trigger.
+
+**Como foi validado.**
+- `validate_node_config`: Webhook, Set e "Encaminhar Mensagem para Lembrete" (HTTP Request v4.5),
+  com os parâmetros aplicados. Todos `valid: true`.
+- `update_workflow`: só os 2 `SUBNODE_NOT_CONNECTED` pré-existentes, os falsos positivos de
+  memória da rodada 8.
+- `validate_workflow` com o workflow inteiro convertido para SDK: `valid: true`, 104 nodes, só os
+  mesmos 2 avisos.
+  - Como nas rodadas 8 e 9, os textos longos foram abreviados: prompts, `jsCode`, mensagens, e
+    queries trocadas por um SQL curto com o mesmo `$1`.
+  - Tipos, versões, parâmetros estruturais, settings de node e todas as conexões são os exatos.
+- Conferência de escopo (instância × JSON do repo da rodada 12):
+  - 2 nodes novos, 1 removido;
+  - 1 parâmetro alterado ("Encaminhar Mensagem para Lembrete");
+  - 3 entradas de conexão trocadas (a do trigger antigo saiu, entraram as do Webhook e do Set);
+  - nada mais. Settings iguais.
+- `test_workflow` (exec. **1706**), com o payload injetado no Webhook:
+  - Payload: `body` = `{ messaging_product, metadata, contacts: [{ wa_id: "5511091000001" }],
+    messages: [{ id: "wamid.GB-r13-001", type: "text", text: { body: "quais horários eu tenho
+    marcados?" } }] }`, na faixa de telefones e no prefixo do Grupo B.
+  - Fixados: os envios de WhatsApp, o indicador de digitação e as Data Tables. Assim não ficam
+    linhas de teste que o MCP não consegue apagar.
+  - Rodaram de verdade: IA e Postgres.
+  - Resultado: o Set entregou exatamente o `body` como raiz →
+    - "Filtrar Apenas Mensagens" passou (saída "true") →
+    - "Normalizar Dados da Mensagem" extraiu `telefone 5511091000001`, `nome Teste GB`,
+      `message_id wamid.GB-r13-001` →
+    - IA real classificou `consultar` →
+    - "Buscar Agendamentos do Cliente (Consultar)" real, 0 linhas →
+    - "Formatar Resposta da Consulta": "Não encontrei nenhum agendamento ativo no momento, Teste
+      GB. Quer marcar um horário?" →
+    - "Responder Consulta" (fixado).
+  - Execução `success`.
+  - Nada foi gravado no banco nem no Calendar. A única marca é o histórico da "Simple Memory" para
+    a sessão `5511091000001`, que fica na memória do n8n.
+- Os dois workflows continuam **desativados**, sem versão publicada (`active: false`,
+  `activeVersionId: null`).
+
+**O que não foi testado**
+- O caminho "Há Espera de Lembrete Ativa?" → "Encaminhar Mensagem para Lembrete" com a referência
+  nova. Exigiria uma espera real do Lembrete (`resume_url`). A expression foi validada por
+  `validate_node_config` e é a mesma de antes, só com outro nome de node. Ela roda de verdade no
+  primeiro cenário do Grupo B em que o cliente responde a um lembrete.
+- A chamada HTTP real ao Webhook (URL de teste ou de produção). O `test_workflow` injeta o item
+  direto no node. A primeira chamada real acontece nos cenários 23 e 29, com o workflow publicado.
+
+**Próximo passo.** O trigger está pronto: o Grupo B pode começar pelos cenários que usam
+`test_workflow` (9, 17, 20, 22, 26, 34, 21), conforme o plano.

@@ -184,3 +184,42 @@ Não escolhi nenhuma dessas sozinho porque são trade-offs de produto, não só 
 3. Rode os testes do Grupo A do `docs/test-plan.md` (do repo `automacao-pmes-whatsapp`) contra
    esta versão, usando os 2 profissionais de `db/002_seed_exemplo.sql` como dado de teste — sem
    tocar nos workflows de produção.
+
+## Checklist de cutover: reverter o trigger temporário
+
+Desde a rodada 13 (`docs/test-plan.md`), o "Agendamento via WhatsApp (Supabase)" está com um
+trigger **temporário**, só para rodar o Grupo B:
+- **"Receber Mensagem (Webhook Temporário)"**: Webhook `POST`, path aleatório, `responseMode:
+  onReceived`;
+- **"Extrair Mensagem do Webhook"**: Set `raw` com `jsonOutput = {{ $json.body }}`.
+
+Esse trigger **não pode ir para produção**: a Meta não chama esse Webhook, e ele aceita qualquer
+`POST` de quem souber a URL. Antes de qualquer cutover (e antes de ativar o workflow para receber
+mensagens reais), reverta nesta ordem:
+
+1. **Confirme que nada do Grupo B depende mais do Webhook.** Se o workflow estiver publicado,
+   despublique.
+2. **Remova** os nodes "Receber Mensagem (Webhook Temporário)" e "Extrair Mensagem do Webhook".
+3. **Recoloque o WhatsApp Trigger original**, exatamente como estava até a rodada 12 (commit
+   `8d63880`):
+   ```json
+   {
+     "name": "Receber Mensagem WhatsApp",
+     "type": "n8n-nodes-base.whatsAppTrigger",
+     "typeVersion": 1,
+     "position": [240, 1936],
+     "parameters": { "updates": ["messages"], "options": {} },
+     "webhookId": "15600388-12a1-4b4f-97c3-9ac5c8e3f5b0"
+   }
+   ```
+   Use a credencial de WhatsApp Trigger já configurada na instância ("WhatsApp OAuth account").
+   O nome do node tem que ser exatamente "Receber Mensagem WhatsApp".
+4. **Religue** "Receber Mensagem WhatsApp" → "Filtrar Apenas Mensagens".
+5. **Restaure a referência** em "Encaminhar Mensagem para Lembrete":
+   `jsonBody = {{ $('Receber Mensagem WhatsApp').item.json }}`. Hoje ela aponta para
+   `$('Extrair Mensagem do Webhook')`. Nenhum outro node cita o trigger pelo nome.
+6. **Confira** com um diff contra o JSON do commit `8d63880`: só podem sobrar as mudanças feitas
+   depois da rodada 13. Rode `validate_workflow` e re-exporte o JSON.
+7. **Só então ative** (isso registra o webhook na Meta), seguindo o plano de cutover.
+
+O Lembrete não muda de trigger: os Schedule e os Waits dele são os originais.
