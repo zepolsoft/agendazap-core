@@ -1649,8 +1649,8 @@ Comportamento real:
 - Se um nome inexistente chegar ao `INSERT`, a falha é a prevista (`servico_id` nulo, `NOT NULL`).
   Em produção o Error Workflow avisaria a equipe; em execução manual ele não dispara.
 
-**Achado R16-1 (novo, não corrigido). Erro de `INSERT` que não é conflito deixa evento órfão e o
-cliente sem resposta.**
+**Achado R16-1 (novo). Erro de `INSERT` que não é conflito deixa evento órfão e o cliente sem
+resposta.**
 - No caminho "Horário Foi Ocupado? (Agendar)" = não, o fluxo vai direto ao Stop and Error.
 - O evento já criado no Calendar não é desfeito, porque "Desfazer Evento" só existe no caminho de
   conflito, da rodada 8.
@@ -1662,6 +1662,8 @@ cliente sem resposta.**
   - só então seguir para o Stop and Error.
 - Não bloqueia 23, 29 e 32. O 23 provoca justamente um erro de banco no Agendamento e vai mostrar
   esse caminho em produção.
+
+**→ Corrigido na rodada 17.**
 
 Limpezas: exec. 1821 (…034) e 1824 (…035, incluindo o evento órfão).
 
@@ -1676,3 +1678,177 @@ Limpezas: exec. 1821 (…034) e 1824 (…035, incluindo o evento órfão).
 
 **Próximo passo.** Grupo B fica só com 23, 29 e 32: 23 e 29 com publicação curta e monitorada do
 Agendamento; 32 com o Lembrete manual para o número real `5511975049937`.
+
+### Rodada 17 — R16-1, cenários 29, 23 e 32 e reversão do trigger (01/10/2026)
+
+**Decisões do José antes da rodada:**
+- corrigir só o R16-1 agora;
+- adiar para depois do cutover a decisão de `servico_id` (`docs/migracao-supabase.md`);
+- rodar 23, 29 e 32 sem pular nenhum;
+- reverter o trigger temporário sem publicar.
+
+Auxiliar temporário: "TEMP - Ferramentas rodada 17" (`nqDdIOCoNqvejulx`), com conferência,
+limpeza por prefixo, SQL via pin e remoção da espera de uma execução específica. Arquivado no
+fim.
+
+#### 1. Correção do R16-1 (Agendamento)
+
+**O que mudou** (versão `82b0043b…` → `1d7950b9-cce3-4e3b-8d6f-93856bc1dca5`, 105 → 107 nodes):
+- "Horário Foi Ocupado? (Agendar)" = não deixou de ir direto ao Stop and Error. Agora segue por
+  dois nodes novos:
+  - **"Desfazer Evento Criado no Calendar (Erro no Banco)"**: Calendar `delete` do
+    `$('Criar Evento no Calendar').item.json.id`, `onError: continueRegularOutput`;
+  - **"Avisar Cliente Sobre Erro no Agendamento"**: WhatsApp com o texto neutro padrão dos outros
+    erros de banco ("Opa, {nome}, tive um probleminha técnico aqui pra concluir o agendamento do
+    seu {serviço} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu
+    horário certinho."), `onError: continueRegularOutput`.
+  - Em seguida vai ao **"Escalar Erro ao Gravar Agendamento no Banco"**, que é o mesmo Stop and
+    Error de antes.
+- A mensagem do Stop and Error passou a ler o erro de `$('Horário Foi Ocupado? (Agendar)')` quando
+  esse node executou (`.isExecuted`). No caminho de remarcação, que também usa esse Stop and Error,
+  continua lendo `$json`, como antes. O caminho de remarcação não foi alterado (ver R17-1 abaixo).
+- Só mudaram os 2 nodes novos, a mensagem e a posição do Stop and Error e as ligações do trecho
+  (conferência de escopo contra o snapshot `82b0043b…`).
+
+**Validação:**
+- `validate_node_config` nos 3 nodes: `valid`.
+- `validate_workflow` com o workflow inteiro convertido para SDK: `valid: true`, só os 2 avisos de
+  sempre.
+
+**Teste real** (`test_workflow`; Postgres e Calendar reais; WhatsApp e a saída da IA fixados com o
+serviço "Corte + Barba + Sobrancelha", o mesmo truque do 34b; tel. …036):
+
+| Passo | Resultado | Evidência |
+|---|---|---|
+| Confirmação de agendamento com serviço fora do catálogo | "Criar Evento" (evento `3ma1hcsq…`) → `INSERT` falhou (`servico_id` nulo) → "Horário Foi Ocupado?" = não → **"Desfazer Evento (Erro no Banco)" `success`** → **"Avisar Cliente Sobre Erro no Agendamento"** (fixado) → **Stop and Error** com a mensagem completa: "Falha ao gravar no banco o agendamento de Trintaeseis Teste (5511091000036): null value in column "servico_id" … — Failing row contains (…)". Execução `error`, como esperado | exec. **1826** |
+| Conferência | 0 linhas, **0 eventos** (antes da correção ficaria 1 evento órfão, como na exec. 1823) | exec. 1827; limpeza 1828 |
+
+O texto do aviso ao cliente rodou de verdade no cenário 23, abaixo.
+
+#### 2. Cenário 29 — Error Workflow por falha de formato da IA — ✅
+
+Protocolo do G1:
+- Snapshot: a versão `1d7950b9…`.
+- "Parser Estruturado de Agendamento" trocado por `schemaType: manual` com `impossivel: {"not": {}}`
+  obrigatório (versão `6e3dbc3d…`).
+- Agendamento **publicado** às ~16:09:20Z, com o Webhook temporário.
+- `POST` real na URL de produção do Webhook às 16:09:32Z, simulando o cliente fictício
+  `5511091000029`: "Oi! Quero marcar um corte masculino amanhã às 15h" (`wamid.GB-r17-29-1`).
+
+| Passo | Resultado | Evidência |
+|---|---|---|
+| Execução de produção (`mode: webhook`) | IA rodou 2× (retry) → "Model output doesn't fit required format" → **"Avisar Cliente Sobre Falha da IA" enviado de verdade** ao …029 (`wamid.HBgNNTUxMTA5MTAwMDAyOR…`; a Meta depois devolveu `failed / 131026 undeliverable`, porque o número não existe) → **"Escalar Falha da IA para a Equipe"** → execução `error` | exec. **1829** |
+| Error Workflow "Notificação de Erros" | Disparou sozinho (`mode: error`) e **enviou a notificação para 5511975049937**: "⚠️ Erro no workflow "Agendamento via WhatsApp (Supabase)" / Node: Escalar Falha da IA para a Equipe / Erro: A IA não conseguiu interpretar a mensagem de Vinteenove Teste (5511091000029) … Motivo: Model output doesn't fit required format / {link da execução}" → `wamid.HBgNNTUxMTk3NTA0OTkzNx…` | exec. **1830** |
+| Entrega | Recibo **`read`** dessa mensagem em 5511975049937 às 16:10:03Z, recebido pelo Agendamento de produção como `statuses` e descartado pelo filtro | exec. 1834 (produção) |
+
+#### 3. Cenário 23 — Error Workflow por erro real de banco — ✅ (e R16-1 em produção)
+
+- Parser restaurado ao original e "Salvar Cliente na Planilha" apontado para a tabela inexistente
+  `agendamentos_inexistente_r17`, **só na cópia** (versão `0d9bcfd9…`), e republicado.
+- Escolhi o `INSERT`, e não um node do começo do fluxo, para que o erro real de banco exercitasse
+  também a correção do R16-1 em produção.
+- Dois `POST`s reais com o cliente fictício `5511091000023`.
+
+| Passo | Resultado | Evidência |
+|---|---|---|
+| "Oi! Quero marcar um corte masculino amanhã às 9h" | IA `agendar`, 02/10 09:00 → "Propor Horário" enviado de verdade ao …023 | exec. 1835 |
+| "Sim, pode marcar" | Evento real `ougntnp9…` criado → `INSERT` falhou: `relation "agendamentos_inexistente_r17" does not exist` → **"Desfazer Evento (Erro no Banco)" `success`** → **"Avisar Cliente Sobre Erro no Agendamento" enviado de verdade** ao …023 (`wamid.HBgNNTUxMTA5MTAwMDAyMx…`) → **Stop and Error** → execução `error` | exec. **1837** |
+| Error Workflow | Notificação enviada para **5511975049937**: "Node: Escalar Erro ao Gravar Agendamento no Banco / Erro: Falha ao gravar no banco o agendamento de Vintetres Teste (5511091000023): relation "agendamentos_inexistente_r17" does not exist — Failed query: …" (`wamid.HBgNNTUxMTk3NTA0OTkzNx…`) | exec. **1838** |
+| Calendar | Evento desfeito: nenhum evento de teste depois | exec. 1843 |
+
+**Janela publicada.** Despublicado às **16:11:44Z**, logo depois do 23. A janela foi de cerca de
+2,5 minutos, de ~16:09:20Z a 16:11:44Z, e foi monitorada pela lista de execuções.
+- Só rodaram as 3 execuções esperadas do Agendamento (1829, 1835 e 1837), as 2 do Error Workflow
+  e callbacks de status da Meta no Agendamento de produção (1831–1834, 1836, 1839–1842), todos
+  descartados por "Filtrar Apenas Mensagens".
+- Depois de despublicar, um `POST` na URL devolveu **404 "webhook is not registered"**.
+
+**Restauração.** `restore_workflow_version` para `1d7950b9…` (nova versão `745a1eb2…`): nodes,
+conexões e settings **byte a byte idênticos**. O parser voltou a ter só `jsonSchemaExample`, e o
+`INSERT` voltou a `agendamentos`.
+
+**Envios reais fora do número da equipe.** Ao fictício …029: 1 aviso de falha da IA e o indicador
+de digitação. Ao …023: proposta, aviso de erro e indicador. Todos falham na entrega, porque o
+número não existe. Esses envios estavam previstos, porque 23 e 29 rodam em produção sem pin.
+
+#### 4. Cenário 32 — Lembrete real para 5511975049937 — ✅
+
+Protocolo:
+- Snapshot do Lembrete: a versão `e259b886…`.
+- Desativei **24** nodes de envio: todos os `whatsApp` e o indicador de digitação, **exceto
+  "Enviar Lembrete no WhatsApp"**. Assim só o lembrete sai de verdade, e nada depois do Wait.
+- Linha real no banco para hoje às 18h, `5511975049937`, `evt-r17-cenario32` (exec. 1844).
+
+| Passo | Resultado | Evidência |
+|---|---|---|
+| Lembrete em modo manual (`test_workflow`, só o trigger fixado) | "Buscar Agendamentos de Hoje" leu a linha → **"Enviar Lembrete no WhatsApp" devolveu `messages[0].id = wamid.HBgNNTUxMTk3NTA0OTkzNxUCABEYEjM4NENFMjVCQ0ZBM0QzQzkwMgA=`**. Nada de `phoneNumber.replace is not a function` → "Registrar Espera" → Wait | exec. **1845** |
+| Entrega | Recibos de status no Agendamento de produção, descartados pelo filtro | exec. 1846, 1847 |
+| Encerramento seguro | Espera da 1845 apagada da tabela compartilhada (só a linha com `resume_url` da 1845; exec. 1848), para a produção não encaminhar mensagens do José para o teste. `POST {}` no `resume_url` → caminho de timeout → "Reverificar" → aviso de timeout (desativado) → fim | exec. 1848; 1845 `success` |
+| Restauração | `restore_workflow_version` para `e259b886…` (nova `675f4d21…`): byte a byte idêntico, nenhum node desativado. Linha `evt-r17-cenario32` apagada | exec. 1849 |
+
+Observação: o upsert da espera do teste sobrescreveu a linha de espera de produção do mesmo
+número, que já estava vencida (exec. 1729, 11:00Z), e o passo de encerramento a apagou. A produção
+recria essa linha no próximo lembrete. Sem efeito prático.
+
+#### 5. Reversão do trigger temporário — feita, sem publicar
+
+O MCP não permite definir o `webhookId` num node novo. Por isso, em vez de recriar o trigger:
+1. `restore_workflow_version` para `f130a17d…`, o estado final da rodada 12, com o WhatsApp
+   Trigger original e a referência original em "Encaminhar".
+2. Reaplicadas, numa única atualização, **as mesmas operações** já validadas das rodadas 15
+   (R14-2) e 17 (R16-1). Resultado: versão **`c001a1ad-d741-4437-9b0f-c5ba3b02aa5f`**, 106 nodes.
+
+Conferência contra a versão anterior (`745a1eb2…`, com Webhook):
+- Saíram "Receber Mensagem (Webhook Temporário)" e "Extrair Mensagem do Webhook". Voltou
+  "Receber Mensagem WhatsApp", **byte a byte idêntico** ao da rodada 12: `id` `e8400018…`,
+  `webhookId` `15600388-12a1-4b4f-97c3-9ac5c8e3f5b0`, credencial "WhatsApp OAuth account",
+  posição `[240, 1936]`.
+- Ligação "Receber Mensagem WhatsApp" → "Filtrar Apenas Mensagens".
+- "Encaminhar Mensagem para Lembrete": `jsonBody = {{ $('Receber Mensagem WhatsApp').item.json }}`.
+  Nenhum node cita mais os nodes temporários.
+- Diferenças incidentais: os `id` internos dos 3 nodes recriados e o `webhookId` interno do node
+  de envio novo, que é atribuído automaticamente e não tem efeito. Fora isso, todos os nodes,
+  conexões e settings são iguais.
+- `validate_workflow` do estado final: `valid: true`, só os 2 avisos de sempre.
+- `active: false`, `activeVersionId: null`: **não publicado**. O item 7 do checklist (ativar) é a
+  decisão de cutover.
+
+JSON reexportado com 106 nodes. O trigger é idêntico ao do commit `8d63880`. As credenciais
+Postgres estão como placeholder e as do WhatsApp omitidas. Não há path de webhook nem vestígio dos
+nodes temporários. O JSON do Lembrete não mudou.
+
+#### Achados e pendências (para registro)
+
+- **R17-1 (novo, não corrigido, fora do escopo da rodada). Erro de `UPDATE` na remarcação que não
+  é conflito tem o mesmo problema do R16-1.**
+  - O evento já foi movido no Calendar.
+  - "Horário Foi Ocupado? (Remarcar)" = não vai direto ao Stop and Error, sem restaurar o evento e
+    sem avisar o cliente.
+  - A equipe é avisada pelo Error Workflow.
+  - Correção análoga à do R16-1: reaproveitar "Buscar Horário Original (Remarcar)" → "Restaurar
+    Evento" e o aviso neutro antes do Stop and Error.
+  - Só ocorre com erro de banco real na remarcação (indisponibilidade ou credencial), raro.
+- **Pendências já conhecidas, que continuam:**
+  - Decisão de `servico_id`, adiada para depois do cutover.
+  - Cenário 22: linha apagada à mão deixa evento órfão, porque não há fallback pelo Calendar.
+  - Achados 2, 3, 4, 6, 7, 8, 9 e 10 da rodada 10, todos de simplificação v1 ou documentação:
+    - expediente fixo de 9h às 18h no código, enquanto o banco diz 9h às 19h;
+    - o calendário vem do profissional ativo, não do agendamento;
+    - `google_event_id` sem índice único;
+    - `status` `confirmado` e `no_show` não são usados.
+  - Espera do lembrete não é apagada no fim da conversa.
+  - Memória da IA do Agendamento chaveada só pelo telefone.
+  - Texto do timeout da 2ª espera.
+- **Cenário 25b** (mensagem entre 23h e 1h) continua sem rodar. Ficou de fora por decisão do
+  plano.
+
+#### Estado final
+
+- Agendamento `c001a1ad…`, com o WhatsApp Trigger original, e Lembrete `675f4d21…` (= `e259b886…`):
+  **desativados**, `activeVersionId: null`, nenhuma execução `waiting` ou `running`.
+- Banco e Calendar (01 a 08/10) sem dados de teste (exec. 1852). As 4 Data Tables sem linhas
+  `5511091000%` / `wamid.GB-%`, e sem espera do número real.
+- Auxiliar `nqDdIOCoNqvejulx` arquivado.
+
+**Grupo B:** todos os cenários planejados rodaram (9, 17, 20, 21, 22, 23, 26, 29, 32, 33 e 34), com
+exceção do **25b**. O 34 tem o comportamento confirmado e a decisão adiada.

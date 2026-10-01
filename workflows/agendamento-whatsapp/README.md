@@ -14,28 +14,19 @@ da instância já vinculadas (no JSON deste repo elas ficam como placeholder ou 
 Workflow apontando para o "Notificação de Erros" de produção. Não ativar enquanto o trigger for o
 do WhatsApp: a ativação registra o webhook na Meta.
 
-> ⚠️ **Trigger temporário (desde a rodada 13, só durante o Grupo B).** O WhatsApp Trigger
-> "Receber Mensagem WhatsApp" foi trocado por:
-> - **"Receber Mensagem (Webhook Temporário)"**: Webhook `POST` com path aleatório, que responde
->   200 na hora (`responseMode: onReceived`);
-> - **"Extrair Mensagem do Webhook"**: Set que repassa só o `body`.
->
-> O `body` esperado tem o mesmo shape que o WhatsApp Trigger entregava: `messaging_product`,
-> `metadata`, `contacts` e `messages`. Não é o envelope bruto da Meta (`entry[].changes[].value`).
->
-> "Encaminhar Mensagem para Lembrete" passou a ler do Set. Nenhum outro node mudou.
->
-> O path real do Webhook fica **só na instância**: o repo é público, então no JSON ele aparece como
-> `SUBSTITUA_PELO_PATH_ALEATORIO`. Ao reimportar este JSON, gere um path aleatório novo.
->
-> O workflow continua **desativado**. Ele só é publicado durante os cenários 23 e 29, numa janela
-> curta e monitorada (`docs/test-plan.md`). **Antes de qualquer cutover**, reverta a troca
-> seguindo o checklist "Reverter o trigger temporário" em `docs/migracao-supabase.md`.
+> **Trigger:** o WhatsApp Trigger original ("Receber Mensagem WhatsApp", mesmo `webhookId` de
+> antes) foi **recolocado na rodada 17**. O Webhook temporário usado no Grupo B (rodadas 13 a 17)
+> foi removido. O workflow continua **desativado**: ativá-lo registra o webhook na Meta e faz parte
+> do cutover (`docs/migracao-supabase.md`).
 
 > **Diferença de comportamento em relação à produção (rodada 15):** a espera de lembrete é
 > checada **antes** do lock do telefone (dedup → espera → lock). Uma resposta ao lembrete é
 > encaminhada mesmo que chegue menos de 10 s depois de outra mensagem do cliente. Ver
 > `docs/migracao-supabase.md`, seção 6.
+
+> **Rodada 17 (R16-1):** quando o `INSERT` do agendamento falha por qualquer motivo que não seja
+> conflito de horário, o workflow desfaz o evento recém-criado no Calendar, avisa o cliente com o
+> texto neutro de erro de banco e só então para com erro, acionando o Error Workflow.
 
 **Antes de importar no n8n:**
 1. Rode `db/001_initial_schema.sql` e `db/002_seed_exemplo.sql` (na raiz do repo) no seu projeto

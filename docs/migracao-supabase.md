@@ -179,13 +179,26 @@ Detalhes e testes em `docs/test-plan.md`, rodada 15.
 
 ## Decisão em aberto: nome do serviço vs. `servico_id`
 
-**Este é o ponto que precisa de uma decisão sua antes de considerar a migração pronta para
-produção.**
+> **Decisão adiada para depois do cutover (01/10/2026, rodada 17).** José decidiu não escolher
+> agora um dos caminhos abaixo. Motivo: com o achado R16-1 corrigido na rodada 17, a falha
+> deixou de ser silenciosa e virou uma falha **tratada**. Se um nome de serviço fora do catálogo
+> chegar ao `INSERT`:
+> - o evento recém-criado é desfeito no Calendar;
+> - o cliente recebe o aviso neutro de erro ("tive um probleminha técnico… nossa equipe já foi
+>   avisada…");
+> - a equipe recebe a notificação do Error Workflow com o erro do banco.
+>
+> Somado a isso, na conversa real a IA se limita ao catálogo (rodada 16, cenário 34a). O risco
+> restante é o cliente precisar ser atendido manualmente nesse caso raro. A decisão continua
+> aberta e deve ser retomada depois do cutover.
 
-> **Bloqueio conhecido:** enquanto esta decisão não for tomada, não execute testes sem pin no
-> Postgres (Grupo B do `docs/test-plan.md`) nem use esta versão em produção de verdade. Testes com
-> pin (Grupo A) podem rodar normalmente, porque o retorno do Postgres é fixado e não passa pela
-> resolução de `servico_id` descrita abaixo.
+**Este era o ponto que precisava de uma decisão antes de considerar a migração pronta para
+produção** (ver o aviso acima: adiada para depois do cutover).
+
+> **Bloqueio original (superado):** a recomendação era não rodar testes sem pin no Postgres nem
+> usar esta versão em produção enquanto a decisão não fosse tomada. O Grupo B rodou mesmo assim
+> (rodadas 14 a 17), com o comportamento confirmado no cenário 34, e a decisão foi adiada para
+> depois do cutover pelo motivo do aviso acima.
 
 Hoje a IA extrai o serviço como texto livre (`"corte e barba"`, `"baixo"` → mapeado para "Corte
 Baixo na Máquina" pelo próprio prompt, etc.), e a planilha aceitava qualquer texto — não havia
@@ -233,8 +246,9 @@ Não escolhi nenhuma dessas sozinho porque são trade-offs de produto, não só 
   - o evento já criado no Calendar **fica órfão**, porque "Desfazer Evento Criado no Calendar" só
     roda no caminho de conflito;
   - o cliente **não recebe nenhuma mensagem**.
-  - Registrado como achado R16-1 no `docs/test-plan.md`, sem correção. Vale considerar junto com
-    esta decisão.
+  - Registrado como achado R16-1 no `docs/test-plan.md`. **Corrigido na rodada 17:** o evento é
+    desfeito e o cliente avisado antes do Stop and Error. Validado de verdade em produção no
+    cenário 23.
 
 ## Como importar e testar
 
@@ -246,6 +260,12 @@ Não escolhi nenhuma dessas sozinho porque são trade-offs de produto, não só 
    tocar nos workflows de produção.
 
 ## Checklist de cutover: reverter o trigger temporário
+
+> **Executado na rodada 17 (01/10/2026), itens 1 a 6.** O Agendamento voltou ao WhatsApp Trigger
+> original: mesmo `id`, `webhookId` `15600388-12a1-4b4f-97c3-9ac5c8e3f5b0` e credencial. A
+> referência em "Encaminhar Mensagem para Lembrete" foi restaurada. O workflow está desativado e
+> **sem versão publicada**: o item 7 (ativar) é a decisão de cutover, separada. Detalhes em
+> `docs/test-plan.md`, rodada 17. O texto abaixo fica como registro do procedimento.
 
 Desde a rodada 13 (`docs/test-plan.md`), o "Agendamento via WhatsApp (Supabase)" está com um
 trigger **temporário**, só para rodar o Grupo B:
