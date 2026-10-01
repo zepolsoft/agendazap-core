@@ -1819,8 +1819,8 @@ nodes temporários. O JSON do Lembrete não mudou.
 
 #### Achados e pendências (para registro)
 
-- **R17-1 (novo, não corrigido, fora do escopo da rodada). Erro de `UPDATE` na remarcação que não
-  é conflito tem o mesmo problema do R16-1.**
+- **R17-1 (novo). Erro de `UPDATE` na remarcação que não é conflito tem o mesmo problema do
+  R16-1.** **→ Corrigido na rodada 18.**
   - O evento já foi movido no Calendar.
   - "Horário Foi Ocupado? (Remarcar)" = não vai direto ao Stop and Error, sem restaurar o evento e
     sem avisar o cliente.
@@ -1859,3 +1859,85 @@ tiver crédito de novo, com o mesmo padrão da correção do R16-1.
 
 **Grupo B:** todos os cenários planejados rodaram (9, 17, 20, 21, 22, 23, 26, 29, 32, 33 e 34), com
 exceção do **25b**. O 34 tem o comportamento confirmado e a decisão adiada.
+
+### Rodada 18 — correção do R17-1, em produção (01/10/2026)
+
+**Contexto.** Depois do cutover, os dois workflows "(Supabase)" são os de **produção**, publicados e
+recebendo clientes reais.
+- A instância separa versão publicada e rascunho: as edições pelo MCP criam versões de rascunho, e
+  a `activeVersionId` só muda com `publish`. Conferido: durante toda a rodada a versão publicada
+  continuou `c001a1ad…`.
+- Toda a edição e os testes foram feitos no rascunho, com `test_workflow`, a faixa de telefones
+  fictícios `5511091000050`/`051` e datas distantes (08/10).
+
+**O que mudou** (rascunho `30c0f403…`, publicado como **`37d8022c-2cbc-4022-ac04-1531f5b1fa82`**,
+106 → 110 nodes):
+- "Horário Foi Ocupado? (Remarcar)" = não (erro que não é conflito) deixou de ir direto ao Stop and
+  Error. Agora segue por 4 nodes novos:
+  - **"Buscar Horário Original (Remarcar, Erro no Banco)"**: mesma query de "Buscar Horário
+    Original (Remarcar)", com `alwaysOutputData` e `onError: continueRegularOutput`. Assim, se o
+    próprio banco estiver fora do ar, o cliente ainda é avisado.
+  - **"Encontrou Horário Original? (Remarcar, Erro no Banco)"**: mesmo If do original.
+  - **"Restaurar Evento no Calendar (Remarcar, Erro no Banco)"**: mesma configuração de
+    "Restaurar Evento no Calendar (Remarcar)", com `onError: continueRegularOutput`. Só roda se
+    achou o horário.
+  - **"Avisar Cliente Sobre Erro na Remarcação (Erro no Banco)"**: mesmo texto neutro de
+    "Avisar Cliente Sobre Erro na Remarcação" ("Opa, {nome}, tive um probleminha técnico aqui pra
+    concluir a remarcação do seu {serviço} 😕 Nossa equipe já foi avisada…"). Depois vai ao
+    **"Escalar Erro ao Gravar Agendamento no Banco"**, o Stop and Error genérico, que aciona o
+    Error Workflow.
+- **Por que cópias e não religar os nodes existentes:** o "Restaurar Evento" existente leva a
+  "Preparar Aviso de Horário Ocupado (Remarcar)" ("o novo horário… acabou de ser ocupado por outra
+  pessoa"). O ramo "não achou horário" do original termina num Stop and Error que diz "bateu com
+  outro agendamento". Religar daria mensagens erradas para esse caso, ou exigiria alterar o
+  caminho de conflito em produção. Com as cópias, **o caminho de conflito ficou byte a byte
+  intacto**.
+- "Escalar Erro ao Gravar Agendamento no Banco": a mensagem passou a reconhecer o caminho de
+  remarcação.
+  - Diz "a remarcação" e lê o erro de "Horário Foi Ocupado? (Remarcar)".
+  - Acrescenta "O evento {id} foi restaurado no Calendar ao horário original; o cliente foi
+    avisado." ou, se não restaurou, "ATENÇÃO: o evento {id} NÃO foi restaurado… Confira e corrija
+    manualmente."
+  - No caminho de agendar, o texto é idêntico ao da rodada 17.
+
+**Validação:**
+- `validate_node_config` nos 5 nodes: `valid`.
+- `validate_workflow` do rascunho inteiro em SDK: `valid: true`, só os 2 avisos de sempre.
+- **Escopo contra a versão publicada** (`c001a1ad…`, lida da própria instância e idêntica ao
+  snapshot da rodada 17):
+  - +4 nodes, mudança só no `errorMessage` do Stop and Error genérico;
+  - ligações: −1 ("Horário Foi Ocupado? (Remarcar)"[não] → Stop and Error) e +6 (as do caminho
+    novo);
+  - nenhum outro node, ligação ou setting diferente.
+
+**Testes reais no rascunho** (Postgres e Calendar reais; WhatsApp e indicador fixados). Para o
+teste, o `UPDATE` de "Atualizar Linha na Planilha" foi apontado temporariamente para
+`agendamentos_inexistente_r18`, só no rascunho; a quebra foi desfeita com `restore_workflow_version`
+para `30c0f403…`.
+
+| Teste | Resultado | Evidência |
+|---|---|---|
+| Agendar 08/10 15h → "sim" (…050) | Linha e evento `tsqfubbg…` às 15:00 | exec. 1883, 1884; conferência 1885 |
+| Remarcar para 15h30 → "sim" | "Atualizar Evento" moveu para 15:30 → `UPDATE` falhou: `relation "agendamentos_inexistente_r18" does not exist` → "Horário Foi Ocupado? (Remarcar)" = não → **"Buscar Horário Original (Erro no Banco)"** leu 15:00–15:30 → **"Restaurar Evento (Erro no Banco)"** devolveu o evento para **15:00** → **aviso ao cliente** (fixado) → **Stop and Error**: "Falha ao gravar no banco a remarcação de Cinquenta Teste (5511091000050): relation … does not exist — Failed query: … O evento tsqfubbgn67i021bqnjdn4eofk foi restaurado no Calendar ao horário original; o cliente foi avisado." | exec. 1886, **1887** |
+| Conferência | Linha às 15:00 (inalterada); evento de volta às **15:00** | exec. **1888** |
+| Regressão do agendar (R16-1), saída da IA fixada com serviço fora do catálogo (…051) | Mensagem no **mesmo formato** da rodada 17 ("…o agendamento de Cinquentaeum Teste … null value in column "servico_id" … — Failing row contains …"); evento `jufophe8…` desfeito | exec. 1889; conferência 1890 |
+
+O Error Workflow não dispara em execução manual. A notificação à equipe por esse Stop and Error é o
+mesmo mecanismo validado em produção no cenário 23 (rodada 17).
+
+**Limpeza:** eventos, locks e mensagens de teste (exec. 1891) e linha do …050 (exec. 1892).
+Conferência final: sem dados de teste no banco, no Calendar e nas 4 Data Tables (exec. 1893). Só
+ficou o agendamento real de hoje às 16h, que não foi tocado. Auxiliar "TEMP - Ferramentas rodada 18"
+(`KWl2wSEmc0f2JqZq`) arquivado.
+
+**Cuidado com a produção antes de publicar.** Nenhuma mensagem real chegou entre 16:35Z e o fim dos
+testes. Para descartar que o `test_workflow` com o WhatsApp Trigger fixado tivesse mexido no
+cadastro do webhook na Meta, o José mandou uma mensagem real às 17:24Z. A produção respondeu
+normalmente (exec. 1894, `webhook`, `success`). Só então publiquei.
+
+**Publicação.** `publish_workflow` com `versionId` explícito `37d8022c…`. Depois: `active: true`,
+`activeVersionId = 37d8022c…` e conteúdo publicado idêntico ao rascunho validado (nodes, conexões e
+settings). JSON reexportado: 110 nodes, credenciais Postgres como placeholder, sem IDs de credencial
+reais.
+
+**R17-1: corrigido.**

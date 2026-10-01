@@ -28,6 +28,10 @@ do WhatsApp: a ativação registra o webhook na Meta.
 > conflito de horário, o workflow desfaz o evento recém-criado no Calendar, avisa o cliente com o
 > texto neutro de erro de banco e só então para com erro, acionando o Error Workflow.
 
+> **Rodada 18 (R17-1):** o mesmo vale para a remarcação. Se o `UPDATE` falha sem ser conflito, o
+> workflow relê o horário original, devolve o evento do Calendar para ele, avisa o cliente e só
+> então para com erro. A mensagem para a equipe diz se o Calendar foi restaurado.
+
 **Antes de importar no n8n:**
 1. Rode `db/001_initial_schema.sql` e `db/002_seed_exemplo.sql` (na raiz do repo) no seu projeto
    Supabase, se ainda não tiver rodado.

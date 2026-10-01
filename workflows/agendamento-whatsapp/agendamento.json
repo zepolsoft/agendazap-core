@@ -2273,7 +2273,7 @@
         640
       ],
       "parameters": {
-        "errorMessage": "={{ (() => { const e = $('Horário Foi Ocupado? (Agendar)').isExecuted ? $('Horário Foi Ocupado? (Agendar)').item.json : $json; return 'Falha ao gravar no banco o agendamento de ' + $('Normalizar Dados da Mensagem').item.json.nome + ' (' + $('Normalizar Dados da Mensagem').item.json.telefone + '): ' + (e.message ?? JSON.stringify(e)) + (e.error?.description ? ' — ' + e.error.description : ''); })() }}"
+        "errorMessage": "={{ (() => { const ag = $('Horário Foi Ocupado? (Agendar)').isExecuted; const rm = !ag && $('Horário Foi Ocupado? (Remarcar)').isExecuted; const e = ag ? $('Horário Foi Ocupado? (Agendar)').item.json : (rm ? $('Horário Foi Ocupado? (Remarcar)').item.json : $json); const base = 'Falha ao gravar no banco ' + (rm ? 'a remarcação' : 'o agendamento') + ' de ' + $('Normalizar Dados da Mensagem').item.json.nome + ' (' + $('Normalizar Dados da Mensagem').item.json.telefone + '): ' + (e.message ?? JSON.stringify(e)) + (e.error?.description ? ' — ' + e.error.description : ''); if (!rm) return base; const r = $('Restaurar Evento no Calendar (Remarcar, Erro no Banco)'); const restaurado = r.isExecuted && !r.item.json.error; return base + (restaurado ? ' O evento ' + $('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id + ' foi restaurado no Calendar ao horário original; o cliente foi avisado.' : ' ATENÇÃO: o evento ' + $('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id + ' NÃO foi restaurado no Calendar (horário original não lido do banco) e pode estar no novo horário pedido; o cliente foi avisado. Confira e corrija manualmente.'); })() }}"
       }
     },
     {
@@ -2646,6 +2646,108 @@
       },
       "onError": "continueRegularOutput",
       "webhookId": "a273d961-c576-4a37-8069-7d4edc5d1a62"
+    },
+    {
+      "id": "e0382330-f3f0-41ca-9710-c204eab3b2aa",
+      "name": "Buscar Horário Original (Remarcar, Erro no Banco)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        8992,
+        1400
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  to_char(data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_inicio,\n  to_char(data_hora_fim AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_fim\nFROM agendamentos\nWHERE google_event_id = $1\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [$('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id] }}"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Supabase - agendazap-core"
+        }
+      }
+    },
+    {
+      "id": "aee54070-5398-4723-b94a-a89ff3ae4fae",
+      "name": "Encontrou Horário Original? (Remarcar, Erro no Banco)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        9216,
+        1400
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "horario-original-encontrado-erro-banco",
+              "leftValue": "={{ $json.data_hora_inicio }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "034b3bc1-f8a2-4b12-be53-f1deee68cc63",
+      "name": "Restaurar Evento no Calendar (Remarcar, Erro no Banco)",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        9440,
+        1400
+      ],
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Buscar Profissional Ativo').item.json.google_calendar_id }}"
+        },
+        "eventId": "={{ $('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id }}",
+        "updateFields": {
+          "start": "={{ $json.data_hora_inicio }}",
+          "end": "={{ $json.data_hora_fim }}"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "c15ca9b9-a184-41ad-b24f-c319c4d0ad1d",
+      "name": "Avisar Cliente Sobre Erro na Remarcação (Erro no Banco)",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        9664,
+        1480
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+        "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir a remarcação do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "e773d38d-e958-4b0e-92e2-838106d35a36"
     }
   ],
   "connections": {
@@ -3563,7 +3665,7 @@
         ],
         [
           {
-            "node": "Escalar Erro ao Gravar Agendamento no Banco",
+            "node": "Buscar Horário Original (Remarcar, Erro no Banco)",
             "type": "main",
             "index": 0
           }
@@ -3728,6 +3830,57 @@
       ]
     },
     "Avisar Cliente Sobre Erro no Agendamento": {
+      "main": [
+        [
+          {
+            "node": "Escalar Erro ao Gravar Agendamento no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Horário Original (Remarcar, Erro no Banco)": {
+      "main": [
+        [
+          {
+            "node": "Encontrou Horário Original? (Remarcar, Erro no Banco)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encontrou Horário Original? (Remarcar, Erro no Banco)": {
+      "main": [
+        [
+          {
+            "node": "Restaurar Evento no Calendar (Remarcar, Erro no Banco)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Avisar Cliente Sobre Erro na Remarcação (Erro no Banco)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restaurar Evento no Calendar (Remarcar, Erro no Banco)": {
+      "main": [
+        [
+          {
+            "node": "Avisar Cliente Sobre Erro na Remarcação (Erro no Banco)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Cliente Sobre Erro na Remarcação (Erro no Banco)": {
       "main": [
         [
           {
