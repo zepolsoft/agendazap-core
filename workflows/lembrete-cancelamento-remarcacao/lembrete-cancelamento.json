@@ -2026,6 +2026,108 @@
         },
         "options": {}
       }
+    },
+    {
+      "id": "8fc1c3e7-ef3c-49fe-8a87-2869c7a8ee53",
+      "name": "Cancelamento Gravado no Banco?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3168,
+        176
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cancelamento-gravado",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "262575a2-bc7a-4539-be48-b2f34621a94e",
+      "name": "Preparar Aviso de Erro no Cancelamento",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3392,
+        -208
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "mensagem_cliente",
+              "name": "mensagem_cliente",
+              "type": "string",
+              "value": "={{ (() => { const a = $('Processar Cada Agendamento').item.json; const nome = a.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir o cancelamento do seu ${a.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar tudo certinho.`; })() }}"
+            },
+            {
+              "id": "mensagem_equipe",
+              "name": "mensagem_equipe",
+              "type": "string",
+              "value": "={{ (() => { const a = $('Processar Cada Agendamento').item.json; const zona = 'America/Sao_Paulo'; const fmt = iso => { const dt = DateTime.fromISO(String(iso ?? ''), { zone: zona }); return dt.isValid ? dt.setLocale('pt-BR').toFormat(\"dd/MM 'às' HH:mm\") : 'não informado'; }; const erro = ($json.message || $json.error) ? ($json.message ?? JSON.stringify($json)) + ($json.error?.description ? ' — ' + $json.error.description : '') : `nenhuma linha em agendamentos com o event_id ${a.event_id} (a linha pode ter sido apagada)`; return `⚠️ Lembrete: erro no banco ao cancelar o agendamento de ${a.nome} (${a.telefone}): ${a.servico} em ${fmt(a.data)} (event_id ${a.event_id}). O evento no Calendar pode já ter sido apagado (\"Cancelar Evento no Calendar\" roda antes do UPDATE), mas o cancelamento não foi gravado no banco — confira os dois e resolva manualmente. O cliente foi avisado de que a equipe vai entrar em contato. Erro: ${erro}`; })() }}"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "f5e03935-8f7e-4665-b9b1-d9109d669036",
+      "name": "Avisar Cliente Sobre Erro no Cancelamento",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3616,
+        -208
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "textBody": "={{ $('Preparar Aviso de Erro no Cancelamento').item.json.mensagem_cliente }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "78aec589-7413-4a02-b0dc-4f0a03bac247"
+    },
+    {
+      "id": "66ba9f6d-134d-4894-8724-e055a5500f11",
+      "name": "Notificar Equipe Sobre Erro no Cancelamento",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3840,
+        -208
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "5511975049937",
+        "textBody": "={{ $('Preparar Aviso de Erro no Cancelamento').item.json.mensagem_equipe }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "56a646f1-b074-4c9c-82c7-1948640e826b"
     }
   ],
   "connections": {
@@ -2503,17 +2605,6 @@
         ]
       ]
     },
-    "Atualizar Status na Planilha (Cancelar)": {
-      "main": [
-        [
-          {
-            "node": "Enviar Confirmação de Cancelamento no WhatsApp",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Enviar Confirmação de Cancelamento no WhatsApp": {
       "main": [
         [
@@ -2952,6 +3043,68 @@
         [
           {
             "node": "Preparar Aviso de Erro no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar Status na Planilha (Cancelar)": {
+      "main": [
+        [
+          {
+            "node": "Cancelamento Gravado no Banco?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancelamento Gravado no Banco?": {
+      "main": [
+        [
+          {
+            "node": "Enviar Confirmação de Cancelamento no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Aviso de Erro no Cancelamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Aviso de Erro no Cancelamento": {
+      "main": [
+        [
+          {
+            "node": "Avisar Cliente Sobre Erro no Cancelamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Cliente Sobre Erro no Cancelamento": {
+      "main": [
+        [
+          {
+            "node": "Notificar Equipe Sobre Erro no Cancelamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Equipe Sobre Erro no Cancelamento": {
+      "main": [
+        [
+          {
+            "node": "Processar Cada Agendamento",
             "type": "main",
             "index": 0
           }

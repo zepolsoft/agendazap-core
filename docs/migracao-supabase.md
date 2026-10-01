@@ -96,7 +96,7 @@ criados. No modelo relacional, `preco` já vem de `servicos.preco` (via `servico
 via trigger). Por isso os `UPDATE`s gerados não escrevem mais essas duas colunas — elas nunca
 precisaram ser reescritas.
 
-### 5. Fuso do início e escrita que não acha a linha (rodada 11)
+### 5. Fuso do início e escrita que não acha a linha (rodadas 11 e 12)
 
 Duas diferenças em relação ao Sheets, que guardava texto e nunca "falhava":
 
@@ -112,17 +112,26 @@ Duas diferenças em relação ao Sheets, que guardava texto e nunca "falhava":
     gravado.
 
   Por isso:
-  - "Reverificar Agendamento Antes do Timeout" e "Buscar Horário Original (Remarcação)" usam
-    `alwaysOutputData: true`. "Buscar Horário Original" ganhou o If "Encontrou Horário
-    Original?".
-  - "Atualizar Linha na Planilha (Cancelar)" é seguido do If "Cancelamento Gravado no Banco?",
-    que testa `id`.
+  - Os `SELECT`s "Reverificar Agendamento Antes do Timeout" (Lembrete) e "Buscar Horário
+    Original" (os dois workflows) usam `alwaysOutputData: true`. Cada "Buscar Horário Original"
+    é seguido de um If "Encontrou Horário Original?": no Agendamento, "Encontrou Horário
+    Original? (Remarcar)".
+  - O `UPDATE` de cancelamento ("Atualizar Linha na Planilha (Cancelar)" no Agendamento,
+    "Atualizar Status na Planilha (Cancelar)" no Lembrete) é seguido do If "Cancelamento Gravado
+    no Banco?", que testa `id`.
   - "Atualizar Data na Planilha" virou uma CTE que sempre devolve 1 linha (`id`,
     `linhas_atualizadas`), checada por "Remarcação Gravada no Banco?". Esse node não usa
     `alwaysOutputData`, porque tem saída de erro: com as duas opções ligadas, um erro dispara
     as duas saídas, a de sucesso com `{}`.
 
-  Detalhes e testes em `docs/test-plan.md`, rodada 11.
+  Quando a linha não é encontrada, o tratamento depende do workflow:
+  - **Agendamento** (fora de loop): aviso neutro ao cliente ("probleminha técnico", sem afirmar
+    nem negar o resultado), depois Stop and Error, que dispara o Error Workflow para a equipe.
+  - **Lembrete** (em loop): aviso neutro ao cliente, notificação à equipe pelo WhatsApp (mesmo
+    número das outras notificações de erro) e volta ao "Processar Cada Agendamento". Não usa
+    Stop and Error, que cortaria os lembretes dos outros clientes do lote.
+
+  Detalhes e testes em `docs/test-plan.md`, rodadas 11 e 12.
 
 ## Decisão em aberto: nome do serviço vs. `servico_id`
 

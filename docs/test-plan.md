@@ -1099,8 +1099,113 @@ continuam **desativados**, sem versão publicada (`active: false`, `activeVersio
 **Observação (não alterada).** No Lembrete, um cancelamento com 0 linhas ainda manda ao cliente a
 confirmação de cancelamento. No Agendamento, o mesmo caso agora vira aviso de erro + equipe. O
 pedido desta rodada para o Lembrete era só garantir a volta ao loop. Se quiser o mesmo tratamento
-nos dois, é um If igual ao do Agendamento depois de "Atualizar Status (Cancelar)".
+nos dois, é um If igual ao do Agendamento depois de "Atualizar Status (Cancelar)". **→ Fechada na rodada 12.**
 
 **Fora do escopo, registrado.** "Buscar Horário Original (Remarcar)", do Agendamento, é um
 `SELECT` com a mesma exposição a 0 linhas. Não estava na lista do achado 5 e não foi alterado.
-Fora de loop, o efeito seria a execução parar sem avisar o cliente depois de um conflito.
+Fora de loop, o efeito seria a execução parar sem avisar o cliente depois de um conflito. **→ Fechada na rodada 12.**
+
+### Rodada 12 — pendências da rodada 11 (01/10/2026)
+
+**O que mudou.** As duas pendências deixadas no fim da rodada 11, decididas pelo José. Prompts,
+AI Agents, nodes de Code e todos os outros caminhos ficaram iguais.
+
+- **Lembrete** (`0mPYXZesloutZbek`, versão `9b9f1dd9-e973-4f67-92ce-24ffdd6f7cfa`, 77 → 81
+  nodes): o cancelamento com 0 linhas passa a ter o mesmo tratamento do Agendamento, mas sem
+  Stop and Error. É o padrão da rodada 9.
+  - "Atualizar Status na Planilha (Cancelar)" → If `Cancelamento Gravado no Banco?` (`$json.id`
+    existe, o mesmo molde do If do Agendamento).
+    - Sim: "Enviar Confirmação de Cancelamento no WhatsApp" → loop, sem mudança.
+    - Não: `Preparar Aviso de Erro no Cancelamento` → `Avisar Cliente Sobre Erro no
+      Cancelamento` → `Notificar Equipe Sobre Erro no Cancelamento` (5511975049937, o número das
+      outras notificações de erro) → volta para "Processar Cada Agendamento".
+  - Os dois WhatsApp novos têm `onError: continueRegularOutput`, como os outros WhatsApp desse
+    workflow.
+  - Mensagem ao cliente, neutra, sem afirmar nem negar o cancelamento: "Opa, {nome}, tive um
+    probleminha técnico aqui pra concluir o cancelamento do seu {serviço} 😕 Nossa equipe já foi
+    avisada e vai falar com você em instantes pra deixar tudo certinho."
+  - Mensagem à equipe:
+    - cliente, telefone, serviço, horário e `event_id`;
+    - o aviso de que o evento no Calendar pode já ter sido apagado ("Cancelar Evento no
+      Calendar" roda antes do `UPDATE`), mas o cancelamento não foi gravado no banco;
+    - o erro: `message` + `error.description` quando há; senão, "nenhuma linha em agendamentos
+      com o event_id … (a linha pode ter sido apagada)".
+  - Efeito colateral, desejado: um **erro** de banco nesse `UPDATE`, que já tinha
+    `continueRegularOutput`, também cai no "não". Antes, mandava "cancelado" ao cliente.
+- **Agendamento** (`ny0fqlw8ojzmId7C`, versão final `f130a17d-5aef-4ff2-bf6d-02cc3921f368`,
+  100 → 103 nodes): "Buscar Horário Original (Remarcar)" recebeu a mesma correção que
+  "Buscar Horário Original (Remarcação)" teve no Lembrete na rodada 11.
+  - `alwaysOutputData: true` e o If `Encontrou Horário Original? (Remarcar)` (`data_hora_inicio`
+    existe).
+    - Sim: "Restaurar Evento no Calendar (Remarcar)" → o resto do caminho da rodada 8, sem
+      mudança.
+    - Não: `Avisar Cliente Sobre Erro na Remarcação` (`continueRegularOutput`) → `Escalar
+      Remarcação Sem Horário Original no Banco` (Stop and Error → Error Workflow). É o mesmo
+      padrão do "Avisar Cliente Sobre Erro no Cancelamento" da rodada 11.
+  - Mensagem ao cliente: a mesma, neutra, do Lembrete para erro na remarcação ("…tive um
+    probleminha técnico aqui pra concluir a remarcação do seu {serviço} 😕…").
+  - A mensagem do Stop and Error diz que:
+    - o novo horário bateu com outro agendamento;
+    - o evento já tinha sido movido no Calendar e não pôde ser restaurado;
+    - o horário original lido antes era tal.
+
+**Como foi validado.**
+- `validate_node_config` dos 7 nodes novos, com os parâmetros exatos aplicados: todos
+  `valid: true`.
+- Validação do `update_workflow` (workflow inteiro):
+  - Lembrete sem aviso;
+  - Agendamento só com os 2 `SUBNODE_NOT_CONNECTED` pré-existentes, os falsos positivos de
+    memória da rodada 8.
+- Conferência de escopo (instância × JSON do repo da rodada 11):
+  - Lembrete: 4 nodes novos e 1 conexão trocada ("Atualizar Status (Cancelar)" → If). Nenhum
+    node existente alterado.
+  - Agendamento: 3 nodes novos, `alwaysOutputData` em "Buscar Horário Original (Remarcar)" e 1
+    conexão trocada. Mais 4 nodes deslocados 224 px para a direita ("Restaurar Evento",
+    "Preparar Aviso", "Avisar Horário Recém-Ocupado" e "Corrigir Memória", todos `(Remarcar)`).
+  - Settings iguais nos dois.
+
+`test_workflow` com **Postgres e Google Calendar reais** (PROF-01). Ficaram fixados: WhatsApp,
+Data Tables, HTTP, a saída da IA e os Waits. Conferência por "TEMP - Conferência rodada 12"
+(`OvSEoj7yPfstpOuN`). Telefones fictícios: 5511900001211 (Jade), 1212 (Mila, só no pin), 1213
+(Kim), 1214 (Leo). Linha de base (exec. 1696): 0 agendamentos, nenhum evento de 01 a 03/10.
+
+| Passo | O que aconteceu | Evidência |
+|---|---|---|
+| Jade 02/10 15h, Kim 02/10 10h, Leo 02/10 11h (Agendamento) | 3 eventos reais + 3 `INSERT`s | exec. 1697, 1698, 1699; conferência 1700 |
+| **Correção 1** — Lembrete, lote [Jade (real), Mila (`evt-r12-inexistente`)], os dois cancelando, nada do Calendar fixado | **Jade:** evento apagado (`success: true`) → `UPDATE` devolve `id` → If = **sim** → "Enviar Confirmação de Cancelamento" (o caminho normal, sem mudança). **Mila:** delete no Calendar falha ("could not be found", segue pela saída normal) → `UPDATE` com 0 linhas → `{success: true}` → If = **não** → aviso ao cliente "Opa, Mila Teste, tive um probleminha técnico aqui pra concluir o cancelamento do seu Corte Masculino 😕…" → equipe "⚠️ Lembrete: erro no banco ao cancelar o agendamento de Mila Teste (5511900001212): Corte Masculino em 01/10 às 18:30 (event_id evt-r12-inexistente)… Erro: nenhuma linha em agendamentos com o event_id evt-r12-inexistente (a linha pode ter sido apagada)" → loop `done`, com os 2 itens processados | exec. **1701** |
+| **Correção 2** — Agendamento, Kim remarca para 11h, o horário do Leo (só "Listar Eventos no Novo Horário (Remarcar)" fixado como livre, para simular a corrida) | "Atualizar Evento" moveu o evento real do Kim para 11h → `UPDATE` **barrado** pela constraint (conflito real com o Leo) → `Horário Foi Ocupado? (Remarcar)` = sim → *node temporário apaga a linha do Kim (ver abaixo)* → "Buscar Horário Original (Remarcar)" com 0 linhas → `{}` (AOD) → `Encontrou Horário Original? (Remarcar)` = **não** → "Avisar Cliente Sobre Erro na Remarcação" → Stop and Error: "Remarcação de Kim Teste (5511900001213) não concluída: o novo horário pedido (2026-10-02T11:00:00-03:00) bateu com outro agendamento no banco, e o evento 7luvuaqd3nibraei4a9g3lig0k já tinha sido movido para esse horário no Calendar. Não foi possível restaurá-lo… Horário original lido antes: Corte Masculino em 2026-10-02T10:00:00-03:00…". "Restaurar Evento" não executou. Execução `error`, como esperado; em execução manual o Error Workflow não dispara. Sem a correção, a execução pararia em "Buscar Horário Original" sem avisar ninguém | exec. **1702** |
+| Conferência | Banco: Jade `cancelado`, Leo 11h, Kim sem linha. Calendar: Leo 11h e o evento do Kim **órfão** às 11h, que é exatamente o estado que a mensagem do Stop and Error manda a equipe conferir | exec. 1703 |
+
+**Simulação do cenário 22 na correção 2.** O caminho "não" exige que a linha exista no `UPDATE`
+(senão não há conflito) e suma antes do `SELECT`, e isso não dá para produzir só com pin.
+Seguindo o precedente do G1 (rodada 5):
+1. Inseri temporariamente no Agendamento o node "TEMP - Apagar Linha (Simulação Cenário 22)",
+   entre o "sim" de "Horário Foi Ocupado? (Remarcar)" e "Buscar Horário Original (Remarcar)":
+   `DELETE … WHERE google_event_id = $1 AND cliente_telefone LIKE '55119000012%'`, só os
+   telefones de teste.
+2. Rodei a exec. 1702.
+3. Removi o node e religuei a conexão original.
+
+Conferência depois da reversão: nodes (inclusive ids e credenciais), conexões e settings
+**idênticos** ao snapshot tirado logo depois da correção. Só o `versionId` mudou. A versão
+exportada para o repo é essa.
+
+**Limpeza.** "TEMP - Limpeza rodada 12" (`2FdGhXbbSmF5f0w2`, exec. 1704) apagou os eventos de
+01 a 03/10 cuja descrição tem "Telefone: 55119000012" (Leo e o órfão do Kim) e as linhas desses
+telefones (Leo e Jade). Conferência (exec. 1705): 0 agendamentos e nenhum evento de 01 a 03/10,
+igual à linha de base. Os 2 workflows temporários foram arquivados. Os dois workflows continuam
+**desativados**, sem versão publicada (`active: false`, `activeVersionId: null`).
+
+**O que não foi testado**
+- O texto real dos 3 WhatsApp novos para o cliente ficou fixado. As mensagens do Lembrete foram
+  avaliadas no Set "Preparar Aviso de Erro no Cancelamento" (exec. 1701). A do Agendamento usa
+  os mesmos campos (`nome`, `servico`) do Stop and Error, que foi avaliado (exec. 1702).
+- O disparo do Error Workflow pelo Stop and Error novo, que só acontece em produção.
+- Um **erro** de banco (não 0 linhas) em "Atualizar Status (Cancelar)" do Lembrete. A expression
+  tem o ramo `message`/`error.description`, o mesmo da rodada 9, mas esse ramo não foi executado.
+
+**Observação (não alterada).** Nos dois caminhos "não" do Agendamento (cancelamento, rodada 11, e
+remarcação, esta rodada), a memória da IA não é corrigida, ao contrário do caminho de conflito da
+rodada 8. Se o cliente mandar outra mensagem antes de a equipe responder, a IA pode achar que o
+cancelamento ou a remarcação deu certo. Para corrigir, bastaria um *Chat Memory Manager* com o
+texto enviado, como em "Corrigir Memória da Conversa (Remarcar)".
