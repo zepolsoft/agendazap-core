@@ -96,6 +96,34 @@ criados. No modelo relacional, `preco` já vem de `servicos.preco` (via `servico
 via trigger). Por isso os `UPDATE`s gerados não escrevem mais essas duas colunas — elas nunca
 precisaram ser reescritas.
 
+### 5. Fuso do início e escrita que não acha a linha (rodada 11)
+
+Duas diferenças em relação ao Sheets, que guardava texto e nunca "falhava":
+
+- **Fuso do horário de início.** A sessão do Postgres está em UTC: um início sem offset vindo da
+  IA seria gravado 3 horas errado. Nos três nodes que gravam o início ("Salvar Cliente na
+  Planilha", "Atualizar Linha na Planilha" e, no Lembrete, "Atualizar Data na Planilha"), o
+  parâmetro passa por `DateTime.fromISO(<início da IA>, { zone: 'America/Sao_Paulo' }).toISO()`.
+  Com offset, o instante é o mesmo. Sem offset, assume São Paulo. O fim já vinha do Code com
+  `-03:00`.
+- **Zero linhas.** O node Postgres se comporta de forma diferente para leitura e escrita:
+  - `SELECT` com 0 linhas não emite item. O fluxo para ali.
+  - `UPDATE … RETURNING` com 0 linhas emite `{ "success": true }`. O fluxo segue como se tivesse
+    gravado.
+
+  Por isso:
+  - "Reverificar Agendamento Antes do Timeout" e "Buscar Horário Original (Remarcação)" usam
+    `alwaysOutputData: true`. "Buscar Horário Original" ganhou o If "Encontrou Horário
+    Original?".
+  - "Atualizar Linha na Planilha (Cancelar)" é seguido do If "Cancelamento Gravado no Banco?",
+    que testa `id`.
+  - "Atualizar Data na Planilha" virou uma CTE que sempre devolve 1 linha (`id`,
+    `linhas_atualizadas`), checada por "Remarcação Gravada no Banco?". Esse node não usa
+    `alwaysOutputData`, porque tem saída de erro: com as duas opções ligadas, um erro dispara
+    as duas saídas, a de sucesso com `{}`.
+
+  Detalhes e testes em `docs/test-plan.md`, rodada 11.
+
 ## Decisão em aberto: nome do serviço vs. `servico_id`
 
 **Este é o ponto que precisa de uma decisão sua antes de considerar a migração pronta para

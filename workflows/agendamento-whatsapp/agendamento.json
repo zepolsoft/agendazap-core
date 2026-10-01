@@ -1499,7 +1499,7 @@
         "operation": "executeQuery",
         "query": "INSERT INTO agendamentos (\n  profissional_id, servico_id, cliente_nome, cliente_telefone,\n  beneficiario, data_hora_inicio, data_hora_fim, status,\n  google_event_id, observacoes\n)\nVALUES (\n  $1,\n  (SELECT id FROM servicos WHERE ativo = true AND lower(nome) = lower($2) LIMIT 1),\n  $3, $4, $5, $6, $7, 'agendado', $8, $9\n)\nRETURNING id, google_event_id AS event_id;",
         "options": {
-          "queryReplacement": "={{ [\n  $('Buscar Profissional Ativo').item.json.profissional_id,\n  $('Interpretar Intenção do Cliente').item.json.output.servico,\n  $('Interpretar Intenção do Cliente').item.json.output.nome_cliente,\n  $('Normalizar Dados da Mensagem').item.json.telefone,\n  $('Interpretar Intenção do Cliente').item.json.output.beneficiario || 'Eu mesmo',\n  $('Interpretar Intenção do Cliente').item.json.output.data_hora_inicio,\n  $('Validar Horário de Funcionamento').item.json.output.data_hora_fim,\n  $('Criar Evento no Calendar').item.json.id,\n  'Serviço informado pelo cliente/IA: ' + $('Interpretar Intenção do Cliente').item.json.output.servico\n] }}"
+          "queryReplacement": "={{ [\n  $('Buscar Profissional Ativo').item.json.profissional_id,\n  $('Interpretar Intenção do Cliente').item.json.output.servico,\n  $('Interpretar Intenção do Cliente').item.json.output.nome_cliente,\n  $('Normalizar Dados da Mensagem').item.json.telefone,\n  $('Interpretar Intenção do Cliente').item.json.output.beneficiario || 'Eu mesmo',\n  DateTime.fromISO($('Interpretar Intenção do Cliente').item.json.output.data_hora_inicio, { zone: 'America/Sao_Paulo' }).toISO(),\n  $('Validar Horário de Funcionamento').item.json.output.data_hora_fim,\n  $('Criar Evento no Calendar').item.json.id,\n  'Serviço informado pelo cliente/IA: ' + $('Interpretar Intenção do Cliente').item.json.output.servico\n] }}"
         }
       },
       "id": "a6e13314-5b68-4ead-ba42-3108cf1eda46",
@@ -1838,7 +1838,7 @@
         "operation": "executeQuery",
         "query": "UPDATE agendamentos\nSET\n  servico_id = (SELECT id FROM servicos WHERE ativo = true AND lower(nome) = lower($1) LIMIT 1),\n  data_hora_inicio = $2,\n  data_hora_fim = $3,\n  status = 'remarcado'\nWHERE google_event_id = $4\nRETURNING id, google_event_id AS event_id;",
         "options": {
-          "queryReplacement": "={{ [\n  (($('Interpretar Intenção do Cliente').item.json.output.servico === 'não especificado' || $('Interpretar Intenção do Cliente').item.json.output.servico === '') ? $('Identificar Agendamento Escolhido (Remarcar)').item.json.servico : $('Interpretar Intenção do Cliente').item.json.output.servico),\n  $('Interpretar Intenção do Cliente').item.json.output.data_hora_inicio,\n  $('Validar Horário de Funcionamento (Remarcar)').item.json.output.data_hora_fim,\n  $('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id\n] }}"
+          "queryReplacement": "={{ [\n  (($('Interpretar Intenção do Cliente').item.json.output.servico === 'não especificado' || $('Interpretar Intenção do Cliente').item.json.output.servico === '') ? $('Identificar Agendamento Escolhido (Remarcar)').item.json.servico : $('Interpretar Intenção do Cliente').item.json.output.servico),\n  DateTime.fromISO($('Interpretar Intenção do Cliente').item.json.output.data_hora_inicio, { zone: 'America/Sao_Paulo' }).toISO(),\n  $('Validar Horário de Funcionamento (Remarcar)').item.json.output.data_hora_fim,\n  $('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id\n] }}"
         }
       },
       "id": "4f28ec81-9951-454c-993c-8defd683b140",
@@ -2053,7 +2053,8 @@
           "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
           "name": "Supabase - agendazap-core"
         }
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -2068,7 +2069,7 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        6976,
+        7200,
         1376
       ],
       "webhookId": "04269168-f0bf-4c6a-8e38-588a94bc1e8d"
@@ -2416,6 +2417,72 @@
             }
           ]
         }
+      }
+    },
+    {
+      "id": "bfae85ab-0537-4713-a999-e9c75047db46",
+      "name": "Cancelamento Gravado no Banco?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        6976,
+        1376
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cancelamento-gravado",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a8e7a40b-cc80-4adc-9ebf-bdc75ebefa46",
+      "name": "Avisar Cliente Sobre Erro no Cancelamento",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        7200,
+        1568
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+        "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir o cancelamento do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar tudo certinho.`; })() }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "e31db393-05f8-428b-916d-1f15cb407c1d"
+    },
+    {
+      "id": "113d4bac-a0c1-4081-bbc2-ecfcf21f8d0c",
+      "name": "Escalar Cancelamento Não Gravado no Banco",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        7424,
+        1568
+      ],
+      "parameters": {
+        "errorMessage": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const c = $('Normalizar Dados da Mensagem').item.json; return `Cancelamento não gravado no banco para ${c.nome} (${c.telefone}): o evento ${r.event_id} (${r.servico} em ${r.data}) já foi apagado do Calendar, mas o UPDATE não encontrou nenhuma linha em agendamentos com esse google_event_id. O cliente foi avisado de que a equipe vai entrar em contato — confira o banco e o Calendar e responda manualmente.`; })() }}"
       }
     }
   ],
@@ -3294,17 +3361,6 @@
         ]
       ]
     },
-    "Atualizar Linha na Planilha (Cancelar)": {
-      "main": [
-        [
-          {
-            "node": "Confirmar Cancelamento no WhatsApp",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Horário Foi Ocupado? (Agendar)": {
       "main": [
         [
@@ -3412,6 +3468,46 @@
         [
           {
             "node": "Corrigir Memória da Conversa (Remarcar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar Linha na Planilha (Cancelar)": {
+      "main": [
+        [
+          {
+            "node": "Cancelamento Gravado no Banco?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancelamento Gravado no Banco?": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Cancelamento no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Avisar Cliente Sobre Erro no Cancelamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Cliente Sobre Erro no Cancelamento": {
+      "main": [
+        [
+          {
+            "node": "Escalar Cancelamento Não Gravado no Banco",
             "type": "main",
             "index": 0
           }

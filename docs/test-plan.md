@@ -923,6 +923,7 @@ leitura, ambos arquivados ao final:
    - Correção sugerida, só na expression dos 3 nodes Postgres: `DateTime.fromISO(x, { zone:
      'America/Sao_Paulo' }).toISO()` no lugar do valor cru. Mantém o instante quando há offset e
      assume São Paulo quando não há.
+   **→ Corrigido na rodada 11.**
 2. **Os agendamentos lidos não trazem o calendário do profissional.** As leituras de
    agendamentos do cliente e a do Lembrete não trazem `profissional_id` nem o
    `google_calendar_id` do agendamento. Cancelar, remarcar, restaurar e desfazer usam o
@@ -951,6 +952,9 @@ leitura, ambos arquivados ao final:
    Pelo comportamento do loop do n8n, os lembretes seguintes do lote provavelmente não seriam
    processados. O comportamento de 0 linhas foi confirmado; o efeito no loop, não. Probabilidade
    baixa, impacto alto no Lembrete.
+   **→ Corrigido na rodada 11**, que também mostrou que a premissa vale só para `SELECT`: com 0
+   linhas, um `UPDATE … RETURNING` emite `{ "success": true }` e o fluxo segue como se tivesse
+   gravado.
 6. **"Buscar Agendamentos de Hoje" sem `WHERE`.** Lê a tabela inteira (todo o histórico, todos
    os profissionais) e filtra no n8n. O `EXPLAIN` mostra `Seq Scan`. Funciona, mas cresce com o
    histórico. Sugestão: filtrar no SQL pelo dia de hoje em São Paulo e por
@@ -967,3 +971,136 @@ leitura, ambos arquivados ao final:
    ele voltasse.
 10. **Doc desatualizado:** o SQL de "Buscar Profissional Ativo" no `migracao-supabase.md` ainda
     mostra `ORDER BY criado_em`, sem `, id` (já apontado na auditoria anterior).
+
+### Rodada 11 — achados 1 e 5 da rodada 10 (01/10/2026)
+
+**O que mudou.** Só os achados 1 (fuso do início) e 5 (zero linhas). Os outros 8 achados da
+rodada 10 continuam como estão. Prompts, AI Agents e nodes de Code não foram tocados.
+
+- **Agendamento** (`ny0fqlw8ojzmId7C`, versão `2b51bab8-9531-4875-a2b6-d8f1594d2cd2`, 97 → 100
+  nodes):
+  - Achado 1: em "Salvar Cliente na Planilha" (`$6`) e "Atualizar Linha na Planilha" (`$2`), o
+    início passou a ser `DateTime.fromISO($('Interpretar Intenção do Cliente').item.json.output.data_hora_inicio,
+    { zone: 'America/Sao_Paulo' }).toISO()`.
+  - Achado 5: "Atualizar Linha na Planilha (Cancelar)" ganhou `alwaysOutputData: true` e o If
+    `Cancelamento Gravado no Banco?` (`$json.id` existe).
+    - Sim: `Confirmar Cancelamento no WhatsApp`, como antes.
+    - Não: `Avisar Cliente Sobre Erro no Cancelamento` → `Escalar Cancelamento Não Gravado no
+      Banco`. É o mesmo padrão do fallback de IA fora de loop: aviso ao cliente e depois Stop
+      and Error, que dispara o Error Workflow.
+    - O WhatsApp novo tem `onError: continueRegularOutput`.
+    - Mensagem ao cliente: "Opa, {nome}, tive um probleminha técnico aqui pra concluir o
+      cancelamento do seu {serviço} 😕 Nossa equipe já foi avisada e vai falar com você em
+      instantes pra deixar tudo certinho."
+    - A mensagem do Stop and Error diz que o evento já foi apagado do Calendar e que o `UPDATE`
+      não achou a linha.
+- **Lembrete** (`0mPYXZesloutZbek`, versão `da818896-e016-4474-b422-83a2c6fe8a63`, 75 → 77
+  nodes):
+  - Achado 1: em "Atualizar Data na Planilha" (`$1`), `DateTime.fromISO(... novo_horario_inicio,
+    { zone: 'America/Sao_Paulo' }).toISO()`.
+  - Achado 5:
+    - "Reverificar Agendamento Antes do Timeout": `alwaysOutputData: true`. Com `{}`, o If
+      existente "Agendamento Ainda É o Mesmo?" dá falso e volta ao loop. Não precisou de node
+      novo.
+    - "Atualizar Status na Planilha (Cancelar)": `alwaysOutputData: true`. Na prática não muda
+      nada, porque o `UPDATE` já emite `{success: true}` com 0 linhas (ver abaixo). Segue para a
+      confirmação de cancelamento e volta ao loop, como antes.
+    - "Atualizar Data na Planilha": **sem** `alwaysOutputData` (ver abaixo). A query virou
+      `WITH atualizado AS (UPDATE … RETURNING id) SELECT (SELECT id FROM atualizado LIMIT 1) AS id,
+      (SELECT count(*) FROM atualizado)::int AS linhas_atualizadas`. Ela sempre devolve 1 linha
+      e é seguida do If `Remarcação Gravada no Banco?` (`linhas_atualizadas > 0`). Sim: "Enviar
+      Confirmação Final da Remarcação". Não: o fallback da rodada 9 ("Preparar Aviso de Erro no
+      Banco" → cliente → equipe → loop). A saída de erro (conflito) ficou igual.
+    - "Buscar Horário Original (Remarcação)": `alwaysOutputData: true` e o If `Encontrou Horário
+      Original?` (`data_hora_inicio` existe). Sim: "Restaurar Evento no Calendar". Não: o mesmo
+      fallback da rodada 9.
+    - "Preparar Aviso de Erro no Banco": só o trecho `erro` da mensagem da equipe mudou. Quando
+      o item não tem `message`/`error`, ou seja, quando veio de um dos dois Ifs novos, o texto é
+      "nenhuma linha em agendamentos com o event_id … (a linha pode ter sido apagada)". A
+      mensagem ao cliente não mudou.
+
+**Por que "Atualizar Data" não usa `alwaysOutputData`.** Teste no workflow temporário (exec.
+1678): com `alwaysOutputData: true` + `onError: continueErrorOutput`, um erro emite o item de
+erro na saída 1 **e** `{}` na saída 0. Em "Atualizar Data", um conflito mandaria "Remarcado!" ao
+mesmo tempo que o aviso de horário ocupado.
+
+**O comportamento real de 0 linhas** (exec. 1686, sem `alwaysOutputData`):
+
+| Query com 0 linhas | O que o node emite |
+|---|---|
+| `SELECT … WHERE google_event_id = $1` | nada (o fluxo para) |
+| `SELECT 1 WHERE false` | nada (é o caso da rodada 10) |
+| `UPDATE … WHERE google_event_id = $1 RETURNING id` | `{ "success": true }` (o fluxo segue como se tivesse gravado) |
+| A CTE nova de "Atualizar Data" | `{ "id": null, "linhas_atualizadas": 0 }` |
+
+A premissa do achado 5 vale para os dois `SELECT`s ("Reverificar" e "Buscar Horário Original"):
+sem a correção, a iteração não voltava ao loop. Para os três `UPDATE`s o problema era outro. Nada
+travava, mas o cliente recebia "Cancelado!" ou "Remarcado!" sem nada ter sido gravado (no
+Lembrete, com o Calendar já movido). Os Ifs novos testam `id`/`linhas_atualizadas`, não só se
+chegou item, então cobrem os dois casos. O mesmo teste confirmou que
+`DateTime.fromISO('2026-10-01T15:00:00', { zone: 'America/Sao_Paulo' }).toISO()` vira 15:00 em
+São Paulo no banco. Com offset, também 15:00. O valor cru sem offset vira 12:00 (exec. 1678).
+
+**Como foi validado.**
+- `validate_node_config`:
+  - os 3 nodes Postgres com a expression nova;
+  - os 3 Ifs, o WhatsApp e o Stop and Error novos;
+  - "Preparar Aviso de Erro no Banco" com os parâmetros exatos do JSON exportado.
+  - Todos `valid: true`.
+- Validação estrutural do `update_workflow`, que valida o workflow inteiro: nenhum aviso novo.
+  No Agendamento, só os 2 `SUBNODE_NOT_CONNECTED` pré-existentes, os falsos positivos da
+  rodada 8.
+- Conferência de escopo (instância × JSON do repo de antes): só os nodes, settings e conexões
+  descritos acima mudaram, mais o reposicionamento de 5 nodes para abrir espaço aos Ifs. Os
+  settings dos workflows são iguais.
+
+`test_workflow` com **Postgres e Google Calendar reais** (calendário PROF-01). Ficaram fixados:
+WhatsApp, Data Tables, HTTP e a **saída da IA**. A IA foi fixada para forçar o início sem offset.
+Conferência por "TEMP - Conferência rodada 11" (`9uFmfSH23Fa5qvFv`). Telefones fictícios
+5511900001101 (Davi), 1102 (Eva), 1103 (Fábio), 1104 (Gil); 1105/1106 (Hugo/Iara) só existem no
+pin. Linha de base (exec. 1679): 0 agendamentos, nenhum evento de 01 a 03/10.
+
+| Passo | O que aconteceu | Evidência |
+|---|---|---|
+| T1 — Davi agenda 02/10, IA **sem offset** (`2026-10-02T15:00:00`) | Evento real `k8h9md4…` 15:00–15:30 → `INSERT` pela saída de sucesso → confirmação | exec. 1680 |
+| T2 — Eva agenda 02/10, IA **com offset** (`11:00:00-03:00`) | Evento real `egiri0a…` → `INSERT` → confirmação | exec. 1681 |
+| Conferência | Davi `inicio_sp` **15:00** (`18:00+00`), sem a correção seria 12:00. Eva 11:00 (`14:00+00`). Calendar igual | exec. 1682 |
+| T3 — Davi remarca pelo Agendamento, sem offset, para 16:00 | Calendar → 16:00–16:30 → `UPDATE` pela saída de **sucesso** (primeira vez que esse caminho roda contra o banco real) → "Confirmar Remarcação" | exec. 1683 |
+| T4 — Eva cancela (caminho normal) | Evento apagado → `UPDATE` devolve `id` → `Cancelamento Gravado no Banco?` = sim → "Confirmar Cancelamento" | exec. 1684 |
+| T5 — Fábio cancela `evt-r11-inexistente` (leitura e "Cancelar Evento no Calendar" fixados, `UPDATE` real) | `UPDATE` com 0 linhas → `{success: true}` → If = **não** → `Avisar Cliente Sobre Erro no Cancelamento` → Stop and Error: "Cancelamento não gravado no banco para Fábio Teste (5511900001103): o evento evt-r11-inexistente (Corte Masculino em 2026-10-02T17:00:00-03:00) já foi apagado do Calendar, mas o UPDATE não encontrou nenhuma linha…". Execução `error`, como esperado; em execução manual o Error Workflow não dispara. **"Confirmar Cancelamento" não executou** (antes, teria dito "Cancelado!") | exec. **1685** |
+| Gil agenda 02/10 14h | Evento real `irv7ncg…` + `INSERT` | exec. 1687 |
+| L1 — Lembrete: Davi remarca para 14h, **sem offset**, conflito real com o Gil (só a leitura de disponibilidade fixada como "livre") | Calendar moveu o Davi para 14h → CTE **barrada** pela constraint, com a chave `["2026-10-02 17:00:00+00", …)` = 14:00 SP. Sem a correção, iria como 11:00 SP, não bateria com o Gil e gravaria o horário errado → **só a saída de erro** ("Remarcação Gravada?" e "Confirmação Final" não rodaram) → `Buscar Horário Original` = 16:00 → `Encontrou Horário Original?` = sim → `Restaurar Evento` 16:00–16:30 → aviso "…às 14h, acabou de ser ocupado… continua marcado na sexta-feira, dia 2 de outubro, às 16h…" → loop `done` | exec. **1688** |
+| L2 — Lembrete: Davi remarca para 13:00, sem offset (disponibilidade real) | Calendar → 13:00 → CTE `{linhas_atualizadas: 1}` → If = sim → "Confirmação Final da Remarcação" | exec. 1689 |
+| L3 — Lembrete, lote de 2 inexistentes, remarcação (Calendar fixado, CTE real) | Item 1: `{id: null, linhas_atualizadas: 0}` → If = não → "Preparar Aviso de Erro no Banco" (equipe: "…Erro: nenhuma linha em agendamentos com o event_id evt-r11-inexistente-1 (a linha pode ter sido apagada)") → cliente → equipe → loop → **item 2 processado** igual → `done`. "Processar Cada Agendamento" rodou 3×, "Enviar Lembrete" 2× | exec. **1690** |
+| L4 — Lembrete, lote de 2 inexistentes, timeout | "Reverificar" (real) → `{}` (AOD) → "Ainda É o Mesmo?" = não → loop → **item 2 processado** → `done`. Sem a correção, o lote pararia no item 1 | exec. **1691** |
+| L5 — Lembrete, lote de 2 inexistentes, cancelamento (Calendar fixado) | "Atualizar Status (Cancelar)" → `{success: true}` → confirmação de cancelamento → loop → item 2 → `done` | exec. 1692 |
+| Conferência final | Davi 13:00 `remarcado`, Eva `cancelado`, Gil 14:00. Calendar: só Davi 13:00 e Gil 14:00 | exec. 1693 |
+
+**Limpeza.** "TEMP - Limpeza rodada 11" (`sz7W0yGceCdSi2zo`, exec. 1694) apagou os 2 eventos
+ativos (Davi e Gil) e as 3 linhas dos telefones `55119000011%`. Conferência (exec. 1695): 0
+agendamentos e nenhum evento de 01 a 03/10, igual à linha de base. Os 3 workflows temporários
+(`O0e9CLjRnqNbMtj3`, `9uFmfSH23Fa5qvFv`, `sz7W0yGceCdSi2zo`) foram arquivados. Os dois workflows
+continuam **desativados**, sem versão publicada (`active: false`, `activeVersionId: null`).
+
+**O que não foi testado**
+- "Buscar Horário Original (Remarcação)" com 0 linhas, de ponta a ponta. Esse node só roda
+  depois de um conflito no `UPDATE` da mesma linha, então não dá para a linha não existir sem
+  apagá-la no meio da execução. As peças foram testadas separadas:
+  - `SELECT` com parâmetro e 0 linhas não emite item (exec. 1686), e com AOD vira `{}` (exec.
+    1678 e 1691);
+  - If de `exists` com `{}` dá falso (exec. 1678);
+  - o fallback com item sem `message`/`error` (exec. 1690).
+  O caminho "sim" desse If rodou na L1.
+- O texto real do "Avisar Cliente Sobre Erro no Cancelamento": o node estava fixado, então a
+  expression não foi avaliada. Ela usa os mesmos campos (`nome`, `servico`) do Stop and Error,
+  que foi avaliado na T5.
+- O disparo do Error Workflow pelo Stop and Error novo. Isso só acontece em execução de produção.
+
+**Observação (não alterada).** No Lembrete, um cancelamento com 0 linhas ainda manda ao cliente a
+confirmação de cancelamento. No Agendamento, o mesmo caso agora vira aviso de erro + equipe. O
+pedido desta rodada para o Lembrete era só garantir a volta ao loop. Se quiser o mesmo tratamento
+nos dois, é um If igual ao do Agendamento depois de "Atualizar Status (Cancelar)".
+
+**Fora do escopo, registrado.** "Buscar Horário Original (Remarcar)", do Agendamento, é um
+`SELECT` com a mesma exposição a 0 linhas. Não estava na lista do achado 5 e não foi alterado.
+Fora de loop, o efeito seria a execução parar sem avisar o cliente depois de um conflito.

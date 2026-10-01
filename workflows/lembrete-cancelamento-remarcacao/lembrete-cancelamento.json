@@ -340,7 +340,8 @@
           "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
           "name": "Supabase - agendazap-core"
         }
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "id": "66e5def1-5cae-470a-ba6b-45982b952e30",
@@ -1060,7 +1061,8 @@
           "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
           "name": "Supabase - agendazap-core"
         }
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "id": "da5d323f-07e5-4fa8-99b1-c17e39ec0d4f",
@@ -1559,9 +1561,9 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE agendamentos\nSET data_hora_inicio = $1, data_hora_fim = $2, status = 'remarcado'\nWHERE google_event_id = $3\nRETURNING id;",
+        "query": "WITH atualizado AS (\n  UPDATE agendamentos\n  SET data_hora_inicio = $1, data_hora_fim = $2, status = 'remarcado'\n  WHERE google_event_id = $3\n  RETURNING id\n)\nSELECT\n  (SELECT id FROM atualizado LIMIT 1) AS id,\n  (SELECT count(*) FROM atualizado)::int AS linhas_atualizadas;",
         "options": {
-          "queryReplacement": "={{ [\n  $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio,\n  $('Validar Horário de Funcionamento').item.json.output.novo_horario_fim,\n  $('Processar Cada Agendamento').item.json.event_id\n] }}"
+          "queryReplacement": "={{ [\n  DateTime.fromISO($('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio, { zone: 'America/Sao_Paulo' }).toISO(),\n  $('Validar Horário de Funcionamento').item.json.output.novo_horario_fim,\n  $('Processar Cada Agendamento').item.json.event_id\n] }}"
         }
       },
       "onError": "continueErrorOutput",
@@ -1578,7 +1580,7 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        3392,
+        3616,
         368
       ],
       "parameters": {
@@ -1820,7 +1822,8 @@
           "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
           "name": "Supabase - agendazap-core"
         }
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "id": "7d7a2770-4573-4394-a846-261405a1dca0",
@@ -1828,7 +1831,7 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        3840,
+        4064,
         180
       ],
       "parameters": {
@@ -1852,7 +1855,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        4064,
+        4288,
         180
       ],
       "parameters": {
@@ -1876,7 +1879,7 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        4288,
+        4512,
         180
       ],
       "parameters": {
@@ -1912,7 +1915,7 @@
               "id": "mensagem_equipe",
               "name": "mensagem_equipe",
               "type": "string",
-              "value": "={{ (() => { const a = $('Processar Cada Agendamento').item.json; const zona = 'America/Sao_Paulo'; const fmt = iso => { const dt = DateTime.fromISO(String(iso ?? ''), { zone: zona }); return dt.isValid ? dt.setLocale('pt-BR').toFormat(\"dd/MM 'às' HH:mm\") : 'não informado'; }; const novo = $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio; const erro = ($json.message ?? JSON.stringify($json)) + ($json.error?.description ? ' — ' + $json.error.description : ''); return `⚠️ Lembrete: erro no banco ao remarcar o agendamento de ${a.nome} (${a.telefone}). Horário atual: ${a.servico} em ${fmt(a.data)} (event_id ${a.event_id}); novo horário pedido: ${fmt(novo)}. O evento no Calendar pode já ter sido movido para o novo horário, mas o banco não foi atualizado — confira os dois e resolva manualmente. O cliente foi avisado de que a equipe vai entrar em contato. Erro: ${erro}`; })() }}"
+              "value": "={{ (() => { const a = $('Processar Cada Agendamento').item.json; const zona = 'America/Sao_Paulo'; const fmt = iso => { const dt = DateTime.fromISO(String(iso ?? ''), { zone: zona }); return dt.isValid ? dt.setLocale('pt-BR').toFormat(\"dd/MM 'às' HH:mm\") : 'não informado'; }; const novo = $('Classificar Resposta do Lembrete').item.json.output.novo_horario_inicio; const erro = ($json.message || $json.error) ? ($json.message ?? JSON.stringify($json)) + ($json.error?.description ? ' — ' + $json.error.description : '') : `nenhuma linha em agendamentos com o event_id ${a.event_id} (a linha pode ter sido apagada)`; return `⚠️ Lembrete: erro no banco ao remarcar o agendamento de ${a.nome} (${a.telefone}). Horário atual: ${a.servico} em ${fmt(a.data)} (event_id ${a.event_id}); novo horário pedido: ${fmt(novo)}. O evento no Calendar pode já ter sido movido para o novo horário, mas o banco não foi atualizado — confira os dois e resolva manualmente. O cliente foi avisado de que a equipe vai entrar em contato. Erro: ${erro}`; })() }}"
             }
           ]
         },
@@ -1956,6 +1959,73 @@
       },
       "onError": "continueRegularOutput",
       "webhookId": "35f5e2b1-2ae5-4cdc-8dd8-3a3330ee0278"
+    },
+    {
+      "id": "1b0d89c7-f77c-49ce-a975-f4665a5a4369",
+      "name": "Remarcação Gravada no Banco?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3392,
+        368
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "remarcacao-gravada",
+              "leftValue": "={{ $json.linhas_atualizadas }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "b55ce0e6-2ec5-4fa8-8d8b-ff2a8b3d1013",
+      "name": "Encontrou Horário Original?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3840,
+        180
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "horario-original-encontrado",
+              "leftValue": "={{ $json.data_hora_inicio }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
     }
   ],
   "connections": {
@@ -2699,7 +2769,7 @@
       "main": [
         [
           {
-            "node": "Enviar Confirmação Final da Remarcação no WhatsApp",
+            "node": "Remarcação Gravada no Banco?",
             "type": "main",
             "index": 0
           }
@@ -2775,17 +2845,6 @@
         ]
       ]
     },
-    "Buscar Horário Original (Remarcação)": {
-      "main": [
-        [
-          {
-            "node": "Restaurar Evento no Calendar",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Restaurar Evento no Calendar": {
       "main": [
         [
@@ -2846,6 +2905,53 @@
         [
           {
             "node": "Processar Cada Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remarcação Gravada no Banco?": {
+      "main": [
+        [
+          {
+            "node": "Enviar Confirmação Final da Remarcação no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Aviso de Erro no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Horário Original (Remarcação)": {
+      "main": [
+        [
+          {
+            "node": "Encontrou Horário Original?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encontrou Horário Original?": {
+      "main": [
+        [
+          {
+            "node": "Restaurar Evento no Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Aviso de Erro no Banco",
             "type": "main",
             "index": 0
           }
