@@ -175,8 +175,9 @@ Decisões tomadas antes de começar a rodar o Grupo B:
      - 23: erro provocado apontando um node Postgres **só da cópia** para uma tabela inexistente;
        restaurar depois.
    - 32 (lembrete real): Lembrete em modo manual, com uma linha real no banco para um número de
-     teste que **não é cliente cadastrado na produção**. Número ainda não definido — pendente de
-     confirmação (ver "Pendências" abaixo).
+     teste que **não é cliente cadastrado na produção**. Confirmado: `5511975049937` (o mesmo
+     número que recebe as notificações de erro/equipe, confirmado pelo responsável como próprio,
+     não cliente).
 3. **Notificações de erro (23 e 29):** vão para o número real de produção (`5511975049937`), sem
    criar cópia do "Notificação de Erros". Quem recebe esse WhatsApp deve ser avisado **antes**
    que vão chegar 2 notificações de erro propositais nesse dia, pra não causar susto — o nome do
@@ -193,8 +194,7 @@ Decisões tomadas antes de começar a rodar o Grupo B:
 
 ### Pendências antes de executar
 
-- **Número de teste do cenário 32**: precisa ser um número que o responsável confirme não ser
-  cliente cadastrado na produção. Ainda não definido.
+- ~~Número de teste do cenário 32~~ **Confirmado**: `5511975049937` (01/10/2026).
 - **Troca do trigger do Agendamento**: depende do MCP do n8n para editar o workflow na instância
   (`https://n8n-n8n.wg1izd.easypanel.host`). Esse conector não está disponível nesta sessão —
   assim que estiver, a troca do trigger é o primeiro passo antes de rodar qualquer cenário do
