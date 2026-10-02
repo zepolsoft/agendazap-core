@@ -2390,11 +2390,22 @@ Nenhum cliente real foi afetado (execuções de produção 1999–2006 todas `su
   guarda o JSON sanitizado dessas versões.
 
 **Monitoramento.**
-- **Mensagem real** de José ("Quais serviços vocês têm?", 11:52 em SP, execs. 2085–2092):
-  - cliente criado com o nome do perfil do WhatsApp;
-  - `entrada`/`recebida`, depois `saida` com o texto enviado (execução do sub-workflow 2088);
+- **Mensagem real** de José ("Quais serviços vocês têm?", 11:52 em SP, execs. 2085–2093):
+  - o cliente já existia (criado pelo backfill da fase 1, primeiro contato em 01/10, com nome):
+    o upsert só atualizou `ultimo_contato_em`;
+  - `entrada`/`recebida` gravada antes do caminho principal, depois `saida` com o texto enviado e
+    o `wa_message_id` da Meta (execução do sub-workflow 2088);
   - o `read` da Meta levou a saída a **`lida`**;
   - todas as execuções `success`.
+- **Até 12:06 SP (15:06Z):**
+  - 10 execuções de produção desde a troca, todas `success`, nenhuma `waiting` ou `running`;
+  - `mensagens` desde a troca: 1 `entrada`/`recebida` e 1 `saida`/`lida`, nenhuma sem `wa_message_id`;
+  - versões ativas inalteradas (`bc334c4a…`, `051b4e6b…` e `38ec1e6c…`, do sub-workflow);
+  - "Notificação de Erros" não disparou.
+- **Não acompanhado** (a sessão foi encerrada antes): o resto da primeira hora, o job das 22h e o
+  lembrete das 8h de 03/10, o primeiro com a v2. Conferir esses três quando possível: execuções
+  com `error`, saídas ainda `enviada` depois de 30 min e agendamentos do dia em `concluido`.
+- O workflow auxiliar de SQL do monitoramento (`1IQNDJPM364u7hGh`) foi arquivado.
 
 **Pendências:**
 - **Correção do artigo "o Barba"** no template de cancelamento ("Cancelei o Barba…"). Fica fora
