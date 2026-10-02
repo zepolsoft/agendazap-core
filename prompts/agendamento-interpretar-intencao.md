@@ -13,7 +13,31 @@ Usado no AI Agent node "Interpretar Intenção do Cliente" do workflow
 O prompt em si é **idêntico** ao de produção (`automacao-pmes-whatsapp`): mesmas regras de
 intenção (agendar/cancelar/remarcar/consultar/dúvida/encaminhar/fora_do_escopo), mesmo tom,
 mesma lógica de desambiguação de agendamento por beneficiário, mesmas regras de horário de
-funcionamento e sugestão de horários livres. Nenhuma linha foi tocada nesta migração.
+funcionamento e sugestão de horários livres. Nenhuma linha foi tocada nesta migração — as
+únicas mudanças posteriores, já com o workflow em produção, estão na seção abaixo.
+
+## Ajustes em produção (rodada 19, 02/10/2026)
+
+- **Barbearia ZAP como demonstração do AgendaZap.** Nova seção `## CONTEXTO: BARBEARIA DE
+  DEMONSTRAÇÃO DO AGENDAZAP`, logo depois de INFORMAÇÕES DA BARBEARIA:
+  - a barbearia é fictícia e muitos contatos chegam pelo site só para testar;
+  - saudações e menções a "site", "demonstração", "demo", "teste"/"testar" ou "AgendaZap" são
+    `duvida` (nunca `fora_do_escopo`), respondidas com boas-vindas da demonstração + lista de
+    serviços, sem as palavras "agendado", "marcado", "confirmado" ou "reservado";
+  - perguntas sobre o AgendaZap em si (preço, planos, contratação) são `encaminhar`.
+
+  A definição de `fora_do_escopo` (item 1, "REGRA — O QUE VOCÊ NÃO SABE…" e REGRAS GERAIS) e a
+  regra de saudação do item 7 passaram a citar essa exceção.
+- **Texto fixo de recusa (`fora_do_escopo`).** A frase que o prompt manda usar "EXATAMENTE" passou
+  a ser:
+
+  > Isso eu não consigo responder por aqui 😅 Mas posso te ajudar com a Barbearia ZAP: quer marcar
+  > um horário? É só me dizer o serviço e o dia.
+
+  É o mesmo texto do node "Recusar Assunto Fora do Escopo no WhatsApp", que é quem de fato envia a
+  recusa. Os dois precisam continuar idênticos — e iguais ao prompt e ao node de mesmo nome no
+  workflow de Lembrete.
+- Os espaços no fim das linhas do prompt foram removidos (sem efeito no comportamento).
 
 ## O que mudou: de onde vêm os dados que alimentam o prompt
 

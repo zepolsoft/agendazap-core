@@ -1941,3 +1941,107 @@ settings). JSON reexportado: 110 nodes, credenciais Postgres como placeholder, s
 reais.
 
 **R17-1: corrigido.**
+
+### Rodada 19 — prompt de demonstração e novo texto de recusa, em produção (01–02/10/2026)
+
+**Contexto.** Os dois workflows "(Supabase)" são os de produção. Toda edição foi feita no rascunho e
+testada com `test_workflow`, com telefones fictícios (`55110910000NN`) e todos os nodes de WhatsApp
+e o indicador de digitação fixados.
+
+**1. Prompt da demonstração (01/10).** O systemMessage de "Interpretar Intenção do Cliente" passou a
+tratar a Barbearia ZAP como a barbearia de demonstração do AgendaZap (ver
+`prompts/agendamento-interpretar-intencao.md`). O diff foi mostrado antes de salvar. Rascunho
+`9a36154a…`, não publicado; só esse parâmetro diferia da versão publicada `37d8022c…`.
+
+| Teste (rascunho `9a36154a…`) | Resultado | Evidência |
+|---|---|---|
+| "Oi! Vim pelo site e quero testar a demonstração do AgendaZap." (…060) | `duvida`; boas-vindas da demonstração + Barba R$ 35 (20 min), Corte + Barba R$ 75 (50 min), Corte Masculino R$ 50 (30 min) + "Qual deles você quer agendar?" | exec. 1913 |
+| "Oi" (…061) | `duvida`; mesmas boas-vindas + lista de serviços | exec. 1914 |
+| "Quanto custa o AgendaZap?" (…062) | `encaminhar`; cliente recebe o texto fixo "Boa pergunta!…", aviso ao responsável (fixado) | exec. 1915 |
+
+Limpeza das Data Tables: exec. 1916 (auxiliar `IlBrKi9NJ4ZrHVRY`, arquivado).
+
+**2. O save da UI que derrubou a demonstração (01/10, ~21:33Z).** Na hora de aplicar o novo texto de
+recusa, os dois workflows estavam em versões que eu não conhecia. As duas eram autosaves da UI,
+publicados:
+- Agendamento `1f2eb29e…`;
+- Lembrete `16e8ed54…`.
+
+Comparação feita antes de qualquer edição:
+- **Agendamento:**
+  - o prompt era **byte a byte o da rodada 18** (`37d8022c…`): o rascunho com a demonstração tinha
+    sido descartado;
+  - quase todos os nodes mudaram de posição;
+  - parâmetros com valor padrão foram removidos (`insertMode: "insert"` nos dois "Corrigir Memória
+    da Conversa", `mode: "manual"` nos dois "Preparar Aviso de Horário Ocupado").
+- **Lembrete:**
+  - posições alteradas;
+  - padrões removidos (`limitType`, `contentType`, `mode` de Set/Switch/Code, `resource` e
+    `condition` das Data Tables, `language`);
+  - `options.version: 1` acrescentado no If "Cliente Confirmou a Remarcação?";
+  - `settings.binaryMode: "separate"`.
+- Conexões idênticas nos dois.
+
+Pela regra da rodada, parei sem editar nem publicar e avisei. O José confirmou que o save da UI não
+foi intencional e definiu:
+- reaplicar a demonstração;
+- tratar os ajustes da UI como **novo baseline**;
+- aplicar o texto de recusa nos dois workflows.
+
+> **Lição:** abrir e salvar o workflow pela UI enquanto há um rascunho do MCP pendente pode partir
+> da versão publicada e descartar o rascunho. Antes de publicar, sempre comparar o rascunho com a
+> versão publicada atual lida da instância, não com um snapshot antigo.
+
+**3. Demonstração reaplicada (02/10).**
+- Antes de reaplicar, diff do prompt `9a36154a` × `1f2eb29e`: o de `1f2eb29e` é igual ao da rodada
+  18 e o de `9a36154a` é esse mesmo texto, sem espaços no fim das linhas, mais a seção da
+  demonstração. Nada mais antigo voltou.
+- Rascunho `e075a5b8…`: só o systemMessage difere de `1f2eb29e`, byte a byte igual ao de
+  `9a36154a`.
+- Os mesmos 3 testes deram o mesmo resultado de 1913–1915:
+
+| Teste (rascunho `e075a5b8…`) | Resultado | Evidência |
+|---|---|---|
+| "Oi! Vim pelo site e quero testar a demonstração do AgendaZap." (…063) | `duvida`; boas-vindas da demonstração + os 3 serviços com preço | exec. 1925 |
+| "Oi" (…064) | `duvida`; boas-vindas + lista dos 3 serviços (preço e duração) | exec. 1926 |
+| "Quanto custa o AgendaZap?" (…065) | `encaminhar`; texto fixo "Boa pergunta!…"; aviso ao responsável e ao cliente fixados | exec. 1927 |
+
+**4. Novo texto de recusa (`fora_do_escopo`).**
+- Texto antigo: "Desculpe, só consigo ajudar com assuntos da Barbearia ZAP: serviços, preços e
+  agendamentos. Se quiser marcar, remarcar ou cancelar um horário, é só me falar! 💈"
+- Texto novo: "Isso eu não consigo responder por aqui 😅 Mas posso te ajudar com a Barbearia ZAP:
+  quer marcar um horário? É só me dizer o serviço e o dia."
+- O texto existia em **4 lugares**, 1 vez cada, e os 4 foram trocados:
+  - Agendamento: node "Recusar Assunto Fora do Escopo no WhatsApp" (`textBody`) e a frase
+    "EXATAMENTE" no prompt de "Interpretar Intenção do Cliente";
+  - Lembrete: node de mesmo nome e a frase no prompt de "Classificar Resposta do Lembrete".
+- Rascunhos: Agendamento `a5af7fad…`, Lembrete `8b5e2cb2…`.
+
+**5. Conferência antes de publicar** (contra o baseline da UI, lido da instância):
+- **Agendamento** (`a5af7fad` × `1f2eb29e`): 110 nodes nos dois; só diferem
+  - o systemMessage, igual ao de `9a36154a` com a frase de recusa trocada (1 ocorrência
+    nova, 0 da antiga);
+  - o `textBody` da recusa, igual ao texto novo.
+- **Lembrete** (`8b5e2cb2` × `16e8ed54`): 86 nodes nos dois; só diferem
+  - o systemMessage, igual ao de `16e8ed54` com a frase trocada;
+  - o `textBody` da recusa.
+- Nos dois: resto do node de recusa, todos os outros nodes (inclusive posições), conexões e
+  settings idênticos.
+- Teste extra no rascunho do Agendamento: "Qual a capital da Austrália?" (…066) → `fora_do_escopo`
+  com `confirmacao_texto` igual ao texto novo e roteado para o node de recusa (fixado). Exec. 1928.
+- O Lembrete não foi testado de ponta a ponta: o caminho de recusa dele depende de um lembrete em
+  espera, e a troca é só de texto. A conferência byte a byte cobre a mudança.
+
+**6. Publicação** com `versionId` explícito:
+- Agendamento **`a5af7fad-74a5-414f-96f7-352cb62a17a8`**;
+- Lembrete **`8b5e2cb2-afcc-421e-b80e-df0eb5cfd1da`**.
+
+Depois: `activeVersionId` = esses ids e conteúdo publicado idêntico ao rascunho conferido.
+
+**Limpeza:** locks, mensagens processadas e o encaminhamento dos telefones …063–066 apagados (exec.
+1929, auxiliar `bD00xRmKHhNCwoaH`, arquivado). Os testes não criam agendamento nem evento.
+
+**Repo:**
+- JSONs dos dois workflows reexportados, com credenciais Postgres placeholder. O diff no repo inclui
+  os ajustes da UI (posições, padrões removidos, `binaryMode`), que agora são o baseline.
+- `prompts/agendamento-interpretar-intencao.md` atualizado.
