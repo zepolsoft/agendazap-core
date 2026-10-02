@@ -60,10 +60,30 @@ funcionamento e sugestão de horários livres. Nenhuma linha foi tocada nesta mi
   continuar idênticos. O aviso da trava de 30 min ("Avisar Dúvida Já Encaminhada no WhatsApp") não
   está no prompt; nele só "sua dúvida" virou "sua mensagem".
 
+## Ajustes em produção (rodada 21, 02/10/2026)
+
+- **Profissionais ativos no prompt.** Nova seção `## PROFISSIONAIS ATIVOS` com
+  `{{ $json.profissionais_ativos }}`, montada a cada execução a partir do banco (ver tabela
+  abaixo, nunca texto fixo). Cada linha traz nome, dias e horário de trabalho, se atende hoje e os
+  serviços do profissional. A nova "REGRA — PERGUNTAS SOBRE OS PROFISSIONAIS" diz que:
+  - perguntas como "a Larissa atende hoje?", "o Carlos trabalha sábado?" ou "quem são os
+    barbeiros?" são `duvida`, respondidas direto com a lista, sem `encaminhar`;
+  - quem não está na lista (inclusive inativo) "não está atendendo no momento", sem especular o
+    motivo;
+  - **o cliente não escolhe o profissional pelo WhatsApp**: a IA nunca promete um profissional nem
+    pergunta com quem ele prefere marcar. Isso continua fora de escopo;
+  - lista `INDISPONÍVEL` (falha no banco) → `encaminhar`.
+
+  Também: `duvida` (item 1) passou a citar profissionais; "quem são os profissionais" saiu dos
+  exemplos de `encaminhar`; PROFISSIONAIS ATIVOS entrou na lista do que a IA sabe.
+- O prompt do Lembrete ("Classificar Resposta do Lembrete") **não** recebeu a lista. Ver o motivo
+  no registro da rodada 21 em `docs/test-plan.md`.
+
 ## O que mudou: de onde vêm os dados que alimentam o prompt
 
 O prompt recebe, via variáveis do node (`{{ $json.lista_servicos }}`,
-`{{ $json.horarios_livres }}`, `{{ $json.agendamentos_ativos }}`), três blocos de contexto que
+`{{ $json.horarios_livres }}`, `{{ $json.agendamentos_ativos }}` e, desde a rodada 21,
+`{{ $json.profissionais_ativos }}`), blocos de contexto que
 antes vinham do Google Sheets e agora vêm do Postgres/Supabase:
 
 | Bloco no prompt | Antes (Sheets) | Agora (Postgres) |
@@ -71,6 +91,7 @@ antes vinham do Google Sheets e agora vêm do Postgres/Supabase:
 | SERVIÇOS DISPONÍVEIS E PREÇOS | leitura da aba "Serviços" | `SELECT nome, categoria, duracao_min, preco FROM servicos WHERE ativo = true` |
 | HORÁRIOS LIVRES | Google Calendar (inalterado) + duração mínima da planilha | Google Calendar do profissional ativo (dinâmico) + duração mínima de `servicos` |
 | AGENDAMENTOS ATIVOS DESTE CLIENTE | leitura da aba "Agendamentos" filtrada por telefone | `agendamentos` + `JOIN servicos`, filtrado por `cliente_telefone` |
+| PROFISSIONAIS ATIVOS (rodada 21) | — (não existia) | `profissionais WHERE ativo = true` + `profissionais_servicos`/`servicos` (node "Buscar Profissionais Ativos"), formatado em "Formatar Profissionais Ativos" |
 
 A IA não sabe (nem precisa saber) que a origem mudou — o formato dos blocos de texto que ela
 recebe é o mesmo.

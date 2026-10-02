@@ -2155,3 +2155,142 @@ não foram tocadas.
 Responsável") ainda começa com "📩 Dúvida de cliente sobre o negócio" e diz que "a IA não tem essa
 informação". Para um pedido de atendente, o texto ficaria mais claro como "Cliente pediu para
 falar com alguém". Não foi alterado.
+
+### Rodada 21 — trava de 30 min só para o cliente e profissionais ativos no prompt (02/10/2026)
+
+**Ponto de partida.** Histórico conferido antes de editar: versões ativas eram as da rodada 20
+(Agendamento `2ecc1e75…`, Lembrete `38b237d7…`), sem save da UI depois. Esse foi o baseline.
+
+**Contexto: a investigação que motivou a rodada.** Nos testes reais do José, com um número que é ao
+mesmo tempo cliente de teste e destinatário dos alertas, entraram três mensagens no Agendamento
+(nenhuma no Lembrete):
+- exec. 1952 (09:56Z), "Quero falar com um atendente": `encaminhar`, alerta enviado e lido;
+- exec. 1969 (10:14Z), "A Larissa vai atender hj?": `encaminhar`;
+- exec. 1973 (10:16Z), "E o Carlos vai atender hoje?": `encaminhar`.
+
+Nas duas últimas, "Checar Encaminhamento Recente" achou o encaminhamento de 09:56. "Já Encaminhou
+Nos Últimos 30 Min?" foi pelo ramo "sim", que só respondia o cliente ("Já repassei sua
+mensagem…"). Resultado:
+- "Registrar Encaminhamento" e "Encaminhar Dúvida ao Responsável" **nem foram chamados**;
+- o responsável nunca soube das duas perguntas;
+- o cliente ouviu que a mensagem tinha sido repassada.
+
+O número compartilhado não teve papel nisso: a Meta confirmou entrega e leitura do alerta da 1952.
+
+**1. Correção da trava (decisão do José): a trava vale só para a resposta ao cliente.** Nos dois
+workflows, o ramo "sim" de "Já Encaminhou Nos Últimos 30 Min?" ganhou dois nodes antes do aviso
+ao cliente:
+- **"Registrar Encaminhamento de Dúvida (Nova Mensagem)"**: cópia de "Registrar Encaminhamento de
+  Dúvida", com o mesmo upsert e as mesmas settings. A janela de 30 min passa a contar do último
+  encaminhamento.
+- **"Avisar Responsável Sobre Nova Mensagem no WhatsApp"**: alerta curto ao responsável, no padrão
+  das mensagens internas: "📩 Nova mensagem do mesmo cliente (já tinha sido encaminhado há pouco;
+  não é erro do sistema)", cliente, mensagem e link de resposta. No Lembrete leva também a linha
+  "Contexto" do alerta original. `onError: continueRegularOutput`, como o alerta original no
+  Lembrete. Assim uma falha de envio não impede a resposta ao cliente.
+
+Por que copiar e não religar: o "Registrar" existente leva ao alerta completo e ao "Pra isso vou te
+colocar direto…". Religar mandaria o texto de primeiro contato a cada mensagem. Com as cópias, o
+caminho do primeiro encaminhamento ficou intacto. Só "Avisar Dúvida Já Encaminhada" mudou de
+entrada (e de posição no canvas). Não existe caminho separado de "mensagem repetida idêntica"; a
+deduplicação por `message_id` ("Checar Mensagem Duplicada") é outro mecanismo e não foi tocada.
+
+**2. Profissionais ativos no prompt do Agendamento.** Dois nodes novos entre "Formatar Agendamentos
+Ativos" e a IA:
+- **"Buscar Profissionais Ativos"** (Postgres; `executeOnce`, `alwaysOutputData`,
+  `onError: continueRegularOutput`):
+  - lê nome, `dias_trabalho`, horário e serviços (via `profissionais_servicos`/`servicos` ativos)
+    de `profissionais WHERE ativo = true`;
+  - a query foi testada antes num workflow auxiliar (exec. 1977).
+- **"Formatar Profissionais Ativos"** (Code): monta `profissionais_ativos`, no mesmo padrão de
+  `agendamentos_ativos`, uma linha por profissional com:
+  - dias e horário;
+  - "hoje (dia): atende / não atende", calculado no fuso de São Paulo;
+  - serviços.
+
+  Se a leitura falhar, vira `INDISPONÍVEL — …`, e a IA usa `encaminhar`.
+- Prompt: seção e regra novas, descritas em `prompts/agendamento-interpretar-intencao.md`. A regra
+  diz explicitamente que **o cliente não escolhe profissional**. Agendar com profissional
+  específico continua fora de escopo; o agendamento ainda usa um único calendário ("Buscar
+  Profissional Ativo", `LIMIT 1`).
+- Dados reais na hora do teste: Carlos (seg–sáb, 9h–18h) e Larissa (ter–sáb, 10h–18h), ambos com os
+  3 serviços.
+
+**Lembrete: por que não recebeu a lista.**
+- A conversa do lembrete é sobre um agendamento específico. A pergunta natural ali é "quem vai me
+  atender?", que deveria ser respondida pelo `profissional_id` do próprio agendamento, não pela
+  lista — e com um único calendário a resposta seria sempre a mesma.
+- Depois do lembrete, a mensagem seguinte já cai no Agendamento, que responde com a lista.
+- Fica como pendência, junto com a escolha de profissional.
+
+**Rascunhos:** Agendamento `68c7d91c…` (estrutura em `5406ab74…` + prompt); Lembrete `278afaa9…`.
+
+**Escopo contra o baseline:**
+- **AG:** +4 nodes; muda só o `systemMessage` (byte a byte igual ao texto preparado) e a posição de
+  "Avisar Dúvida Já Encaminhada"; −2 / +6 ligações, todas as previstas.
+- **LB:** +2 nodes; muda a mesma posição; −1 / +3 ligações.
+
+**Testes do Agendamento** (rascunho `68c7d91c…`, todos os 22 nodes de envio e o indicador
+fixados):
+
+| Teste | Resultado | Evidência |
+|---|---|---|
+| "A Larissa vai atender hj?" (…082) | `duvida`: "Atende sim! Hoje é sexta-feira e a Larissa trabalha normalmente, das 10h às 18h. Quer aproveitar e marcar um horário?" | exec. 1980 |
+| "E o Carlos vai atender hoje?" (…083) | `duvida`: "Atende sim! O Carlos trabalha hoje (sexta) das 9h às 18h…" | exec. 1981 |
+| "Quero marcar um corte com a Larissa amanhã às 11h" (…084) | `agendar`, 03/10 11h: "…não dá pra escolher o profissional, mas já vi que amanhã às 11h tem horário livre… posso confirmar?" | exec. 1982 |
+| Inativo: "Rodrigo" inserido com `ativo = false` (exec. 1979); "O Rodrigo atende hoje?" (…085) | Rodrigo **não** aparece na lista; `duvida`: "O Rodrigo não está atendendo na Barbearia ZAP no momento… Hoje quem está por aqui são o Carlos e a Larissa…" | exec. 1983 |
+| Trava: "vocês vendem pomada?" e, 30 s depois, "e vocês fazem luzes?" (…086) | 1ª: caminho original, alerta completo. 2ª: "Já encaminhou" = sim → "Registrar (Nova Mensagem)" renovou `encaminhado_em` (10:41:14 → 10:41:44) → **alerta curto ao responsável** → "Já repassei…" ao cliente | exec. 1984; **1986** |
+
+- **Exec. 1985** (2ª pergunta disparada 5,6 s depois da 1ª) caiu em "Ignorar Mensagem (Telefone
+  Ocupado)". É a trava de 10 s por telefone, comportamento já conhecido e efeito de os dois
+  `test_workflow` terem rodado colados. Refeita na 1986 com novo `message_id`.
+- **Imprecisão sem efeito:** na 1983 a IA disse "Carlos e a Larissa, das 9h às 18h"; a Larissa
+  começa às 10h. A lista estava certa; a frase juntou os dois horários.
+
+**Teste do Lembrete (trava).** Mesmo protocolo da rodada 20:
+- **Preparação:** agendamento real para amanhã (sáb 03/10, 14h, …087; exec. 1987 e 1988), e
+  encaminhamento de "vocês vendem pomada?" pelo Agendamento (exec. 1989, `encaminhado_em`
+  10:43:13).
+- **Desativação temporária:** os 26 nodes que chamam a Meta (25 + o alerta novo) só no rascunho
+  (`ac250a4e…`).
+- **Execução:** Lembrete com "Buscar Agendamentos de Hoje" fixado só com esse agendamento (exec.
+  **1990**); resposta "e vocês fazem luzes?" pelo caminho real do Agendamento (exec. 1991).
+- **Resultado:** `encaminhar` → "Já Encaminhou" = sim (10:43:13) → "Registrar (Nova Mensagem)"
+  (→ 10:44:00) → **"Avisar Responsável Sobre Nova Mensagem"** (desativado) → "Avisar Dúvida Já
+  Encaminhada" (desativado) → fim do loop.
+- **Encerramento:** rascunho restaurado para `278afaa9…` (`56eb95e1…`); agendamento cancelado pelo
+  fluxo normal: "pode cancelar meu horário de amanhã" → evento apagado no Calendar e linha
+  `cancelado` (exec. 1992).
+
+**Antes de publicar:**
+- Nenhuma execução `waiting`/`running`.
+- Versões ativas ainda `2ecc1e75…`/`38b237d7…`.
+- AG: rascunho igual ao testado.
+- LB: `56eb95e1…` idêntico a `278afaa9…` (nodes, conexões, settings), sem nenhuma chave
+  `disabled`.
+
+**Publicação** com `versionId` explícito:
+- Agendamento **`68c7d91c-a5d0-47e7-926c-d0a6b905f5ac`**;
+- Lembrete **`56eb95e1-aeb2-41e6-8b1d-8f88dc85aed5`**.
+
+Conteúdo publicado idêntico ao conferido.
+
+**Limpeza** (exec. 1993, auxiliar `iavnkeRlN98RJAzO`, arquivado):
+- linha do agendamento de teste;
+- o profissional "Rodrigo" de teste (`ativo = false`);
+- 6 locks, 12 mensagens processadas, 2 encaminhamentos e 1 espera dos telefones …082–087.
+
+O auxiliar de SQL "TEMP - Ferramentas rodada 21" (`84iLuLcG51slnP67`) também foi arquivado.
+
+**Repo:**
+- JSONs reexportados: nodes novos com credencial Postgres placeholder; nodes de WhatsApp sem
+  credencial, como os demais.
+- `prompts/agendamento-interpretar-intencao.md` atualizado.
+
+**Pendências:**
+- **Teste real do alerta curto.** Nos testes o alerta curto estava fixado ou desativado, então o
+  texto renderizado ainda não foi visto no WhatsApp. Para confirmar, basta mandar duas perguntas
+  diferentes seguidas que caiam em `encaminhar`; a 2ª deve gerar o alerta "📩 Nova mensagem do
+  mesmo cliente…".
+- **Profissional do agendamento no Lembrete** ("quem vai me atender?") e escolha de profissional
+  no agendamento: decisão maior, para depois.

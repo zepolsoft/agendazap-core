@@ -910,7 +910,7 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        4512,
+        4960,
         880
       ],
       "parameters": {
@@ -2251,6 +2251,81 @@
         },
         "options": {}
       }
+    },
+    {
+      "id": "32a38e78-0486-4b50-89f4-15b6b7a25d8f",
+      "name": "Registrar Encaminhamento de Dúvida (Nova Mensagem)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        4512,
+        880
+      ],
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "LIsp5qJ88DxWRnOY"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telefone",
+              "keyValue": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+            "encaminhado_em": "={{ $now.toISO() }}"
+          },
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "encaminhado_em",
+              "displayName": "encaminhado_em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "05c37ccd-85a3-4d19-8890-d18c14b6380e",
+      "name": "Avisar Responsável Sobre Nova Mensagem no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        4736,
+        880
+      ],
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "5511975049937",
+        "textBody": "=📩 Nova mensagem do mesmo cliente (já tinha sido encaminhado há pouco; não é erro do sistema)\n\nCliente: {{ $('Processar Cada Agendamento').item.json.nome }} ({{ String($('Processar Cada Agendamento').item.json.telefone) }})\nMensagem: \"{{ $('Normalizar Resposta do Lembrete').item.json.resposta_cliente }}\"\nContexto: resposta ao lembrete do {{ $('Processar Cada Agendamento').item.json.servico }} de hoje às {{ DateTime.fromISO($('Processar Cada Agendamento').item.json.data).setZone('America/Sao_Paulo').toFormat('HH:mm') }} (o agendamento continua marcado).\n\nResponder: https://wa.me/{{ String($('Processar Cada Agendamento').item.json.telefone) }}",
+        "additionalFields": {}
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "8fa76dca-c53f-4001-ae83-cf215e4bc38c"
     }
   ],
   "connections": {
@@ -2648,7 +2723,7 @@
       "main": [
         [
           {
-            "node": "Avisar Dúvida Já Encaminhada no WhatsApp",
+            "node": "Registrar Encaminhamento de Dúvida (Nova Mensagem)",
             "type": "main",
             "index": 0
           }
@@ -3297,6 +3372,28 @@
         [
           {
             "node": "Avisar Agendamento Inativo no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Encaminhamento de Dúvida (Nova Mensagem)": {
+      "main": [
+        [
+          {
+            "node": "Avisar Responsável Sobre Nova Mensagem no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Responsável Sobre Nova Mensagem no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Avisar Dúvida Já Encaminhada no WhatsApp",
             "type": "main",
             "index": 0
           }
