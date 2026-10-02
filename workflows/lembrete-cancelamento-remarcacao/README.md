@@ -19,6 +19,12 @@ marcando como `concluido` os agendamentos do dia que já passaram.
 da instância já vinculadas (no JSON deste repo elas ficam como placeholder ou omitidas) e Error
 Workflow apontando para o "Notificação de Erros" de produção.
 
+> **Histórico de mensagens (fase 2, rodada 23):** desde 02/10/2026 este workflow grava os envios em
+> `clientes`/`mensagens` pelo sub-workflow "Registrar Mensagem [v2 historico]" (chamado sem
+> esperar, com `onError: continueRegularOutput`). Nenhum texto enviado ao cliente mudou; nos nodes
+> com variações de frase, o sorteio passou a ser determinístico (execução + telefone). Ver
+> `docs/test-plan.md`, rodada 23, e `workflows/backup/` para a versão anterior.
+
 **Antes de importar no n8n:** mesmos passos do README de `workflows/agendamento-whatsapp/` —
 schema/seed já rodados no Supabase, credencial Postgres trocada em cada node, workflow
 desativado até validar.

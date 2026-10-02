@@ -2327,3 +2327,76 @@ Resultado:
 Conclusão: o trigger valida a assinatura com o App Secret da credencial "WhatsApp OAuth account".
 O fato de o `webhookId` estar público não permite injetar mensagens. Não foi preciso trocar o
 `webhookId`.
+
+### Rodada 23 — histórico de mensagens no WhatsApp (fase 2) e troca em produção (02/10/2026)
+
+**O que mudou nos workflows.** Os dois workflows em produção passaram a gravar o histórico em
+`clientes`/`mensagens`:
+- **Agendamento** (138 nodes, era 114):
+  - "Registrar Mensagem Recebida no Histórico" (Postgres), ramo a partir de "Normalizar Dados da
+    Mensagem", acima do caminho principal: upsert em `clientes` + insert `entrada`/`recebida`;
+  - "Preparar Atualização de Status" + "Atualizar Status da Mensagem no Histórico", ramo a partir
+    do trigger: callbacks `sent`/`delivered`/`read`/`failed` viram `enviada`/`entregue`/`lida`/
+    `falhou`. O `UPDATE` nunca regride o status e `falhou` é final;
+  - "Salvar Cliente na Planilha" grava `agendamentos.cliente_id`;
+  - "Atualizar Primeiro Agendamento do Cliente" preenche `clientes.primeiro_agendamento_em`
+    (só se vazio), depois da confirmação ao cliente.
+- **Lembrete** (108 nodes, era 88): só os registros de envio.
+- **Sub-workflow novo** "Registrar Mensagem [v2 historico]" (`KcPWQc7VJbj2e4sf`): upsert em
+  `clientes` + insert `saida` com o texto enviado, o `wa_message_id` da Meta e o
+  `agendamento_id` (pelo `google_event_id`). Chamado por 20 nodes "Registrar no Histórico: …" em
+  cada workflow, **sem esperar** (`waitForSubWorkflow: false`) e com `onError: continueRegularOutput`:
+  uma falha do histórico nunca atrasa nem muda a resposta ao cliente. Alertas internos para a
+  equipe não são registrados.
+- **Texto determinístico.** Nos 11 nodes de envio com 2 ou 3 variações de frase (4 no Agendamento,
+  7 no Lembrete), o sorteio `Math.random()` virou uma escolha derivada de `$execution.id` e dos 2
+  últimos dígitos do telefone. Assim o texto gravado é exatamente o enviado. Comportamento visível
+  ao cliente: o mesmo; as variações continuam alternando entre execuções.
+- Prompts, AI Agents e demais nodes de Code: inalterados.
+
+**Estratégia.** Em vez de ativar cópias (um `webhookId` diferente faria o n8n re-registrar o webhook
+na Meta), as mudanças foram refeitas nos **rascunhos das originais**, mantendo o trigger com o
+mesmo `webhookId`: zero downtime. As cópias de staging ("… [v2 historico]", inativas) serviram só
+para desenvolver e testar.
+
+**Testes na cópia de staging** (execuções 2007–2038, números fictícios `5511091000NN`, tudo
+limpo depois):
+- entrada gravada antes do caminho principal;
+- saída gravada pelo sub-workflow;
+- `cliente_id` nos agendamentos;
+- status `entregue` e depois `lida`; um `delivered` atrasado foi ignorado;
+- falha proposital no histórico: a resposta ao cliente não mudou;
+- Lembrete antes e depois do Wait;
+- `primeiro_agendamento_em` preenchido (exec. 2036).
+
+Durante os testes, a credencial do Google Calendar expirou (exec. 2009); foi reconectada por José.
+Nenhum cliente real foi afetado (execuções de produção 1999–2006 todas `success`).
+
+**Troca.**
+- Pré-checagem: originais idênticas ao backup (`68c7d91c…` / `56eb95e1…`), sem execuções.
+- Sub-workflow publicado: `38ec1e6c…`.
+- Replay no rascunho das originais: Agendamento 77 operações, Lembrete 67.
+- Comparação nó a nó e conexão a conexão com as cópias de staging: **idêntico**, exceto `id` dos
+  nodes e `webhookId`. Nenhum node pré-existente teve `id` ou `webhookId` alterado.
+- Smoke test no rascunho do Agendamento (número …081, execs. 2081–2083): pergunta, entrada gravada,
+  saída gravada pelo sub-workflow, status `enviada` → `entregue`. Limpo na exec. 2084. O Lembrete
+  não teve smoke test próprio: o rascunho é idêntico à cópia de staging já testada, e um teste
+  com Wait enviaria mensagens reais.
+- Antes de publicar: nenhuma execução `running`/`waiting` e nenhum tráfego havia mais de 10 min.
+- **Publicado com `versionId` explícito, em ~14:50Z:**
+  - Agendamento **`bc334c4a-28a6-4a1b-8eb6-1b01f005e10e`**, trigger ainda com o mesmo `webhookId`;
+  - Lembrete **`051b4e6b-1289-4006-82bc-6fae7fbd8b3c`**.
+- **Rollback:** publicar `68c7d91c…` (Agendamento) / `56eb95e1…` (Lembrete); `workflows/backup/`
+  guarda o JSON sanitizado dessas versões.
+
+**Monitoramento.**
+- **Mensagem real** de José ("Quais serviços vocês têm?", 11:52 em SP, execs. 2085–2092):
+  - cliente criado com o nome do perfil do WhatsApp;
+  - `entrada`/`recebida`, depois `saida` com o texto enviado (execução do sub-workflow 2088);
+  - o `read` da Meta levou a saída a **`lida`**;
+  - todas as execuções `success`.
+
+**Pendências:**
+- **Correção do artigo "o Barba"** no template de cancelamento ("Cancelei o Barba…"). Fica fora
+  desta troca por decisão de José; fazer depois que a v2 estiver estável.
+- Acompanhar a primeira hora, o job das 22h e o lembrete das 8h de amanhã (primeiro com a v2).

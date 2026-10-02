@@ -16,7 +16,13 @@
         240,
         2032
       ],
-      "webhookId": "15600388-12a1-4b4f-97c3-9ac5c8e3f5b0"
+      "webhookId": "SUBSTITUA_PELO_WEBHOOK_ID_DO_TRIGGER",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp OAuth account"
+        }
+      }
     },
     {
       "parameters": {
@@ -448,7 +454,13 @@
         2928,
         1744
       ],
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {},
@@ -543,7 +555,13 @@
       ],
       "executeOnce": true,
       "alwaysOutputData": true,
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Google Calendar account"
+        }
+      }
     },
     {
       "parameters": {
@@ -636,7 +654,13 @@
       "position": [
         4728,
         1976
-      ]
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Anthropic account"
+        }
+      }
     },
     {
       "parameters": {
@@ -695,7 +719,13 @@
         1744
       ],
       "webhookId": "b9830e8b-075e-4199-b316-1e2de130500b",
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1036,7 +1066,13 @@
         5520,
         2240
       ],
-      "webhookId": "c76b05d7-92c4-46f6-a59b-b9a709f9cf73"
+      "webhookId": "c76b05d7-92c4-46f6-a59b-b9a709f9cf73",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1054,7 +1090,13 @@
         7088,
         608
       ],
-      "webhookId": "b9b79706-3de2-4203-a2fa-33493568f3c2"
+      "webhookId": "b9b79706-3de2-4203-a2fa-33493568f3c2",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1104,7 +1146,13 @@
         6416,
         1952
       ],
-      "webhookId": "3a85e614-2104-48de-bb00-d176695e88d0"
+      "webhookId": "3a85e614-2104-48de-bb00-d176695e88d0",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1165,7 +1213,7 @@
       "parameters": {
         "operation": "send",
         "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "5511975049937",
+        "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
         "textBody": "=📩 Dúvida de cliente sobre o negócio (não é erro do sistema)\n\nCliente: {{ $('Normalizar Dados da Mensagem').item.json.nome }} ({{ $('Normalizar Dados da Mensagem').item.json.telefone }})\nMensagem: \"{{ $('Normalizar Dados da Mensagem').item.json.mensagem }}\"\n\nA IA não tem essa informação e avisou o cliente que você vai entrar em contato. Responder: https://wa.me/{{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "additionalFields": {}
       },
@@ -1178,7 +1226,13 @@
         2144
       ],
       "webhookId": "89c8bd2d-eb60-4803-809e-2177c05ad970",
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1196,7 +1250,13 @@
         6416,
         2144
       ],
-      "webhookId": "3b12bf53-4b2e-4fa4-8ba1-e1cd7253c318"
+      "webhookId": "3b12bf53-4b2e-4fa4-8ba1-e1cd7253c318",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1227,7 +1287,13 @@
         5968,
         1760
       ],
-      "webhookId": "11020e6d-a361-40f1-8527-2f50e97b4aa0"
+      "webhookId": "11020e6d-a361-40f1-8527-2f50e97b4aa0",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1294,14 +1360,20 @@
       "position": [
         7536,
         288
-      ]
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Google Calendar account"
+        }
+      }
     },
     {
       "parameters": {
         "operation": "send",
         "phoneNumberId": "1367004446487242",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
-        "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ (nome ? `${nome}, esse` : `Esse`) + ` horário já passou ou está fora do nosso expediente (funcionamos de segunda a sábado, das 9h às 18h). Pode me dizer outro dia ou horário?`, `Esse horário não rola` + (nome ? `, ${nome}` : '') + ` — nosso expediente é de segunda a sábado, 9h às 18h. Qual outro horário funciona pra você?`, `Ops, estamos fechados nesse horário (atendemos seg-sáb, 9h às 18h)` + (nome ? `, ${nome}` : '') + `. Me diz outro dia ou horário que já verifico!` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
+        "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ (nome ? `${nome}, esse` : `Esse`) + ` horário já passou ou está fora do nosso expediente (funcionamos de segunda a sábado, das 9h às 18h). Pode me dizer outro dia ou horário?`, `Esse horário não rola` + (nome ? `, ${nome}` : '') + ` — nosso expediente é de segunda a sábado, 9h às 18h. Qual outro horário funciona pra você?`, `Ops, estamos fechados nesse horário (atendemos seg-sáb, 9h às 18h)` + (nome ? `, ${nome}` : '') + `. Me diz outro dia ou horário que já verifico!` ]; return opcoes[((parseInt(String($execution.id).replace(/\\D/g, '') || '0', 10) + (parseInt(String($('Normalizar Dados da Mensagem').item.json.telefone).replace(/\\D/g, '').slice(-2), 10) || 0)) % opcoes.length)]; })() }}",
         "additionalFields": {}
       },
       "id": "d3f9c555-81c5-4c4f-bec4-fe3ee2959758",
@@ -1312,7 +1384,13 @@
         7536,
         608
       ],
-      "webhookId": "a8c39a59-36d2-4573-92ac-0b067b46ecf8"
+      "webhookId": "a8c39a59-36d2-4573-92ac-0b067b46ecf8",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1384,7 +1462,7 @@
         "operation": "send",
         "phoneNumberId": "1367004446487242",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
-        "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ (nome ? `Poxa, ${nome}, esse horário já ficou ocupado! ` : `Esse horário já ficou ocupado! `) + `Consegue me dizer outro dia ou horário que funcione pra você?`, `Ih, alguém acabou de pegar esse horário` + (nome ? `, ${nome}` : '') + `! Tem outro dia ou horário em mente?`, (nome ? `${nome}, esse` : `Esse`) + ` horário não está mais livre. Qual outro você prefere? Já verifico a disponibilidade certinho.` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
+        "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ (nome ? `Poxa, ${nome}, esse horário já ficou ocupado! ` : `Esse horário já ficou ocupado! `) + `Consegue me dizer outro dia ou horário que funcione pra você?`, `Ih, alguém acabou de pegar esse horário` + (nome ? `, ${nome}` : '') + `! Tem outro dia ou horário em mente?`, (nome ? `${nome}, esse` : `Esse`) + ` horário não está mais livre. Qual outro você prefere? Já verifico a disponibilidade certinho.` ]; return opcoes[((parseInt(String($execution.id).replace(/\\D/g, '') || '0', 10) + (parseInt(String($('Normalizar Dados da Mensagem').item.json.telefone).replace(/\\D/g, '').slice(-2), 10) || 0)) % opcoes.length)]; })() }}",
         "additionalFields": {}
       },
       "id": "1f35f963-f3d5-4c68-8efa-cdfcb90abd59",
@@ -1395,7 +1473,13 @@
         7984,
         608
       ],
-      "webhookId": "44036fe1-3a21-4755-a661-02644d17b782"
+      "webhookId": "44036fe1-3a21-4755-a661-02644d17b782",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1418,7 +1502,13 @@
       "position": [
         8208,
         192
-      ]
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Google Calendar account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1436,7 +1526,13 @@
         8208,
         608
       ],
-      "webhookId": "8bbfd959-f435-4305-ad32-cb1ee557981a"
+      "webhookId": "8bbfd959-f435-4305-ad32-cb1ee557981a",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1492,12 +1588,18 @@
       "position": [
         8208,
         1008
-      ]
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Google Calendar account"
+        }
+      }
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO agendamentos (\n  profissional_id, servico_id, cliente_nome, cliente_telefone,\n  beneficiario, data_hora_inicio, data_hora_fim, status,\n  google_event_id, observacoes\n)\nVALUES (\n  $1,\n  (SELECT id FROM servicos WHERE ativo = true AND lower(nome) = lower($2) LIMIT 1),\n  $3, $4, $5, $6, $7, 'agendado', $8, $9\n)\nRETURNING id, google_event_id AS event_id;",
+        "query": "INSERT INTO agendamentos (\n  profissional_id, servico_id, cliente_nome, cliente_telefone,\n  beneficiario, data_hora_inicio, data_hora_fim, status,\n  google_event_id, observacoes, cliente_id\n)\nVALUES (\n  $1,\n  (SELECT id FROM servicos WHERE ativo = true AND lower(nome) = lower($2) LIMIT 1),\n  $3, $4, $5, $6, $7, 'agendado', $8, $9,\n  (SELECT id FROM clientes WHERE telefone = regexp_replace($4, '\\D', '', 'g'))\n)\nRETURNING id, google_event_id AS event_id;",
         "options": {
           "queryReplacement": "={{ [\n  $('Buscar Profissional Ativo').item.json.profissional_id,\n  $('Interpretar Intenção do Cliente').item.json.output.servico,\n  $('Interpretar Intenção do Cliente').item.json.output.nome_cliente,\n  $('Normalizar Dados da Mensagem').item.json.telefone,\n  $('Interpretar Intenção do Cliente').item.json.output.beneficiario || 'Eu mesmo',\n  DateTime.fromISO($('Interpretar Intenção do Cliente').item.json.output.data_hora_inicio, { zone: 'America/Sao_Paulo' }).toISO(),\n  $('Validar Horário de Funcionamento').item.json.output.data_hora_fim,\n  $('Criar Evento no Calendar').item.json.id,\n  'Serviço informado pelo cliente/IA: ' + $('Interpretar Intenção do Cliente').item.json.output.servico\n] }}"
         }
@@ -1534,7 +1636,13 @@
         8656,
         96
       ],
-      "webhookId": "61381782-b182-4e21-8564-103779ad76c1"
+      "webhookId": "61381782-b182-4e21-8564-103779ad76c1",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1704,7 +1812,13 @@
         6640,
         1280
       ],
-      "webhookId": "9dc7dc3a-29e0-4eee-a97e-211ab718bb44"
+      "webhookId": "9dc7dc3a-29e0-4eee-a97e-211ab718bb44",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1786,7 +1900,13 @@
         7312,
         912
       ],
-      "alwaysOutputData": true
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Google Calendar account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1873,7 +1993,13 @@
         8656,
         704
       ],
-      "webhookId": "597df3f3-9906-4fda-9a58-cfbcd211f7d4"
+      "webhookId": "597df3f3-9906-4fda-9a58-cfbcd211f7d4",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1980,7 +2106,13 @@
       "position": [
         6416,
         1328
-      ]
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Google Calendar account"
+        }
+      }
     },
     {
       "parameters": {
@@ -2019,7 +2151,7 @@
         "operation": "send",
         "phoneNumberId": "1367004446487242",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
-        "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ `Não encontrei nenhum agendamento ativo pra esse número` + (nome ? `, ${nome}` : '') + `. Quer marcar um horário novo?`, (nome ? `${nome}, não` : `Não`) + ` achei nenhum horário marcado aqui pra você. Vamos agendar um?`, `Por aqui não consta nenhum agendamento seu no momento` + (nome ? `, ${nome}` : '') + `. Posso te ajudar a marcar um horário?` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
+        "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ `Não encontrei nenhum agendamento ativo pra esse número` + (nome ? `, ${nome}` : '') + `. Quer marcar um horário novo?`, (nome ? `${nome}, não` : `Não`) + ` achei nenhum horário marcado aqui pra você. Vamos agendar um?`, `Por aqui não consta nenhum agendamento seu no momento` + (nome ? `, ${nome}` : '') + `. Posso te ajudar a marcar um horário?` ]; return opcoes[((parseInt(String($execution.id).replace(/\\D/g, '') || '0', 10) + (parseInt(String($('Normalizar Dados da Mensagem').item.json.telefone).replace(/\\D/g, '').slice(-2), 10) || 0)) % opcoes.length)]; })() }}",
         "additionalFields": {}
       },
       "id": "fc944ed0-d4b8-4cdf-9c14-d2e31953159a",
@@ -2030,7 +2162,13 @@
         6640,
         1712
       ],
-      "webhookId": "81c64927-279c-4da0-9a26-790df84208d2"
+      "webhookId": "81c64927-279c-4da0-9a26-790df84208d2",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -2048,20 +2186,20 @@
         6640,
         1472
       ],
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
           "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
           "name": "Supabase - agendazap-core"
         }
-      },
-      "alwaysOutputData": true
+      }
     },
     {
       "parameters": {
         "operation": "send",
         "phoneNumberId": "1367004446487242",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
-        "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const zona = 'America/Sao_Paulo'; const dt = DateTime.fromISO(String(r.data), { zone: zona }); const dif = dt.startOf('day').diff($now.setZone(zona).startOf('day'), 'days').days; const hora = dt.toFormat(dt.minute ? \"H'h'mm\" : \"H'h'\"); const quando = dif === 0 ? `de hoje, às ${hora}` : dif === 1 ? `de amanhã, às ${hora}` : `de ${dt.setLocale('pt-BR').toFormat(\"cccc, 'dia' d 'de' LLLL\")}, às ${hora}`; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const b = String(r.beneficiario ?? '').trim(); const para = b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : ''; const opcoes = [ `Pronto${nome ? `, ${nome}` : ''}! Cancelei o ${r.servico}${para} ${quando}. Quando quiser remarcar, é só chamar.`, `Tudo certo, o ${r.servico}${para} ${quando} foi cancelado. Se quiser marcar de novo, é só me chamar!`, `Cancelado${nome ? `, ${nome}` : ''}: ${r.servico}${para} ${quando}. Fico à disposição pra quando quiser voltar!` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
+        "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const zona = 'America/Sao_Paulo'; const dt = DateTime.fromISO(String(r.data), { zone: zona }); const dif = dt.startOf('day').diff($now.setZone(zona).startOf('day'), 'days').days; const hora = dt.toFormat(dt.minute ? \"H'h'mm\" : \"H'h'\"); const quando = dif === 0 ? `de hoje, às ${hora}` : dif === 1 ? `de amanhã, às ${hora}` : `de ${dt.setLocale('pt-BR').toFormat(\"cccc, 'dia' d 'de' LLLL\")}, às ${hora}`; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const b = String(r.beneficiario ?? '').trim(); const para = b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : ''; const opcoes = [ `Pronto${nome ? `, ${nome}` : ''}! Cancelei o ${r.servico}${para} ${quando}. Quando quiser remarcar, é só chamar.`, `Tudo certo, o ${r.servico}${para} ${quando} foi cancelado. Se quiser marcar de novo, é só me chamar!`, `Cancelado${nome ? `, ${nome}` : ''}: ${r.servico}${para} ${quando}. Fico à disposição pra quando quiser voltar!` ]; return opcoes[((parseInt(String($execution.id).replace(/\\D/g, '') || '0', 10) + (parseInt(String($('Normalizar Dados da Mensagem').item.json.telefone).replace(/\\D/g, '').slice(-2), 10) || 0)) % opcoes.length)]; })() }}",
         "additionalFields": {}
       },
       "id": "a38a0655-2764-4da7-b71d-33133e8b3b2b",
@@ -2072,7 +2210,13 @@
         7088,
         1184
       ],
-      "webhookId": "04269168-f0bf-4c6a-8e38-588a94bc1e8d"
+      "webhookId": "04269168-f0bf-4c6a-8e38-588a94bc1e8d",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "parameters": {
@@ -2147,14 +2291,6 @@
       ]
     },
     {
-      "id": "7699eed0-bf4a-4f43-b2ea-735cc8e3d786",
-      "name": "Horário Foi Ocupado? (Agendar)",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        8656,
-        448
-      ],
       "parameters": {
         "conditions": {
           "options": {
@@ -2176,17 +2312,17 @@
           ]
         },
         "options": {}
-      }
+      },
+      "id": "7699eed0-bf4a-4f43-b2ea-735cc8e3d786",
+      "name": "Horário Foi Ocupado? (Agendar)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        8656,
+        448
+      ]
     },
     {
-      "id": "29961093-cca0-43e9-84c1-20b240a4d35e",
-      "name": "Desfazer Evento Criado no Calendar",
-      "type": "n8n-nodes-base.googleCalendar",
-      "typeVersion": 1.3,
-      "position": [
-        8880,
-        304
-      ],
       "parameters": {
         "operation": "delete",
         "calendar": {
@@ -2197,17 +2333,23 @@
         "eventId": "={{ $('Criar Evento no Calendar').item.json.id }}",
         "options": {}
       },
-      "onError": "continueRegularOutput"
-    },
-    {
-      "id": "216378e1-8175-4db8-9165-bc5d993418a7",
-      "name": "Preparar Aviso de Horário Ocupado (Agendar)",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "id": "29961093-cca0-43e9-84c1-20b240a4d35e",
+      "name": "Desfazer Evento Criado no Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
       "position": [
-        9104,
+        8880,
         304
       ],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
       "parameters": {
         "assignments": {
           "assignments": [
@@ -2220,9 +2362,24 @@
           ]
         },
         "options": {}
-      }
+      },
+      "id": "216378e1-8175-4db8-9165-bc5d993418a7",
+      "name": "Preparar Aviso de Horário Ocupado (Agendar)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        9104,
+        304
+      ]
     },
     {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+        "textBody": "={{ $json.mensagem_cliente }}",
+        "additionalFields": {}
+      },
       "id": "c719523e-fb84-4183-b745-c00e8d890440",
       "name": "Avisar Horário Recém-Ocupado no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
@@ -2231,24 +2388,15 @@
         9328,
         304
       ],
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
-        "textBody": "={{ $json.mensagem_cliente }}",
-        "additionalFields": {}
-      },
-      "webhookId": "3d45c509-ed8b-4d6e-8152-f9be24efe3eb"
+      "webhookId": "3d45c509-ed8b-4d6e-8152-f9be24efe3eb",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
-      "id": "e659eca9-2ef3-428e-9402-a0d0e823eebc",
-      "name": "Corrigir Memória da Conversa (Agendar)",
-      "type": "@n8n/n8n-nodes-langchain.memoryManager",
-      "typeVersion": 1.1,
-      "position": [
-        9552,
-        208
-      ],
       "parameters": {
         "mode": "insert",
         "messages": {
@@ -2259,9 +2407,20 @@
             }
           ]
         }
-      }
+      },
+      "id": "e659eca9-2ef3-428e-9402-a0d0e823eebc",
+      "name": "Corrigir Memória da Conversa (Agendar)",
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        9552,
+        208
+      ]
     },
     {
+      "parameters": {
+        "errorMessage": "={{ (() => { const ag = $('Horário Foi Ocupado? (Agendar)').isExecuted; const rm = !ag && $('Horário Foi Ocupado? (Remarcar)').isExecuted; const e = ag ? $('Horário Foi Ocupado? (Agendar)').item.json : (rm ? $('Horário Foi Ocupado? (Remarcar)').item.json : $json); const base = 'Falha ao gravar no banco ' + (rm ? 'a remarcação' : 'o agendamento') + ' de ' + $('Normalizar Dados da Mensagem').item.json.nome + ' (' + $('Normalizar Dados da Mensagem').item.json.telefone + '): ' + (e.message ?? JSON.stringify(e)) + (e.error?.description ? ' — ' + e.error.description : ''); if (!rm) return base; const r = $('Restaurar Evento no Calendar (Remarcar, Erro no Banco)'); const restaurado = r.isExecuted && !r.item.json.error; return base + (restaurado ? ' O evento ' + $('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id + ' foi restaurado no Calendar ao horário original; o cliente foi avisado.' : ' ATENÇÃO: o evento ' + $('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id + ' NÃO foi restaurado no Calendar (horário original não lido do banco) e pode estar no novo horário pedido; o cliente foi avisado. Confira e corrija manualmente.'); })() }}"
+      },
       "id": "522cc4a3-f36b-4f03-b436-4fce5eb6e966",
       "name": "Escalar Erro ao Gravar Agendamento no Banco",
       "type": "n8n-nodes-base.stopAndError",
@@ -2269,20 +2428,9 @@
       "position": [
         9904,
         1008
-      ],
-      "parameters": {
-        "errorMessage": "={{ (() => { const ag = $('Horário Foi Ocupado? (Agendar)').isExecuted; const rm = !ag && $('Horário Foi Ocupado? (Remarcar)').isExecuted; const e = ag ? $('Horário Foi Ocupado? (Agendar)').item.json : (rm ? $('Horário Foi Ocupado? (Remarcar)').item.json : $json); const base = 'Falha ao gravar no banco ' + (rm ? 'a remarcação' : 'o agendamento') + ' de ' + $('Normalizar Dados da Mensagem').item.json.nome + ' (' + $('Normalizar Dados da Mensagem').item.json.telefone + '): ' + (e.message ?? JSON.stringify(e)) + (e.error?.description ? ' — ' + e.error.description : ''); if (!rm) return base; const r = $('Restaurar Evento no Calendar (Remarcar, Erro no Banco)'); const restaurado = r.isExecuted && !r.item.json.error; return base + (restaurado ? ' O evento ' + $('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id + ' foi restaurado no Calendar ao horário original; o cliente foi avisado.' : ' ATENÇÃO: o evento ' + $('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id + ' NÃO foi restaurado no Calendar (horário original não lido do banco) e pode estar no novo horário pedido; o cliente foi avisado. Confira e corrija manualmente.'); })() }}"
-      }
+      ]
     },
     {
-      "id": "04299382-f2b6-4ae7-8b9f-8976320d8556",
-      "name": "Horário Foi Ocupado? (Remarcar)",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        8656,
-        1104
-      ],
       "parameters": {
         "conditions": {
           "options": {
@@ -2304,9 +2452,24 @@
           ]
         },
         "options": {}
-      }
+      },
+      "id": "04299382-f2b6-4ae7-8b9f-8976320d8556",
+      "name": "Horário Foi Ocupado? (Remarcar)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        8656,
+        1104
+      ]
     },
     {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  to_char(data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_inicio,\n  to_char(data_hora_fim AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_fim\nFROM agendamentos\nWHERE google_event_id = $1\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [$('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id] }}"
+        }
+      },
       "id": "8f9664fe-4e1e-4c66-9ecc-92559339ac53",
       "name": "Buscar Horário Original (Remarcar)",
       "type": "n8n-nodes-base.postgres",
@@ -2315,30 +2478,15 @@
         8880,
         896
       ],
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT\n  to_char(data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_inicio,\n  to_char(data_hora_fim AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_fim\nFROM agendamentos\nWHERE google_event_id = $1\nLIMIT 1;",
-        "options": {
-          "queryReplacement": "={{ [$('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id] }}"
-        }
-      },
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
           "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
           "name": "Supabase - agendazap-core"
         }
-      },
-      "alwaysOutputData": true
+      }
     },
     {
-      "id": "5d745bd7-8342-4065-8c51-06f67e512765",
-      "name": "Restaurar Evento no Calendar (Remarcar)",
-      "type": "n8n-nodes-base.googleCalendar",
-      "typeVersion": 1.3,
-      "position": [
-        9328,
-        800
-      ],
       "parameters": {
         "operation": "update",
         "calendar": {
@@ -2352,17 +2500,23 @@
           "start": "={{ $json.data_hora_inicio }}"
         }
       },
-      "onError": "continueRegularOutput"
-    },
-    {
-      "id": "893bbcbc-fe9b-453c-b4ad-cb0835634591",
-      "name": "Preparar Aviso de Horário Ocupado (Remarcar)",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "id": "5d745bd7-8342-4065-8c51-06f67e512765",
+      "name": "Restaurar Evento no Calendar (Remarcar)",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
       "position": [
-        9616,
+        9328,
         800
       ],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
       "parameters": {
         "assignments": {
           "assignments": [
@@ -2375,9 +2529,24 @@
           ]
         },
         "options": {}
-      }
+      },
+      "id": "893bbcbc-fe9b-453c-b4ad-cb0835634591",
+      "name": "Preparar Aviso de Horário Ocupado (Remarcar)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        9616,
+        800
+      ]
     },
     {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+        "textBody": "={{ $json.mensagem_cliente }}",
+        "additionalFields": {}
+      },
       "id": "58b4007e-9d51-4d41-9018-6a804f00f03e",
       "name": "Avisar Horário Recém-Ocupado no WhatsApp (Remarcar)",
       "type": "n8n-nodes-base.whatsApp",
@@ -2386,24 +2555,15 @@
         9904,
         1200
       ],
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
-        "textBody": "={{ $json.mensagem_cliente }}",
-        "additionalFields": {}
-      },
-      "webhookId": "dc768c75-b50a-40d5-98b2-6d1527ec4773"
+      "webhookId": "dc768c75-b50a-40d5-98b2-6d1527ec4773",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
-      "id": "e5690df5-a17a-4357-b8bb-17f96a568110",
-      "name": "Corrigir Memória da Conversa (Remarcar)",
-      "type": "@n8n/n8n-nodes-langchain.memoryManager",
-      "typeVersion": 1.1,
-      "position": [
-        10128,
-        1200
-      ],
       "parameters": {
         "mode": "insert",
         "messages": {
@@ -2414,17 +2574,17 @@
             }
           ]
         }
-      }
+      },
+      "id": "e5690df5-a17a-4357-b8bb-17f96a568110",
+      "name": "Corrigir Memória da Conversa (Remarcar)",
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        10128,
+        1200
+      ]
     },
     {
-      "id": "bfae85ab-0537-4713-a999-e9c75047db46",
-      "name": "Cancelamento Gravado no Banco?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        6864,
-        1472
-      ],
       "parameters": {
         "conditions": {
           "options": {
@@ -2448,9 +2608,24 @@
           ]
         },
         "options": {}
-      }
+      },
+      "id": "bfae85ab-0537-4713-a999-e9c75047db46",
+      "name": "Cancelamento Gravado no Banco?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        6864,
+        1472
+      ]
     },
     {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+        "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir o cancelamento do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar tudo certinho.`; })() }}",
+        "additionalFields": {}
+      },
       "id": "a8e7a40b-cc80-4adc-9ebf-bdc75ebefa46",
       "name": "Avisar Cliente Sobre Erro no Cancelamento",
       "type": "n8n-nodes-base.whatsApp",
@@ -2459,17 +2634,19 @@
         7088,
         1568
       ],
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
-        "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir o cancelamento do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar tudo certinho.`; })() }}",
-        "additionalFields": {}
-      },
+      "webhookId": "e31db393-05f8-428b-916d-1f15cb407c1d",
       "onError": "continueRegularOutput",
-      "webhookId": "e31db393-05f8-428b-916d-1f15cb407c1d"
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
+      "parameters": {
+        "errorMessage": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const c = $('Normalizar Dados da Mensagem').item.json; return `Cancelamento não gravado no banco para ${c.nome} (${c.telefone}): o evento ${r.event_id} (${r.servico} em ${r.data}) já foi apagado do Calendar, mas o UPDATE não encontrou nenhuma linha em agendamentos com esse google_event_id. O cliente foi avisado de que a equipe vai entrar em contato — confira o banco e o Calendar e responda manualmente.`; })() }}"
+      },
       "id": "113d4bac-a0c1-4081-bbc2-ecfcf21f8d0c",
       "name": "Escalar Cancelamento Não Gravado no Banco",
       "type": "n8n-nodes-base.stopAndError",
@@ -2477,20 +2654,9 @@
       "position": [
         7312,
         1568
-      ],
-      "parameters": {
-        "errorMessage": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const c = $('Normalizar Dados da Mensagem').item.json; return `Cancelamento não gravado no banco para ${c.nome} (${c.telefone}): o evento ${r.event_id} (${r.servico} em ${r.data}) já foi apagado do Calendar, mas o UPDATE não encontrou nenhuma linha em agendamentos com esse google_event_id. O cliente foi avisado de que a equipe vai entrar em contato — confira o banco e o Calendar e responda manualmente.`; })() }}"
-      }
+      ]
     },
     {
-      "id": "1c3ad478-206e-4419-b289-28724b62db58",
-      "name": "Encontrou Horário Original? (Remarcar)",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        9104,
-        896
-      ],
       "parameters": {
         "conditions": {
           "options": {
@@ -2514,9 +2680,24 @@
           ]
         },
         "options": {}
-      }
+      },
+      "id": "1c3ad478-206e-4419-b289-28724b62db58",
+      "name": "Encontrou Horário Original? (Remarcar)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        9104,
+        896
+      ]
     },
     {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+        "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir a remarcação do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
+        "additionalFields": {}
+      },
       "id": "584bc9a5-7d3a-4807-86db-f7142a01fda7",
       "name": "Avisar Cliente Sobre Erro na Remarcação",
       "type": "n8n-nodes-base.whatsApp",
@@ -2525,17 +2706,19 @@
         9328,
         992
       ],
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
-        "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir a remarcação do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
-        "additionalFields": {}
-      },
+      "webhookId": "ed1f7741-4b7a-4a28-a114-efad72da539e",
       "onError": "continueRegularOutput",
-      "webhookId": "ed1f7741-4b7a-4a28-a114-efad72da539e"
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
+      "parameters": {
+        "errorMessage": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const c = $('Normalizar Dados da Mensagem').item.json; const novo = $('Interpretar Intenção do Cliente').item.json.output.data_hora_inicio; return `Remarcação de ${c.nome} (${c.telefone}) não concluída: o novo horário pedido (${novo}) bateu com outro agendamento no banco, e o evento ${r.event_id} já tinha sido movido para esse horário no Calendar. Não foi possível restaurá-lo porque nenhuma linha em agendamentos tem esse google_event_id (a linha pode ter sido apagada). Horário original lido antes: ${r.servico} em ${r.data}. O cliente foi avisado de que a equipe vai entrar em contato — confira o banco e o Calendar e resolva manualmente.`; })() }}"
+      },
       "id": "418fdf15-e214-4286-9c2a-cba505ecc470",
       "name": "Escalar Remarcação Sem Horário Original no Banco",
       "type": "n8n-nodes-base.stopAndError",
@@ -2543,20 +2726,9 @@
       "position": [
         9616,
         992
-      ],
-      "parameters": {
-        "errorMessage": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const c = $('Normalizar Dados da Mensagem').item.json; const novo = $('Interpretar Intenção do Cliente').item.json.output.data_hora_inicio; return `Remarcação de ${c.nome} (${c.telefone}) não concluída: o novo horário pedido (${novo}) bateu com outro agendamento no banco, e o evento ${r.event_id} já tinha sido movido para esse horário no Calendar. Não foi possível restaurá-lo porque nenhuma linha em agendamentos tem esse google_event_id (a linha pode ter sido apagada). Horário original lido antes: ${r.servico} em ${r.data}. O cliente foi avisado de que a equipe vai entrar em contato — confira o banco e o Calendar e resolva manualmente.`; })() }}"
-      }
+      ]
     },
     {
-      "id": "477062bd-43d1-4a36-be68-bb527fa7f34b",
-      "name": "Registrar Lock do Telefone (Encaminhamento)",
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1.1,
-      "position": [
-        2256,
-        2064
-      ],
       "parameters": {
         "operation": "upsert",
         "dataTableId": {
@@ -2601,17 +2773,17 @@
           ]
         },
         "options": {}
-      }
+      },
+      "id": "477062bd-43d1-4a36-be68-bb527fa7f34b",
+      "name": "Registrar Lock do Telefone (Encaminhamento)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2256,
+        2064
+      ]
     },
     {
-      "id": "86904cec-5595-4bf3-b2d9-67925bb80993",
-      "name": "Desfazer Evento Criado no Calendar (Erro no Banco)",
-      "type": "n8n-nodes-base.googleCalendar",
-      "typeVersion": 1.3,
-      "position": [
-        9328,
-        608
-      ],
       "parameters": {
         "operation": "delete",
         "calendar": {
@@ -2622,9 +2794,30 @@
         "eventId": "={{ $('Criar Evento no Calendar').item.json.id }}",
         "options": {}
       },
-      "onError": "continueRegularOutput"
+      "id": "86904cec-5595-4bf3-b2d9-67925bb80993",
+      "name": "Desfazer Evento Criado no Calendar (Erro no Banco)",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        9328,
+        608
+      ],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Google Calendar account"
+        }
+      }
     },
     {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+        "textBody": "={{ (() => { const servico = $('Interpretar Intenção do Cliente').item.json.output.servico; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir o agendamento do seu ${servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
+        "additionalFields": {}
+      },
       "id": "314ce573-8e73-43ef-b558-98b4fd1312f0",
       "name": "Avisar Cliente Sobre Erro no Agendamento",
       "type": "n8n-nodes-base.whatsApp",
@@ -2633,17 +2826,23 @@
         9616,
         608
       ],
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
-        "textBody": "={{ (() => { const servico = $('Interpretar Intenção do Cliente').item.json.output.servico; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir o agendamento do seu ${servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
-        "additionalFields": {}
-      },
+      "webhookId": "a273d961-c576-4a37-8069-7d4edc5d1a62",
       "onError": "continueRegularOutput",
-      "webhookId": "a273d961-c576-4a37-8069-7d4edc5d1a62"
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  to_char(data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_inicio,\n  to_char(data_hora_fim AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_fim\nFROM agendamentos\nWHERE google_event_id = $1\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [$('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id] }}"
+        }
+      },
       "id": "e0382330-f3f0-41ca-9710-c204eab3b2aa",
       "name": "Buscar Horário Original (Remarcar, Erro no Banco)",
       "type": "n8n-nodes-base.postgres",
@@ -2652,15 +2851,8 @@
         8880,
         1296
       ],
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT\n  to_char(data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_inicio,\n  to_char(data_hora_fim AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data_hora_fim\nFROM agendamentos\nWHERE google_event_id = $1\nLIMIT 1;",
-        "options": {
-          "queryReplacement": "={{ [$('Identificar Agendamento Escolhido (Remarcar)').item.json.event_id] }}"
-        }
-      },
-      "onError": "continueRegularOutput",
       "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
       "credentials": {
         "postgres": {
           "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
@@ -2669,14 +2861,6 @@
       }
     },
     {
-      "id": "aee54070-5398-4723-b94a-a89ff3ae4fae",
-      "name": "Encontrou Horário Original? (Remarcar, Erro no Banco)",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        9104,
-        1296
-      ],
       "parameters": {
         "conditions": {
           "options": {
@@ -2700,17 +2884,17 @@
           ]
         },
         "options": {}
-      }
+      },
+      "id": "aee54070-5398-4723-b94a-a89ff3ae4fae",
+      "name": "Encontrou Horário Original? (Remarcar, Erro no Banco)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        9104,
+        1296
+      ]
     },
     {
-      "id": "034b3bc1-f8a2-4b12-be53-f1deee68cc63",
-      "name": "Restaurar Evento no Calendar (Remarcar, Erro no Banco)",
-      "type": "n8n-nodes-base.googleCalendar",
-      "typeVersion": 1.3,
-      "position": [
-        9328,
-        1184
-      ],
       "parameters": {
         "operation": "update",
         "calendar": {
@@ -2724,9 +2908,30 @@
           "start": "={{ $json.data_hora_inicio }}"
         }
       },
-      "onError": "continueRegularOutput"
+      "id": "034b3bc1-f8a2-4b12-be53-f1deee68cc63",
+      "name": "Restaurar Evento no Calendar (Remarcar, Erro no Banco)",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        9328,
+        1184
+      ],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Google Calendar account"
+        }
+      }
     },
     {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1367004446487242",
+        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+        "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir a remarcação do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
+        "additionalFields": {}
+      },
       "id": "c15ca9b9-a184-41ad-b24f-c319c4d0ad1d",
       "name": "Avisar Cliente Sobre Erro na Remarcação (Erro no Banco)",
       "type": "n8n-nodes-base.whatsApp",
@@ -2735,15 +2940,14 @@
         9616,
         1296
       ],
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
-        "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir a remarcação do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
-        "additionalFields": {}
-      },
+      "webhookId": "e773d38d-e958-4b0e-92e2-838106d35a36",
       "onError": "continueRegularOutput",
-      "webhookId": "e773d38d-e958-4b0e-92e2-838106d35a36"
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "id": "4df256b5-a14f-4817-8a1d-804705274084",
@@ -2812,12 +3016,18 @@
       "parameters": {
         "operation": "send",
         "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "5511975049937",
+        "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
         "textBody": "=📩 Nova mensagem do mesmo cliente (já tinha sido encaminhado há pouco; não é erro do sistema)\n\nCliente: {{ $('Normalizar Dados da Mensagem').item.json.nome }} ({{ $('Normalizar Dados da Mensagem').item.json.telefone }})\nMensagem: \"{{ $('Normalizar Dados da Mensagem').item.json.mensagem }}\"\n\nResponder: https://wa.me/{{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "additionalFields": {}
       },
       "onError": "continueRegularOutput",
-      "webhookId": "10a22756-cfd5-475f-a2f5-9d050813e9a7"
+      "webhookId": "10a22756-cfd5-475f-a2f5-9d050813e9a7",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "WhatsApp account"
+        }
+      }
     },
     {
       "id": "d22305b4-a8b6-4f4b-b8bb-4304feb3e726",
@@ -2855,6 +3065,1952 @@
       "parameters": {
         "jsCode": "const ZONA = 'America/Sao_Paulo';\nconst NOMES = { seg: 'segunda', ter: 'terça', qua: 'quarta', qui: 'quinta', sex: 'sexta', sab: 'sábado', dom: 'domingo' };\nconst ORDEM = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']; // Luxon: weekday 1 = segunda\nconst hoje = ORDEM[DateTime.now().setZone(ZONA).weekday - 1];\nconst linhas = $input.all().map(i => i.json);\n\n// Se a leitura do banco falhou, o node devolve { error } — a IA não pode contar com a lista.\nconst bancoConsultado = !linhas.some(r => r.error);\nconst ativos = linhas.filter(r => r.nome);\n\nconst hora = h => {\n  const [hh, mm] = String(h ?? '').split(':');\n  return `${Number(hh)}h${mm && mm !== '00' ? mm : ''}`;\n};\n\nconst profissionaisAtivos = !bancoConsultado\n  ? 'INDISPONÍVEL — não foi possível consultar os profissionais agora.'\n  : ativos.length\n    ? ativos.map(r => {\n        const dias = (Array.isArray(r.dias_trabalho) ? r.dias_trabalho : String(r.dias_trabalho ?? '').replace(/[{}]/g, '').split(','))\n          .map(d => String(d).trim())\n          .filter(Boolean);\n        const diasTexto = ORDEM.filter(d => dias.includes(d)).map(d => NOMES[d]).join(', ');\n        const atendeHoje = dias.includes(hoje) ? 'atende' : 'não atende';\n        const servicos = r.servicos ? ` — serviços: ${r.servicos}` : '';\n        return `- ${r.nome} — trabalha ${diasTexto}, das ${hora(r.horario_inicio)} às ${hora(r.horario_fim)} — hoje (${NOMES[hoje]}): ${atendeHoje}${servicos}`;\n      }).join('\\n')\n    : 'Nenhum profissional ativo no cadastro.';\n\nreturn [{\n  json: {\n    ...$('Formatar Agendamentos Ativos').first().json,\n    profissionais_ativos: profissionaisAtivos\n  }\n}];\n"
       }
+    },
+    {
+      "id": "f68bafb9-ea0e-478c-a14f-4f01e9779737",
+      "name": "Registrar Mensagem Recebida no Histórico",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        912,
+        1840
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH c AS (\n  INSERT INTO clientes (telefone, nome, primeiro_contato_em, ultimo_contato_em)\n  VALUES (regexp_replace($1, '\\D', '', 'g'), NULLIF(btrim($2), ''), to_timestamp($3::double precision), to_timestamp($3::double precision))\n  ON CONFLICT (telefone) DO UPDATE SET\n    ultimo_contato_em = greatest(clientes.ultimo_contato_em, EXCLUDED.ultimo_contato_em),\n    nome = COALESCE(clientes.nome, EXCLUDED.nome)\n  RETURNING id\n)\nINSERT INTO mensagens (cliente_id, wa_message_id, direcao, tipo, conteudo, status, criado_em)\nSELECT c.id, NULLIF($4, ''), 'entrada', $5, $6, 'recebida', to_timestamp($3::double precision)\nFROM c\nON CONFLICT (wa_message_id) DO NOTHING\nRETURNING id, cliente_id, wa_message_id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Normalizar Dados da Mensagem').item.json.telefone, $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '', $('Receber Mensagem WhatsApp').item.json.messages?.[0]?.timestamp ?? String(Math.floor(Date.now() / 1000)), $('Normalizar Dados da Mensagem').item.json.message_id, ({ text: 'texto', reaction: 'reacao', audio: 'audio', image: 'imagem', video: 'video', document: 'documento', sticker: 'figurinha', location: 'localizacao', button: 'botao', interactive: 'interativo' })[$('Receber Mensagem WhatsApp').item.json.messages?.[0]?.type] ?? ($('Receber Mensagem WhatsApp').item.json.messages?.[0]?.type || 'texto'), $('Receber Mensagem WhatsApp').item.json.messages?.[0]?.text?.body ?? $('Receber Mensagem WhatsApp').item.json.messages?.[0]?.reaction?.emoji ?? '' ] }}"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "postgres": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Supabase - agendazap-core"
+        }
+      }
+    },
+    {
+      "id": "908c3b59-d37e-444e-9ae0-3d52993fcb52",
+      "name": "Preparar Atualização de Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        2224
+      ],
+      "parameters": {
+        "jsCode": "// Callbacks de status da Meta (sent/delivered/read/failed) -> um item por status.\n// Mensagens normais não têm \"statuses\" e não geram item (o ramo termina aqui).\nconst MAPA = { sent: 'enviada', delivered: 'entregue', read: 'lida', failed: 'falhou' };\nconst saida = [];\nfor (const item of $input.all()) {\n  for (const s of item.json.statuses ?? []) {\n    if (s?.id && MAPA[s.status]) saida.push({ json: { wa_message_id: s.id, status: MAPA[s.status] } });\n  }\n}\nreturn saida;"
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "4fef1dbf-457c-4149-a718-43dd69d547f1",
+      "name": "Atualizar Status da Mensagem no Histórico",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        688,
+        2224
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE mensagens m\nSET status = $2::text::status_mensagem\nWHERE m.wa_message_id = $1\n  AND m.direcao = 'saida'\n  -- nunca volta atrás (a Meta pode mandar \"read\" antes de \"delivered\"); \"falhou\" é final\n  AND (CASE m.status WHEN 'enviada' THEN 1 WHEN 'entregue' THEN 2 WHEN 'lida' THEN 3 WHEN 'falhou' THEN 9 ELSE 0 END)\n    < (CASE $2::text WHEN 'enviada' THEN 1 WHEN 'entregue' THEN 2 WHEN 'lida' THEN 3 WHEN 'falhou' THEN 9 ELSE 0 END)\nRETURNING m.id, m.wa_message_id, m.status;",
+        "options": {
+          "queryReplacement": "={{ [ $json.wa_message_id, $json.status ] }}"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "postgres": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Supabase - agendazap-core"
+        }
+      }
+    },
+    {
+      "id": "2162c0f8-9040-405b-a671-e6d1a3742afe",
+      "name": "Registrar no Histórico: Avisar Cliente Sobre Falha da IA",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        5184,
+        1568
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "=Opa, me enrolei aqui pra entender sua última mensagem 😅 Já chamei alguém da equipe pra confirmar isso direitinho com você — em instantes te respondem por aqui.",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "e30231c7-62c7-4f9b-a974-0a6765eb07f2",
+      "name": "Registrar no Histórico: Recusar Assunto Fora do Escopo no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        5632,
+        2064
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "Isso eu não consigo responder por aqui 😅 Mas posso te ajudar com a Barbearia ZAP: quer marcar um horário? É só me dizer o serviço e o dia.",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "762f3e12-afdd-4b28-bc21-c782628a4066",
+      "name": "Registrar no Histórico: Responder Dúvida no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        7200,
+        432
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "bf817a9d-ffdd-454e-8834-3066871091c2",
+      "name": "Registrar no Histórico: Avisar Dúvida Já Encaminhada no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        6528,
+        1776
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "Já repassei sua mensagem pro responsável da Barbearia ZAP — aguarde o contato dele, por favor. 🙂",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "5c484b06-3de6-469d-99fb-9453ef9ba803",
+      "name": "Registrar no Histórico: Avisar Cliente Sobre Dúvida Encaminhada no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        6528,
+        1968
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "Pra isso vou te colocar direto com a nossa equipe! Já passei sua mensagem pro responsável da Barbearia ZAP — ele te chama por aqui em breve. 😊",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "061783df-be86-4a09-a23c-9336c794f031",
+      "name": "Registrar no Histórico: Responder Consulta no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        6080,
+        1584
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ $('Formatar Resposta da Consulta').item.json.mensagem_consulta }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "b54f2b66-d325-40c5-89ba-3343caf61c2a",
+      "name": "Registrar no Histórico: Avisar Horário Fora do Expediente no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        7648,
+        432
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ (nome ? `${nome}, esse` : `Esse`) + ` horário já passou ou está fora do nosso expediente (funcionamos de segunda a sábado, das 9h às 18h). Pode me dizer outro dia ou horário?`, `Esse horário não rola` + (nome ? `, ${nome}` : '') + ` — nosso expediente é de segunda a sábado, 9h às 18h. Qual outro horário funciona pra você?`, `Ops, estamos fechados nesse horário (atendemos seg-sáb, 9h às 18h)` + (nome ? `, ${nome}` : '') + `. Me diz outro dia ou horário que já verifico!` ]; return opcoes[((parseInt(String($execution.id).replace(/\\D/g, '') || '0', 10) + (parseInt(String($('Normalizar Dados da Mensagem').item.json.telefone).replace(/\\D/g, '').slice(-2), 10) || 0)) % opcoes.length)]; })() }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "be4c31fc-92ae-421f-b538-43530d24a724",
+      "name": "Registrar no Histórico: Sugerir Outro Horário no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        8096,
+        432
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ (nome ? `Poxa, ${nome}, esse horário já ficou ocupado! ` : `Esse horário já ficou ocupado! `) + `Consegue me dizer outro dia ou horário que funcione pra você?`, `Ih, alguém acabou de pegar esse horário` + (nome ? `, ${nome}` : '') + `! Tem outro dia ou horário em mente?`, (nome ? `${nome}, esse` : `Esse`) + ` horário não está mais livre. Qual outro você prefere? Já verifico a disponibilidade certinho.` ]; return opcoes[((parseInt(String($execution.id).replace(/\\D/g, '') || '0', 10) + (parseInt(String($('Normalizar Dados da Mensagem').item.json.telefone).replace(/\\D/g, '').slice(-2), 10) || 0)) % opcoes.length)]; })() }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "b133b536-e833-4b98-a696-9389ef6262bc",
+      "name": "Registrar no Histórico: Propor Horário no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        8320,
+        432
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "46ef15cf-def2-4f6b-a8c7-0e7dd40d3b8d",
+      "name": "Registrar no Histórico: Confirmar Agendamento no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        8768,
+        -80
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "7d5b42bf-7c6b-4c56-b586-d54c8847aaf2",
+      "name": "Registrar no Histórico: Perguntar Qual Agendamento no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        6752,
+        1104
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ ($('Precisa Escolher Qual Agendamento? (Cancelar)').isExecuted ? $('Precisa Escolher Qual Agendamento? (Cancelar)').item.json : $('Precisa Escolher Qual Agendamento? (Remarcar)').isExecuted ? $('Precisa Escolher Qual Agendamento? (Remarcar)').item.json : {}).mensagem_escolha }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "208ae302-8f3a-4404-9e68-89a8dd70a7b1",
+      "name": "Registrar no Histórico: Confirmar Remarcação no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        8768,
+        528
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "90317cdf-1573-4f4f-9936-7154d78a3318",
+      "name": "Registrar no Histórico: Avisar Sem Agendamento Ativo no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        6752,
+        1536
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ `Não encontrei nenhum agendamento ativo pra esse número` + (nome ? `, ${nome}` : '') + `. Quer marcar um horário novo?`, (nome ? `${nome}, não` : `Não`) + ` achei nenhum horário marcado aqui pra você. Vamos agendar um?`, `Por aqui não consta nenhum agendamento seu no momento` + (nome ? `, ${nome}` : '') + `. Posso te ajudar a marcar um horário?` ]; return opcoes[((parseInt(String($execution.id).replace(/\\D/g, '') || '0', 10) + (parseInt(String($('Normalizar Dados da Mensagem').item.json.telefone).replace(/\\D/g, '').slice(-2), 10) || 0)) % opcoes.length)]; })() }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "d591a634-f2a4-407f-ba5a-0a143b323aea",
+      "name": "Registrar no Histórico: Confirmar Cancelamento no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        7200,
+        1008
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const zona = 'America/Sao_Paulo'; const dt = DateTime.fromISO(String(r.data), { zone: zona }); const dif = dt.startOf('day').diff($now.setZone(zona).startOf('day'), 'days').days; const hora = dt.toFormat(dt.minute ? \"H'h'mm\" : \"H'h'\"); const quando = dif === 0 ? `de hoje, às ${hora}` : dif === 1 ? `de amanhã, às ${hora}` : `de ${dt.setLocale('pt-BR').toFormat(\"cccc, 'dia' d 'de' LLLL\")}, às ${hora}`; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const b = String(r.beneficiario ?? '').trim(); const para = b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : ''; const opcoes = [ `Pronto${nome ? `, ${nome}` : ''}! Cancelei o ${r.servico}${para} ${quando}. Quando quiser remarcar, é só chamar.`, `Tudo certo, o ${r.servico}${para} ${quando} foi cancelado. Se quiser marcar de novo, é só me chamar!`, `Cancelado${nome ? `, ${nome}` : ''}: ${r.servico}${para} ${quando}. Fico à disposição pra quando quiser voltar!` ]; return opcoes[((parseInt(String($execution.id).replace(/\\D/g, '') || '0', 10) + (parseInt(String($('Normalizar Dados da Mensagem').item.json.telefone).replace(/\\D/g, '').slice(-2), 10) || 0)) % opcoes.length)]; })() }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "495fa297-06e8-41a1-82d3-426a67842c70",
+      "name": "Registrar no Histórico: Avisar Horário Recém-Ocupado no WhatsApp",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        9440,
+        32
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ $('Preparar Aviso de Horário Ocupado (Agendar)').item.json.mensagem_cliente }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "3d85d7a8-65f9-45cc-aa51-9793f2c86816",
+      "name": "Registrar no Histórico: Avisar Horário Recém-Ocupado no WhatsApp (Remarcar)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        10016,
+        1024
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ $('Preparar Aviso de Horário Ocupado (Remarcar)').item.json.mensagem_cliente }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "22d8da6e-d320-49a8-9adc-3ed190f842a3",
+      "name": "Registrar no Histórico: Avisar Cliente Sobre Erro no Cancelamento",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        7200,
+        1392
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir o cancelamento do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar tudo certinho.`; })() }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "537f178e-51a6-4490-857e-e24dbba8d530",
+      "name": "Registrar no Histórico: Avisar Cliente Sobre Erro na Remarcação",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        9440,
+        816
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir a remarcação do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "24f66686-410a-4a5d-9f52-8b65a41fe701",
+      "name": "Registrar no Histórico: Avisar Cliente Sobre Erro no Agendamento",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        9728,
+        432
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ (() => { const servico = $('Interpretar Intenção do Cliente').item.json.output.servico; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir o agendamento do seu ${servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "8a86f8cc-2413-4a05-a616-f92fd1ffbe76",
+      "name": "Registrar no Histórico: Avisar Cliente Sobre Erro na Remarcação (Erro no Banco)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        9728,
+        832
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KcPWQc7VJbj2e4sf"
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefone": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
+            "nome": "={{ $('Receber Mensagem WhatsApp').item.json.contacts?.[0]?.profile?.name ?? '' }}",
+            "texto": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir a remarcação do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
+            "wa_message_id": "={{ $json.messages?.[0]?.id ?? '' }}",
+            "status": "={{ $json.messages?.[0]?.id ? 'enviada' : 'falhou' }}",
+            "google_event_id": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "wa_message_id",
+              "displayName": "wa_message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "1b5046e9-7381-45bd-a24a-120651f547da",
+      "name": "Atualizar Primeiro Agendamento do Cliente",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        8656,
+        288
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE clientes c\nSET primeiro_agendamento_em = a.criado_em\nFROM agendamentos a\nWHERE a.id = $1::uuid\n  AND c.id = a.cliente_id\n  AND c.primeiro_agendamento_em IS NULL\nRETURNING c.id, c.primeiro_agendamento_em;",
+        "options": {
+          "queryReplacement": "={{ [ $json.id ] }}"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "postgres": {
+          "id": "SUBSTITUA_PELO_ID_DA_CREDENCIAL",
+          "name": "Supabase - agendazap-core"
+        }
+      }
     }
   ],
   "connections": {
@@ -2863,6 +5019,11 @@
         [
           {
             "node": "Filtrar Apenas Mensagens",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar Atualização de Status",
             "type": "main",
             "index": 0
           }
@@ -2885,6 +5046,11 @@
         [
           {
             "node": "Checar Mensagem Duplicada",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Registrar Mensagem Recebida no Histórico",
             "type": "main",
             "index": 0
           }
@@ -3150,6 +5316,11 @@
         [
           {
             "node": "Escalar Falha da IA para a Equipe",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Registrar no Histórico: Avisar Cliente Sobre Falha da IA",
             "type": "main",
             "index": 0
           }
@@ -3443,6 +5614,11 @@
         [
           {
             "node": "Confirmar Agendamento no WhatsApp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Atualizar Primeiro Agendamento do Cliente",
             "type": "main",
             "index": 0
           }
@@ -3746,6 +5922,11 @@
             "node": "Corrigir Memória da Conversa (Agendar)",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Registrar no Histórico: Avisar Horário Recém-Ocupado no WhatsApp",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -3797,6 +5978,11 @@
             "node": "Corrigir Memória da Conversa (Remarcar)",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Registrar no Histórico: Avisar Horário Recém-Ocupado no WhatsApp (Remarcar)",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -3837,6 +6023,11 @@
             "node": "Escalar Cancelamento Não Gravado no Banco",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Registrar no Histórico: Avisar Cliente Sobre Erro no Cancelamento",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -3875,6 +6066,11 @@
         [
           {
             "node": "Escalar Remarcação Sem Horário Original no Banco",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Registrar no Histórico: Avisar Cliente Sobre Erro na Remarcação",
             "type": "main",
             "index": 0
           }
@@ -3932,6 +6128,11 @@
             "node": "Escalar Erro ao Gravar Agendamento no Banco",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Registrar no Histórico: Avisar Cliente Sobre Erro no Agendamento",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -3981,6 +6182,11 @@
         [
           {
             "node": "Escalar Erro ao Gravar Agendamento no Banco",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Registrar no Histórico: Avisar Cliente Sobre Erro na Remarcação (Erro no Banco)",
             "type": "main",
             "index": 0
           }
@@ -4036,6 +6242,160 @@
         [
           {
             "node": "Interpretar Intenção do Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Atualização de Status": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Status da Mensagem no Histórico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recusar Assunto Fora do Escopo no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Recusar Assunto Fora do Escopo no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder Dúvida no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Responder Dúvida no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Dúvida Já Encaminhada no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Avisar Dúvida Já Encaminhada no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Cliente Sobre Dúvida Encaminhada no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Avisar Cliente Sobre Dúvida Encaminhada no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder Consulta no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Responder Consulta no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Horário Fora do Expediente no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Avisar Horário Fora do Expediente no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sugerir Outro Horário no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Sugerir Outro Horário no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Propor Horário no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Propor Horário no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar Agendamento no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Confirmar Agendamento no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perguntar Qual Agendamento no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Perguntar Qual Agendamento no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar Remarcação no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Confirmar Remarcação no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Sem Agendamento Ativo no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Avisar Sem Agendamento Ativo no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar Cancelamento no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar no Histórico: Confirmar Cancelamento no WhatsApp",
             "type": "main",
             "index": 0
           }

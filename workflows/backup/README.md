@@ -1,7 +1,8 @@
 # Backup dos workflows publicados — 02/10/2026
 
 Cópia dos 3 workflows em produção, tirada **antes** da migration de `clientes`/`mensagens`
-(`db/003_clientes_mensagens.sql`), como ponto de rollback.
+(`db/003_clientes_mensagens.sql`), como ponto de rollback. Desde a fase 2 (rodada 23, 02/10/2026) os workflows publicados são
+Agendamento `bc334c4a…` e Lembrete `051b4e6b…`; estes arquivos continuam sendo a versão anterior.
 
 | Workflow | ID na instância | Versão publicada (`activeVersionId`) | Nodes | Arquivo |
 |---|---|---|---|---|

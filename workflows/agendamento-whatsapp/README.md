@@ -32,6 +32,12 @@ do WhatsApp: a ativação registra o webhook na Meta.
 > workflow relê o horário original, devolve o evento do Calendar para ele, avisa o cliente e só
 > então para com erro. A mensagem para a equipe diz se o Calendar foi restaurado.
 
+> **Histórico de mensagens (fase 2, rodada 23):** desde 02/10/2026 este workflow grava a mensagem recebida, os envios e os status da Meta em
+> `clientes`/`mensagens` pelo sub-workflow "Registrar Mensagem [v2 historico]" (chamado sem
+> esperar, com `onError: continueRegularOutput`). Nenhum texto enviado ao cliente mudou; nos nodes
+> com variações de frase, o sorteio passou a ser determinístico (execução + telefone). Ver
+> `docs/test-plan.md`, rodada 23, e `workflows/backup/` para a versão anterior.
+
 **Antes de importar no n8n:**
 1. Rode `db/001_initial_schema.sql` e `db/002_seed_exemplo.sql` (na raiz do repo) no seu projeto
    Supabase, se ainda não tiver rodado.

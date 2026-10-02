@@ -29,5 +29,11 @@ Resultado:
   `politicas = 0`, `security_invoker = true` na view e `privilegios_publicos = 0`.
 - **004 rodada de novo:** sem efeito; continua idempotente.
 
-Os workflows em produção não foram alterados; eles ainda não leem nem gravam as tabelas novas. O
-backup deles no momento da migration está em `workflows/backup/`.
+Na época, os workflows em produção não foram alterados. Desde 02/10/2026 (fase 2, rodada 23 de
+`docs/test-plan.md`) o Agendamento e o Lembrete **gravam** em `clientes` e `mensagens`:
+- Agendamento: mensagem recebida (`entrada`/`recebida`), status da Meta (`enviada`/`entregue`/`lida`/
+  `falhou`), `agendamentos.cliente_id` e `clientes.primeiro_agendamento_em`;
+- ambos: mensagens enviadas (`saida`), pelo sub-workflow "Registrar Mensagem [v2 historico]".
+
+Nenhuma query antiga foi alterada e nenhum workflow lê essas tabelas. O backup anterior à fase 2
+(versões `68c7d91c…`/`56eb95e1…`) está em `workflows/backup/`.
