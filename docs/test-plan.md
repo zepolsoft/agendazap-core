@@ -2294,3 +2294,36 @@ O auxiliar de SQL "TEMP - Ferramentas rodada 21" (`84iLuLcG51slnP67`) também fo
   mesmo cliente…".
 - **Profissional do agendamento no Lembrete** ("quem vai me atender?") e escolha de profissional
   no agendamento: decisão maior, para depois.
+
+### Rodada 22 — banco de clientes e histórico (fase 1) e verificação de assinatura do webhook (02/10/2026)
+
+**Backup.** Antes de tudo, os 3 workflows publicados foram copiados para `workflows/backup/` (commit
+`90e2c38`). Versões: Agendamento `68c7d91c…`, Lembrete `56eb95e1…`, Notificação de Erros
+`be7b77da…`. Valores sensíveis foram trocados por placeholders, por o repo ser público:
+- IDs de credencial;
+- `webhookId` do WhatsApp Trigger;
+- telefone do responsável.
+
+**Fase 1 — só banco.** `db/003_clientes_mensagens.sql` (aditiva) e `db/004_backfill_clientes.sql`
+(idempotente) foram aplicadas pelo José no SQL Editor do Supabase. Verificação com
+`db/005_verificacao.sql`:
+- impressão digital das 9 consultas dos workflows idêntica antes e depois;
+- conferências B1–B7 como esperado;
+- 004 idempotente.
+
+Detalhes em `db/README.md`. Nenhum workflow foi alterado.
+
+**Assinatura da Meta no WhatsApp Trigger.** Motivo do teste: o `webhookId` do trigger de produção
+já estava público no histórico do repo. Teste feito com um único POST, às 11:14:24Z, para a URL de
+produção:
+- payload falso do tipo `statuses`, que seria descartado em "Filtrar Apenas Mensagens";
+- sem `X-Hub-Signature-256`.
+
+Resultado:
+- **HTTP 200** `{"message":"Webhook call received"}` (o n8n responde antes de decidir executar);
+- **nenhuma execução criada**;
+- callbacks reais da Meta (assinados) continuam criando execuções normalmente.
+
+Conclusão: o trigger valida a assinatura com o App Secret da credencial "WhatsApp OAuth account".
+O fato de o `webhookId` estar público não permite injetar mensagens. Não foi preciso trocar o
+`webhookId`.

@@ -20,6 +20,10 @@ profissionais (um Google Calendar por profissional).
 - Supabase (Postgres). Schema em `db/001_initial_schema.sql`, seed de exemplo em
   `db/002_seed_exemplo.sql`.
 - Tabelas: `profissionais`, `servicos`, `profissionais_servicos` (N:N), `agendamentos`.
+- Desde 02/10/2026 (migration `db/003_clientes_mensagens.sql` + backfill `004`, aplicadas): também
+  `clientes` (um por telefone, só dígitos), `mensagens` (histórico de entrada/saída do WhatsApp),
+  `agendamentos.cliente_id` e a view `clientes_resumo`. `clientes` e `mensagens` têm RLS ligado sem
+  políticas. Os workflows publicados ainda não gravam nelas (fase 2). Ver `db/README.md`.
 - Prevenção de double-booking garantida no próprio banco (exclusion constraint GiST), não só na
   lógica do workflow.
 - Credencial Postgres no n8n: usar a credencial real já configurada na instância (não recriar
