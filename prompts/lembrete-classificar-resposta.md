@@ -14,6 +14,24 @@ O prompt é **idêntico** ao de produção: classifica a resposta do cliente ao 
 fora do catálogo → encaminhar; fora de escopo/jailbreak → recusa) e o mesmo tratamento de
 ambiguidade entre agendamentos do mesmo cliente. Nenhuma linha foi tocada nesta migração.
 
+## Ajustes em produção (rodadas 19 e 20, 02/10/2026)
+
+Os textos fixos abaixo existem em dois lugares — na frase "EXATAMENTE" do prompt e no node de
+WhatsApp que de fato envia — e precisam continuar idênticos.
+
+- **Recusa (`fora_do_escopo`)**, node "Recusar Assunto Fora do Escopo no WhatsApp". É própria do
+  Lembrete, porque o cliente já tem horário hoje:
+
+  > Isso eu não consigo responder por aqui 😅 Seu horário de hoje continua marcado — se quiser
+  > confirmar, cancelar ou remarcar, é só me avisar!
+
+  Depois da recusa a conversa do lembrete termina. A resposta seguinte do cliente cai no workflow
+  de Agendamento, que trata "cancela", "remarca" etc. normalmente (rodada 20).
+- **Encaminhamento (`encaminhar`)**, node "Avisar Cliente Sobre Dúvida Encaminhada no WhatsApp".
+  Igual ao do Agendamento ("Pra isso vou te colocar direto com a nossa equipe!…").
+- **Pedido de atendimento humano** ("atendente", "humano", "responsável", "gerente", "falar com
+  alguém"…) é sempre `encaminhar`, com prioridade sobre `fora_do_escopo` e `indefinido`.
+
 ## O que mudou: de onde vêm os dados
 
 O agendamento do dia que dispara o lembrete (nome, telefone, serviço, beneficiário, horário) vem

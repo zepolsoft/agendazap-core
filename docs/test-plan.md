@@ -2045,3 +2045,113 @@ Depois: `activeVersionId` = esses ids e conteúdo publicado idêntico ao rascunh
 - JSONs dos dois workflows reexportados, com credenciais Postgres placeholder. O diff no repo inclui
   os ajustes da UI (posições, padrões removidos, `binaryMode`), que agora são o baseline.
 - `prompts/agendamento-interpretar-intencao.md` atualizado.
+
+### Rodada 20 — recusa própria do Lembrete e pedido de atendimento humano, em produção (02/10/2026)
+
+**Ponto de partida.** Antes de qualquer edição, o histórico confirmou que as versões ativas eram as
+publicadas na rodada 19, sem save da UI depois: Agendamento `a5af7fad…` e Lembrete `8b5e2cb2…`.
+Foram o baseline da conferência.
+
+**Contexto do pedido.** Num teste real, o José mandou "Quero falar com um atendente". A mensagem
+caiu em `encaminhar` e a notificação chegou no número do responsável, que é o comportamento
+esperado (ele testa com o próprio número). O problema era só o texto de volta ao cliente: "Boa
+pergunta! Essa informação eu não tenho por aqui…" soa errado para quem pediu um atendente.
+
+**Nodes envolvidos (iguais nos dois workflows):**
+- **"Avisar Cliente Sobre Dúvida Encaminhada no WhatsApp"**: o texto do "Boa pergunta!". Roda
+  depois de "Encaminhar Dúvida ao Responsável no WhatsApp" (a notificação ao responsável).
+- **"Avisar Dúvida Já Encaminhada no WhatsApp"**: a trava de 30 min. Dizia "Já repassei sua dúvida…".
+  A abertura não tinha "Boa pergunta", mas "sua dúvida" presume uma pergunta, então só essa
+  palavra mudou para "sua mensagem".
+
+**O que mudou** (rascunhos: Agendamento `2ecc1e75…`, Lembrete `61443aa8…`):
+
+| Onde | Antes | Depois |
+|---|---|---|
+| "Avisar Cliente Sobre Dúvida Encaminhada" (AG e LB) + frase "EXATAMENTE" de `encaminhar` nos 2 prompts | "Boa pergunta! Essa informação eu não tenho por aqui, mas já repassei sua dúvida pro responsável da Barbearia ZAP — ele vai entrar em contato com você em breve. 😊" | "Pra isso vou te colocar direto com a nossa equipe! Já passei sua mensagem pro responsável da Barbearia ZAP — ele te chama por aqui em breve. 😊" |
+| "Avisar Dúvida Já Encaminhada" (AG e LB) | "Já repassei sua dúvida pro responsável…" | "Já repassei sua mensagem pro responsável…" |
+| "Recusar Assunto Fora do Escopo" **só no LB** + frase do prompt de "Classificar Resposta do Lembrete" | "…Mas posso te ajudar com a Barbearia ZAP: quer marcar um horário? É só me dizer o serviço e o dia." | "Isso eu não consigo responder por aqui 😅 Seu horário de hoje continua marcado — se quiser confirmar, cancelar ou remarcar, é só me avisar!" |
+| Prompts de "Interpretar Intenção do Cliente" e "Classificar Resposta do Lembrete" | — | Regra "PEDIDO DE ATENDIMENTO HUMANO" (ver abaixo); definição de `encaminhar` cita o pedido de falar com uma pessoa |
+
+A recusa do Agendamento ficou como estava (aprovada na rodada 19).
+
+A regra "PEDIDO DE ATENDIMENTO HUMANO":
+- pedir uma pessoa ("atendente", "humano", "pessoa", "pessoa de verdade", "responsável", "dono",
+  "gerente", "especialista", "falar com alguém", "tem alguém aí?", "me passa pra alguém"…) é
+  sempre `encaminhar`, mesmo sem pergunta;
+- tem prioridade sobre `fora_do_escopo` e `duvida` (no Lembrete, sobre `indefinido`);
+- perguntar se o assistente é humano continua `duvida`;
+- tentativa de manipulação continua `fora_do_escopo`.
+
+Diff dos prompts revisado antes de salvar. Conferência de escopo dos rascunhos contra o baseline:
+só os parâmetros acima, conteúdo byte a byte igual aos textos preparados.
+
+**Testes do Agendamento** (rascunho `2ecc1e75…`, envios e indicador fixados):
+
+| Mensagem | Resultado | Evidência |
+|---|---|---|
+| "quero falar com um humano" (…073) | `encaminhar`, texto novo; notificação ao responsável e aviso ao cliente (fixados) | exec. 1937 |
+| "tem algum responsável aí?" (…074) | idem | exec. 1938 |
+| "Quero falar com um atendente" (…075), a frase do teste real | idem | exec. 1939 |
+| "você é humano?" (…076), regressão | `duvida`: "Sou o Zap, assistente virtual da Barbearia ZAP! 😊…" | exec. 1940 |
+
+**Testes do Lembrete.** O caminho passa por Wait retomado, então segui o protocolo da rodada 14:
+- **Desativação temporária:** os 25 nodes que chamam a Meta (24 WhatsApp + indicador) foram
+  desativados só no rascunho (`026dd0d2…`). Antes, conferi que nenhum node lê a saída deles.
+- **Agendamento de teste:** criado de verdade para **amanhã** (sáb 03/10, 10h, …072), pelo
+  Agendamento (exec. 1941 e 1942). Assim a execução real das 8h de hoje não o pegaria.
+- **Pin de "Buscar Agendamentos de Hoje":** em cada execução, fixado com só esse agendamento, com
+  a data de hoje e o telefone do cenário. Nenhum cliente real foi lembrado ou teve espera
+  registrada.
+- **Resposta do cliente:** chegou pelo caminho real: rascunho do Agendamento → "Verificar Espera
+  de Lembrete" → POST no `resume_url`.
+
+| Cenário | Resultado | Evidência |
+|---|---|---|
+| L1 — "quero falar com um humano" (…070) | Releitura `agendado` → `encaminhar`, texto novo → "Registrar Encaminhamento" → notificação e aviso (desativados) → fim do loop | LB **1943**; AG 1944 |
+| L2 — "tem algum responsável aí?" (…071) | idem | LB **1945**; AG 1946 |
+| L3 — "Qual a capital da Austrália?" (…072) | `fora_do_escopo`, `confirmacao_texto` = recusa nova do Lembrete → "Recusar…" (desativado) → fim | LB **1947**; AG 1948 |
+| **Depois da recusa:** "confirmo" (…072) | Ver abaixo | AG **1949** |
+| **Depois da recusa:** "na verdade pode cancelar" (…072) | Mesmo 409 → fluxo normal → `cancelar` (`agendamento_alvo` = evento do teste) → evento apagado no Calendar → linha `cancelado` → confirmação (fixada) | AG **1950** |
+
+Detalhe do "confirmo" (1949):
+- A espera de 1947 continuava na tabela (menos de 13 min). "Encaminhar Mensagem para Lembrete"
+  recebeu **409 "The execution 1947 has finished already."**.
+- A saída de erro levou ao fluxo normal → lock livre → IA `duvida`: "Por nada, Setenta Dois! Já
+  está tudo certo por aqui. Até amanhã! 💈" ("amanhã" porque o agendamento real era de amanhã).
+
+**Observação (fechada):** a rodada 14 registrou que, até 13 min depois do fim de uma conversa do
+Lembrete, o Agendamento encaminha mensagens para um `resume_url` de execução encerrada, e que a
+saída de erro desse encaminhamento "não foi exercitada". Agora foi, nas execs 1949 e 1950: o n8n
+responde 409, a mensagem segue para o fluxo normal e não se perde. A espera continua sem ser
+apagada no fim da conversa; sem efeito prático.
+
+**Antes de publicar:**
+- Rascunho do Lembrete restaurado para `61443aa8…` com `restore_workflow_version`, gerando
+  `38b237d7…`: nodes, conexões e settings iguais a `61443aa8…`, nenhum node com chave `disabled`.
+- Nenhuma execução `waiting`/`running`.
+- Versões ativas ainda `a5af7fad…`/`8b5e2cb2…`.
+- Conferência final contra o baseline: só os parâmetros da tabela "O que mudou".
+
+**Publicação** com `versionId` explícito:
+- Agendamento **`2ecc1e75-86f2-410b-a8f1-c35c4a767be3`**;
+- Lembrete **`38b237d7-cf16-4741-ab43-f82cbdc5c6af`**.
+
+Conteúdo publicado idêntico ao conferido.
+
+**Limpeza** (exec. 1951, auxiliar `j6BItQ7z8hxwqF8v`, arquivado):
+- linha do agendamento de teste (já `cancelado`; o evento foi apagado pelo próprio cancelamento);
+- 7 locks, 11 mensagens processadas, 5 encaminhamentos e 3 esperas dos telefones …070–076.
+
+Entre 1929 e 1937 houve 7 execuções reais de produção (`webhook`, 09:24Z, todas `success`). Elas
+não foram tocadas.
+
+**Repo:**
+- JSONs reexportados: só os 7 parâmetros mudaram; credenciais Postgres placeholder.
+- `prompts/agendamento-interpretar-intencao.md` e `prompts/lembrete-classificar-resposta.md`
+  atualizados.
+
+**Fora do escopo, para decidir depois:** a notificação ao responsável ("Encaminhar Dúvida ao
+Responsável") ainda começa com "📩 Dúvida de cliente sobre o negócio" e diz que "a IA não tem essa
+informação". Para um pedido de atendente, o texto ficaria mais claro como "Cliente pediu para
+falar com alguém". Não foi alterado.
