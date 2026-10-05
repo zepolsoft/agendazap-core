@@ -32,6 +32,18 @@ WhatsApp que de fato envia — e precisam continuar idênticos.
 - **Pedido de atendimento humano** ("atendente", "humano", "responsável", "gerente", "falar com
   alguém"…) é sempre `encaminhar`, com prioridade sobre `fora_do_escopo` e `indefinido`.
 
+## Ajustes (rodada 24, ciclo B, 05/10/2026 — em rascunho, não publicado)
+
+- **Bloco ESTILO + honestidade** nos dois prompts do Lembrete: assistente virtual da Barbearia ZAP, sem
+  nome próprio ("Zap" saiu); respostas curtas, datas por extenso; só o primeiro nome (nova linha "Primeiro
+  nome" no texto enviado à IA).
+- **Textos fixos novos**, iguais aos dos nodes: encaminhar ("Essa eu preciso passar pra equipe! …") e
+  recusa ("Esse assunto foge do que eu sei por aqui 😅 Seu horário de hoje continua marcado — …").
+- **Pergunta mista** (decisão clara + pergunta sem resposta): "Sobre {assunto}, isso eu não sei te dizer
+  por aqui. Se quiser que eu passe pra equipe, manda a pergunta numa mensagem separada."
+- **Cancelamento:** a confirmação enviada ao cliente agora é montada pelo node com os dados reais
+  (inclui "com {profissional}"); o texto da IA para `cancelar` deixa de ser usado.
+
 ## O que mudou: de onde vêm os dados
 
 O agendamento do dia que dispara o lembrete (nome, telefone, serviço, beneficiário, horário) vem

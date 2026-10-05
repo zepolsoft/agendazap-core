@@ -2521,3 +2521,44 @@ do Lembrete ficam no ciclo B.
     textos novos e as intenções certas.
   Dados de teste apagados (1 agendamento, 26 mensagens, 5 clientes, linhas das Data Tables).
 - **Pendente:** os 2 prompts do Lembrete e os 2 textos fixos do Lembrete (ciclo B).
+
+**Ciclo B — preparado no rascunho do Lembrete, ainda NÃO publicado.** Rascunho `6c922351…` (restauração
+de `fff68d93…`; publicada: `051b4e6b…`). 30 nodes em relação à publicada (28 alterados + 2 novos),
+conexões 129, settings iguais, nenhum node desativado, schedules 8h e 22h intactos.
+- **Query do lembrete** (`Buscar Agendamentos de Hoje (Planilha)`): ganha `profissional` (`LEFT JOIN
+  profissionais`) e `primeiro_nome` (extraído no SQL: pula emoji, corrige CAIXA ALTA/minúsculas, mantém
+  maiúsculas mistas; testado com 11 nomes-limite).
+- **Texto do lembrete** (único, sem variantes): "Bom dia, {primeiro_nome}! Passando pra lembrar do seu
+  horário de {serviço}{ (para X)} hoje às {hora}, com {profissional ou "a equipe da barbearia"}. Tá tudo
+  certo pra você? Se precisar remarcar ou cancelar, é só me falar por aqui."
+- **Cancelamento:** o texto da confirmação passa a ser determinístico (mesmas 3 variantes do Agendamento,
+  com "com {profissional}" no fim), em vez do texto escrito pela IA.
+- **Textos ao cliente:** primeiro nome e "seu horário de {serviço}" em todos os nodes de envio, nas cópias
+  do histórico e nas mensagens ao cliente dos "Preparar Aviso…" (a mensagem à equipe segue com o nome
+  completo). "Sobre o Barba…" do "Pedir Esclarecimento" virou "Sobre o horário de Barba…".
+- **Textos fixos** (iguais aos do Agendamento, nos nodes, no histórico e no prompt): dúvida já encaminhada,
+  dúvida encaminhada e recusa ("Esse assunto foge do que eu sei por aqui 😅 Seu horário de hoje continua
+  marcado — se quiser confirmar, cancelar ou remarcar, é só me avisar!").
+- **Prompts da IA** ("Classificar Resposta do Lembrete" e "Classificar Confirmação da Remarcação"): bloco
+  ESTILO + honestidade (assistente virtual da Barbearia ZAP, sem nome próprio), linha "Primeiro nome" no
+  texto enviado à IA, texto da pergunta mista.
+- **Aviso de timeout só se o cliente escreveu nas últimas 24h:** entre "Agendamento Ainda É o Mesmo?" e
+  "Avisar Timeout do Lembrete" entram "Buscar Mensagem Recente do Cliente (24h)" (Postgres sobre
+  `mensagens`, `onError` continua) e "Cliente Escreveu nas Últimas 24h?". Sim → avisa; não, ou falha na
+  consulta → volta ao loop sem enviar.
+- **Testes:**
+  - todas as expressões de texto foram avaliadas com a luxon real (antes e depois, todas as variantes);
+  - em execução real (envios desativados no rascunho para os testes pós-Wait, depois restaurado), com
+    números fictícios: texto do lembrete com profissional; sem profissional + para outra pessoa; e as
+    duas pontas do timeout, com o Wait de 10 min vencendo de verdade (cliente com mensagem recente → aviso
+    montado; cliente sem mensagem nas últimas 24h → sem aviso, volta ao loop);
+  - **não executados:** as respostas "confirmo", "remarcar" e "cancelar" depois do Wait. A IA falhou
+    antes disso por falta de crédito na Anthropic (ver abaixo). O texto de cancelamento só foi validado
+    localmente.
+  - Dados de teste apagados (3 agendamentos, 15 mensagens, 4 clientes, Data Tables) e os 3 eventos de
+    teste removidos do Google Calendar do profissional.
+- **Incidente durante os testes (05/10, ~10:13 SP):** a API da Anthropic passou a responder "Your credit
+  balance is too low to access the Anthropic API" (as chamadas de IA funcionaram até 13:12Z e falharam a
+  partir de 13:13Z). Isso afeta a produção (Agendamento e Lembrete). Os testes deste dia podem ter
+  contribuído para o consumo (~40 chamadas de ~17 mil tokens de entrada). Ação necessária: recarregar o
+  crédito. Testes dependentes de IA suspensos até lá.
