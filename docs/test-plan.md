@@ -2449,8 +2449,9 @@ Nenhum cliente real foi afetado (execuções de produção 1999–2006 todas `su
 pt_BR. Consulta de monitoramento de `falhou` por dia e proposta de alerta diário via Notificação de
 Erros: ver abaixo, ciclo C.
 
-**Ciclo A1 — preparado no rascunho, ainda NÃO publicado.** Rascunho do Agendamento `f460e0c3…`
-(publicada: `bc334c4a…`).
+**Ciclo A1 — preparado no rascunho, ainda NÃO publicado.** Rascunho do Agendamento `7a8816bc…`
+(publicada: `bc334c4a…`). Os textos finais de cancelamento e consulta foram ajustados a pedido do José
+(ver abaixo).
 - 23 nodes alterados, conexões e settings idênticos, `webhookId` do trigger preservado.
 - Mudanças: `primeiro_nome` em "Normalizar Dados da Mensagem"; textos ao cliente com o primeiro nome;
   "seu horário de {serviço}"; cancelamento com "com {profissional}" (`LEFT JOIN profissionais` na
@@ -2464,3 +2465,22 @@ Erros: ver abaixo, ciclo C.
 **Pendências:**
 - Aprovação dos templates na Meta (ciclo C).
 - "o Barba" no cancelamento: coberto pelo A1 (deixa de ser tarefa separada).
+
+**A1: ajustes pedidos pelo José (05/10/2026), rascunho `7a8816bc…`.**
+- **Cancelamento** (o "com {profissional}" vai para o fim da frase da data):
+  - V1: "Pronto, {primeiro_nome}! Cancelei seu horário de {serviço} de {data}, às {hora}, com {profissional}. Quando quiser remarcar, é só chamar."
+  - V2: "Tudo certo, seu horário de {serviço} de {data}, às {hora}, com {profissional}, foi cancelado. Se quiser marcar de novo, é só me chamar!"
+  - V3: "Cancelado, {primeiro_nome}: horário de {serviço} de {data}, às {hora}, com {profissional}. Fico à disposição pra quando quiser voltar!"
+  - Sem profissional, o "com …" some (na V2 também a vírgula antes de "foi cancelado"); para outra
+    pessoa, "(para X)" vem logo depois do serviço; sem nome, a vírgula e o nome somem.
+- **Consulta, variante 2:** "{primeiro_nome}, você tem horário de {serviço} marcado pra {data}, às {hora}."
+- **Template `aviso_equipe_v1` (ciclo C):** última linha "Mensagem gerada pelo assistente virtual. Não é necessário responder a esta conversa."
+- **Testes:**
+  - As expressões exatas dos nodes foram avaliadas com a luxon real, para as 3 variantes e os casos
+    especiais.
+  - Execuções reais com números fictícios (…110, …120, …121, …123), com IA, Calendar e atualização do
+    banco fixados e o restante real: V1, V2 (sem profissional e para outra pessoa) e V3 de
+    cancelamento, e a consulta. O texto gravado em `mensagens` é igual ao enviado, com
+    `google_event_id` no histórico.
+  - Dados de teste apagados.
+- **Diff:** 23 nodes diferentes da publicada, conexões e settings idênticos, `webhookId` preservado.
