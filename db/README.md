@@ -37,3 +37,14 @@ Na época, os workflows em produção não foram alterados. Desde 02/10/2026 (fa
 
 Nenhuma query antiga foi alterada e nenhum workflow lê essas tabelas. O backup anterior à fase 2
 (versões `68c7d91c…`/`56eb95e1…`) está em `workflows/backup/`.
+
+## Re-execução do 004 depois da fase 2 (05/10/2026)
+
+Um agendamento criado antes da troca da fase 2 (31/10 10:00, cliente com final 3698) ficou sem
+`cliente_id` e sem linha em `clientes`, porque o workflow antigo não gravava essas tabelas. O José
+rodou `db/004_backfill_clientes.sql` de novo no SQL Editor (idempotente) e validou:
+- **0** agendamentos sem `cliente_id`;
+- o cliente 3698 criado e ligado ao agendamento;
+- RLS ativo em `clientes` e `mensagens`.
+
+Nada mais precisou ser alterado no banco.

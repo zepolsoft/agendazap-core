@@ -2411,3 +2411,56 @@ Nenhum cliente real foi afetado (execuções de produção 1999–2006 todas `su
 - **Correção do artigo "o Barba"** no template de cancelamento ("Cancelei o Barba…"). Fica fora
   desta troca por decisão de José; fazer depois que a v2 estiver estável.
 - Acompanhar a primeira hora, o job das 22h e o lembrete das 8h de amanhã (primeiro com a v2).
+
+### Rodada 24 — pacote de melhorias (texto, contexto da IA, template) — decisões e andamento (05/10/2026)
+
+**Diagnóstico (fase 1, só leitura).**
+- **Lembrete:** todos os 46 nodes de envio (22 no Agendamento, 24 no Lembrete) usam texto livre
+  (`send`), nenhum usa template. O lembrete só chega a quem escreveu para a barbearia nas últimas
+  24h. O mesmo vale para o aviso de timeout do lembrete e para os alertas ao responsável (dúvida
+  encaminhada, erros). Falha de envio não é detectada no fluxo (`onError: continueRegularOutput`);
+  só aparece como `falhou` em `mensagens`.
+- **Repasse de dúvida:** existe repasse real (`encaminhar`: alerta ao responsável, registro e trava
+  de 30 min). A frase "me manda numa mensagem separada que eu repasso" vem de mensagens mistas
+  (agendar + pergunta sem resposta), em que o agendamento tem prioridade e a IA não encaminha.
+- **Profissional:** o cliente não escolhe. Todo agendamento vai para a agenda do primeiro
+  profissional ativo (`LIMIT 1` por data de criação). A IA nunca promete profissional.
+- **Contexto do cliente:** a IA já recebe os agendamentos ativos no prompt; "quem atende hoje?"
+  ignorou o horário existente por falta de regra, não de dado.
+- **Vínculo mensagem → agendamento:** no Agendamento, `agendamento_id` ficava sempre vazio (as
+  chamadas de histórico passavam `google_event_id` vazio); o Lembrete já vinculava.
+- **Bloqueio de 10 s ("Telefone Ocupado?"):** a 2ª mensagem em poucos segundos é descartada. Visto
+  com cliente real (02/10) e de novo nos testes de hoje.
+
+**Decisões do José (aprovadas):**
+- Itens aprovados: 1 (template), 2, 3, 4, 5, 6, 7, 8, 9 e 11 (backfill, já rodado por ele).
+- Adiados: 10 (bloqueio de 10 s) e as variantes "para depois" (encaminhar na mesma execução, botões
+  no template, refatorar os textos duplicados do histórico).
+- "com Carlos", sem artigo; persona neutra "assistente virtual da Barbearia ZAP"; "seu horário de
+  {serviço}"; cancelamento "Cancelei seu horário de Barba …"; texto da pergunta mista: "Sobre a
+  Red Bull, isso eu não sei te dizer por aqui. Se quiser que eu passe pra equipe, manda a pergunta
+  numa mensagem separada."
+- Ordem, com publicação só depois das 20h e uma publicação por ciclo (rollback próprio):
+  A1 (Agendamento, determinístico) → A2 (Agendamento, prompts) → B (Lembrete) → C (templates, depois
+  da aprovação da Meta).
+
+**Templates entregues** (para o Meta Business Manager): `lembrete_agendamento_v1` (4 variáveis) e
+`aviso_equipe_v1` (4 variáveis, para dúvida encaminhada, nova mensagem e erro), ambos UTILITY,
+pt_BR. Consulta de monitoramento de `falhou` por dia e proposta de alerta diário via Notificação de
+Erros: ver abaixo, ciclo C.
+
+**Ciclo A1 — preparado no rascunho, ainda NÃO publicado.** Rascunho do Agendamento `f460e0c3…`
+(publicada: `bc334c4a…`).
+- 23 nodes alterados, conexões e settings idênticos, `webhookId` do trigger preservado.
+- Mudanças: `primeiro_nome` em "Normalizar Dados da Mensagem"; textos ao cliente com o primeiro nome;
+  "seu horário de {serviço}"; cancelamento com "com {profissional}" (`LEFT JOIN profissionais` na
+  query de cancelar); texto da consulta reescrito; histórico de confirmar, remarcar e cancelar e dos
+  erros de cancelar/remarcar passa `google_event_id`.
+- Testes com números fictícios (…101 a …104; envios fixados, IA/Calendar/banco reais): confirmação,
+  remarcação e cancelamento com `agendamento_id` preenchido; textos conferidos; nome em CAIXA ALTA,
+  em minúsculas com emoji e ausente. Dados de teste apagados.
+- Publicação: depois das 20h, com a versionId explícita e o OK do José.
+
+**Pendências:**
+- Aprovação dos templates na Meta (ciclo C).
+- "o Barba" no cancelamento: coberto pelo A1 (deixa de ser tarefa separada).
