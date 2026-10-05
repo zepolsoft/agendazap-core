@@ -79,6 +79,23 @@ funcionamento e sugestão de horários livres. Nenhuma linha foi tocada nesta mi
 - O prompt do Lembrete ("Classificar Resposta do Lembrete") **não** recebeu a lista. Ver o motivo
   no registro da rodada 21 em `docs/test-plan.md`.
 
+## Ajustes (rodada 24, ciclo A2, 05/10/2026 — em rascunho, não publicado)
+
+- **Bloco ESTILO + honestidade.** Persona neutra: "assistente virtual da Barbearia ZAP", sem nome
+  próprio ("Zap") nem gênero. Respostas curtas, sem formalidade, datas por extenso, só o primeiro
+  nome (linha "Primeiro nome" no texto enviado à IA; `nome_cliente` segue completo).
+- **Profissional.** Seção PROFISSIONAL DO ATENDIMENTO (`{{ $json.profissional_novo_agendamento }}`) e
+  as linhas de AGENDAMENTOS ATIVOS ganham "— com {nome}". Na confirmação definitiva de agendamento e
+  de remarcação a IA diz "com {nome}" (sem artigo); antes disso não promete nem pergunta profissional.
+- **Saudação.** Seção CONTEXTO DA CONVERSA (`{{ $json.contexto_conversa }}`, calculado a cada execução
+  a partir da última resposta enviada em `mensagens`): só cumprimenta na primeira mensagem do dia.
+- **Mesma data.** Se o cliente já tem agendamento no dia de que fala, a IA o menciona em vez de oferecer
+  marcar.
+- **Pergunta mista** (agendar + pergunta sem resposta): "Sobre {assunto}, isso eu não sei te dizer por
+  aqui. Se quiser que eu passe pra equipe, manda a pergunta numa mensagem separada."
+- **Textos fixos** de encaminhar e de recusa trocados; precisam continuar iguais aos dos nodes
+  "Avisar Cliente Sobre Dúvida Encaminhada no WhatsApp" e "Recusar Assunto Fora do Escopo no WhatsApp".
+
 ## O que mudou: de onde vêm os dados que alimentam o prompt
 
 O prompt recebe, via variáveis do node (`{{ $json.lista_servicos }}`,

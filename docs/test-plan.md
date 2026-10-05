@@ -2484,3 +2484,40 @@ Erros: ver abaixo, ciclo C.
     `google_event_id` no histórico.
   - Dados de teste apagados.
 - **Diff:** 23 nodes diferentes da publicada, conexões e settings idênticos, `webhookId` preservado.
+
+**Ciclo A2 — preparado no rascunho, ainda NÃO publicado.** Rascunho do Agendamento `e9e414a3…` (sobre o
+A1 `7a8816bc…`; publicada: `bc334c4a…`). Só o Agendamento: os prompts do Lembrete e os textos fixos
+do Lembrete ficam no ciclo B.
+- **Diff:** 12 nodes em relação ao A1 (10 alterados + 2 novos; 35 em relação à publicada, somando o A1).
+  Conexões: "Formatar Profissionais Ativos" → **"Buscar Última Resposta ao Cliente"** (novo, Postgres,
+  `onError` continua) → **"Formatar Contexto da Conversa"** (novo, Code) → "Interpretar Intenção do
+  Cliente". `webhookId` do trigger preservado.
+- **Prompt do Agendamento:**
+  - novo bloco ESTILO + honestidade (assistente virtual da Barbearia ZAP, sem nome próprio nem gênero;
+    só o primeiro nome; datas por extenso);
+  - seção PROFISSIONAL DO ATENDIMENTO e regra "com {nome}, sem artigo" na confirmação definitiva de
+    agendamento e de remarcação;
+  - seção CONTEXTO DA CONVERSA (última resposta enviada ao telefone, vinda de `mensagens`) e regra de
+    saudação só na primeira mensagem do dia;
+  - regra de agendamento na mesma data (mencionar o horário existente);
+  - texto da pergunta mista: "Sobre {assunto}, isso eu não sei te dizer por aqui. Se quiser que eu passe
+    pra equipe, manda a pergunta numa mensagem separada.";
+  - textos fixos de encaminhar e de recusa trocados (iguais no prompt e nos nodes).
+- **Nodes:** a lista de agendamentos ativos e a query trazem o profissional (`LEFT JOIN profissionais`);
+  "Formatar Profissionais Ativos" passa `profissional_novo_agendamento`; o texto enviado à IA ganha a
+  linha "Primeiro nome"; 3 textos fixos reescritos (+ cópias do histórico).
+- **Textos fixos (Antes → Depois):**
+  - Dúvida já encaminhada: "Já repassei sua mensagem pro responsável da Barbearia ZAP — aguarde o contato dele, por favor. 🙂" → "Sua mensagem já está com o responsável da Barbearia ZAP. Ele te responde por aqui assim que puder. 🙂"
+  - Dúvida encaminhada: "Pra isso vou te colocar direto com a nossa equipe! Já passei sua mensagem pro responsável da Barbearia ZAP — ele te chama por aqui em breve. 😊" → "Essa eu preciso passar pra equipe! Já encaminhei sua mensagem pro responsável da Barbearia ZAP — ele te responde por aqui em breve. 😊"
+  - Recusa fora do escopo: "Isso eu não consigo responder por aqui 😅 Mas posso te ajudar com a Barbearia ZAP: quer marcar um horário? É só me dizer o serviço e o dia." → "Esse assunto foge do que eu sei por aqui 😅 Mas se quiser marcar um horário na Barbearia ZAP, é só me dizer o serviço e o dia."
+- **Testes** (números fictícios …201 a …205; envios fixados; IA, Calendar e banco reais):
+  - saudação na 1ª conversa, com o primeiro nome;
+  - "você é uma pessoa de verdade?" → "Sou assistente virtual da Barbearia ZAP, não uma pessoa 😊 …", sem saudação;
+  - pergunta mista (barba hoje às 15h + Red Bull) → proposta + o texto exato aprovado;
+  - confirmação → "Barba marcada pra hoje às 15h, com Carlos" (`agendamento_id` preenchido);
+  - "Quem atende hoje?" com horário no dia → "Você já tem horário hoje às 15h, viu? Hoje quem atende é o Carlos …";
+  - remarcação confirmada → "…terça-feira, dia 6 de outubro, às 11h, com Carlos" e cancelamento (texto do A1);
+  - encaminhar, "já encaminhou", fora do escopo, tentativa de injeção e pedido de atendente, todos com os
+    textos novos e as intenções certas.
+  Dados de teste apagados (1 agendamento, 26 mensagens, 5 clientes, linhas das Data Tables).
+- **Pendente:** os 2 prompts do Lembrete e os 2 textos fixos do Lembrete (ciclo B).
