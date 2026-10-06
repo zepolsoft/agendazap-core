@@ -23,6 +23,6 @@ Agendamento `bc334c4a…` e Lembrete `051b4e6b…`; estes arquivos continuam sen
      `SUBSTITUA_PELO_WEBHOOK_ID_DO_TRIGGER`. É o caminho do webhook de produção; ao importar, o n8n
      gera um novo e é preciso reativar o trigger para ele se registrar na Meta;
    - telefone do responsável (destino dos alertas e notificações de erro) →
-     `SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL`.
+     `<RESPONSAVEL_PHONE>`.
 
    Fora isso — nodes, parâmetros, conexões e settings — o conteúdo é o da versão publicada.

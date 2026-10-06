@@ -1213,7 +1213,7 @@
       "parameters": {
         "operation": "send",
         "phoneNumberId": "<PHONE_NUMBER_ID>",
-        "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
+        "recipientPhoneNumber": "<RESPONSAVEL_PHONE>",
         "textBody": "=📩 Dúvida de cliente sobre o negócio (não é erro do sistema)\n\nCliente: {{ $('Normalizar Dados da Mensagem').item.json.nome }} ({{ $('Normalizar Dados da Mensagem').item.json.telefone }})\nMensagem: \"{{ $('Normalizar Dados da Mensagem').item.json.mensagem }}\"\n\nA IA não tem essa informação e avisou o cliente que você vai entrar em contato. Responder: https://wa.me/{{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "additionalFields": {}
       },
@@ -3016,7 +3016,7 @@
       "parameters": {
         "operation": "send",
         "phoneNumberId": "<PHONE_NUMBER_ID>",
-        "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
+        "recipientPhoneNumber": "<RESPONSAVEL_PHONE>",
         "textBody": "=📩 Nova mensagem do mesmo cliente (já tinha sido encaminhado há pouco; não é erro do sistema)\n\nCliente: {{ $('Normalizar Dados da Mensagem').item.json.nome }} ({{ $('Normalizar Dados da Mensagem').item.json.telefone }})\nMensagem: \"{{ $('Normalizar Dados da Mensagem').item.json.mensagem }}\"\n\nResponder: https://wa.me/{{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "additionalFields": {}
       },

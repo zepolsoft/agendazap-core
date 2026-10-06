@@ -740,7 +740,7 @@
       "parameters": {
         "operation": "send",
         "phoneNumberId": "<PHONE_NUMBER_ID>",
-        "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
+        "recipientPhoneNumber": "<RESPONSAVEL_PHONE>",
         "textBody": "={{ $('Preparar Aviso de Falha da IA').item.json.mensagem_equipe }}",
         "additionalFields": {}
       },
@@ -1055,7 +1055,7 @@
       "parameters": {
         "operation": "send",
         "phoneNumberId": "<PHONE_NUMBER_ID>",
-        "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
+        "recipientPhoneNumber": "<RESPONSAVEL_PHONE>",
         "textBody": "=📩 Dúvida de cliente sobre o negócio (não é erro do sistema)\n\nCliente: {{ $('Processar Cada Agendamento').item.json.nome }} ({{ String($('Processar Cada Agendamento').item.json.telefone) }})\nMensagem: \"{{ $('Normalizar Resposta do Lembrete').item.json.resposta_cliente }}\"\nContexto: resposta ao lembrete do {{ $('Processar Cada Agendamento').item.json.servico }} de hoje às {{ DateTime.fromISO($('Processar Cada Agendamento').item.json.data).setZone('America/Sao_Paulo').toFormat('HH:mm') }} (o agendamento continua marcado).\n\nA IA não tem essa informação e avisou o cliente que você vai entrar em contato. Responder: https://wa.me/{{ String($('Processar Cada Agendamento').item.json.telefone) }}",
         "additionalFields": {}
       },
@@ -2096,7 +2096,7 @@
       "parameters": {
         "operation": "send",
         "phoneNumberId": "<PHONE_NUMBER_ID>",
-        "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
+        "recipientPhoneNumber": "<RESPONSAVEL_PHONE>",
         "textBody": "={{ $('Preparar Aviso de Erro no Banco').item.json.mensagem_equipe }}",
         "additionalFields": {}
       },
@@ -2276,7 +2276,7 @@
       "parameters": {
         "operation": "send",
         "phoneNumberId": "<PHONE_NUMBER_ID>",
-        "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
+        "recipientPhoneNumber": "<RESPONSAVEL_PHONE>",
         "textBody": "={{ $('Preparar Aviso de Erro no Cancelamento').item.json.mensagem_equipe }}",
         "additionalFields": {}
       },
@@ -2506,7 +2506,7 @@
       "parameters": {
         "operation": "send",
         "phoneNumberId": "<PHONE_NUMBER_ID>",
-        "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
+        "recipientPhoneNumber": "<RESPONSAVEL_PHONE>",
         "textBody": "=📩 Nova mensagem do mesmo cliente (já tinha sido encaminhado há pouco; não é erro do sistema)\n\nCliente: {{ $('Processar Cada Agendamento').item.json.nome }} ({{ String($('Processar Cada Agendamento').item.json.telefone) }})\nMensagem: \"{{ $('Normalizar Resposta do Lembrete').item.json.resposta_cliente }}\"\nContexto: resposta ao lembrete do {{ $('Processar Cada Agendamento').item.json.servico }} de hoje às {{ DateTime.fromISO($('Processar Cada Agendamento').item.json.data).setZone('America/Sao_Paulo').toFormat('HH:mm') }} (o agendamento continua marcado).\n\nResponder: https://wa.me/{{ String($('Processar Cada Agendamento').item.json.telefone) }}",
         "additionalFields": {}
       },
