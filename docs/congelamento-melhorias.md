@@ -5,6 +5,18 @@ As melhorias do pacote de qualidade de mensagem (A1, A2, B, D, templates, mini-C
 sexta (02/10/2026). Nada abaixo foi publicado; os rascunhos ficam parados até haver motivo para
 publicar. Detalhes de cada rodada de testes: `docs/test-plan.md` (Round 24).
 
+## Atualização de 06/10/2026: saldo regularizado, demonstração validada
+
+A chamada mínima de IA respondeu 200 às 10:27Z (organização `2adb30ac…`). O fluxo **publicado**
+(Agendamento `bc334c4a`, conteúdo idêntico restaurado no rascunho só para o teste) foi validado com um
+número falso: conversa nova, agendar (evento criado no Google Agenda), remarcar, cancelar (evento
+removido) e pergunta fora do escopo, todos com a intenção e o texto esperados. O histórico gravou 14
+mensagens (7 de entrada, 7 de saída). Dados de teste, Data Tables e o evento foram limpos. O rascunho do
+Agendamento voltou ao A2 (`e9e414a3`); nada foi publicado. Lembrete e Registrar Mensagem não precisaram
+de teste novo (o Lembrete só roda às 8h e às 22h).
+
+O texto abaixo descreve o bloqueio que existiu entre 10:13 SP e a regularização.
+
 ## Bloqueio atual: saldo da API da Anthropic
 
 Desde ~10:13 (SP) de 05/10/2026 toda chamada de IA falha com `400 invalid_request_error`:
