@@ -96,6 +96,18 @@ funcionamento e sugestão de horários livres. Nenhuma linha foi tocada nesta mi
 - **Textos fixos** de encaminhar e de recusa trocados; precisam continuar iguais aos dos nodes
   "Avisar Cliente Sobre Dúvida Encaminhada no WhatsApp" e "Recusar Assunto Fora do Escopo no WhatsApp".
 
+## Ajustes (rodada 24, A2 parte 3, 06/10/2026 — em rascunho, não publicado)
+
+- **Aviso de privacidade** na primeira conversa de cada cliente (nenhuma resposta anterior em `mensagens`):
+  mensagem separada, enviada antes da resposta da IA, pelo node "Enviar Aviso de Privacidade no WhatsApp".
+  A decisão é do node "Cliente Novo?" (flag `cliente_novo` calculada junto do contexto da conversa).
+- **REGRA — PRIVACIDADE:** pedido para apagar ou consultar os dados do cliente é `encaminhar`; a IA nunca
+  diz que apagou algo. A regra não está no `systemMessage`: é acrescentada ao `contexto_conversa` pelo node
+  "Formatar Contexto da Conversa" (aparece na seção CONTEXTO DA CONVERSA do prompt). Ao reescrever o prompt,
+  pode ser movida para dentro dele.
+- **Texto de falha da IA ao cliente:** "Estou com uma instabilidade aqui e não consegui te responder agora.
+  Tenta de novo em alguns minutos, por favor 🙏" (não promete uma pessoa).
+
 ## O que mudou: de onde vêm os dados que alimentam o prompt
 
 O prompt recebe, via variáveis do node (`{{ $json.lista_servicos }}`,

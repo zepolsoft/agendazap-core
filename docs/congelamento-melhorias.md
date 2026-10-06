@@ -5,6 +5,19 @@ As melhorias do pacote de qualidade de mensagem (A1, A2, B, D, templates, mini-C
 sexta (02/10/2026). Nada abaixo foi publicado; os rascunhos ficam parados até haver motivo para
 publicar. Detalhes de cada rodada de testes: `docs/test-plan.md` (Round 24).
 
+## Atualização de 06/10/2026 (tarde): Fase 1 em rascunho (nada publicado)
+
+Plano completo em [`docs/plano-v1-final.md`](plano-v1-final.md). Rascunhos prontos e testados:
+
+- **Remendo do Lembrete:** rascunho `d48ce044`, feito sobre a publicada `051b4e6b` (não contém o B). Só
+  muda a query dos agendamentos de hoje: `ORDER BY` horário e exclusão de início em menos de 30 min.
+- **A2 completo:** rascunho `9c1084ff` do Agendamento (publicada continua `bc334c4a`): A2 mais aviso de
+  privacidade na primeira conversa, regra de pedido para apagar dados e texto de instabilidade sem
+  prometer uma pessoa.
+- Publicação prevista depois das 20h SP, com comando do dono: primeiro o Lembrete, depois o A2.
+- O B continua no histórico do Lembrete (`fff68d93`, `6c922351`) e será refeito pela arquitetura nova
+  (Fase 2); A1 `7a8816bc` segue como está.
+
 ## Atualização de 06/10/2026 (manhã): D e Notificação de Erros publicadas
 
 Com autorização expressa do dono, em horário comercial (~08:10 SP), depois de o Lembrete das 8h
