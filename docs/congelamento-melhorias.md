@@ -5,6 +5,20 @@ As melhorias do pacote de qualidade de mensagem (A1, A2, B, D, templates, mini-C
 sexta (02/10/2026). Nada abaixo foi publicado; os rascunhos ficam parados até haver motivo para
 publicar. Detalhes de cada rodada de testes: `docs/test-plan.md` (Round 24).
 
+## Atualização de 06/10/2026 (tarde): Fase 1 PUBLICADA
+
+Com autorização expressa do dono (horário comercial, ~09h SP; o bot ainda é só demonstração):
+
+- **Lembrete:** remendo `d48ce044` publicado (rollback: `051b4e6b`). Versão ativa conferida, agendadores 8h
+  e 22h e Error Workflow intactos. Primeira conferência real: disparo das 8h de amanhã.
+- **Agendamento:** A2 `b0ca5857` publicado (rollback: `bc334c4a`). Versão ativa conferida, 144 nodes,
+  `webhookId` do gatilho `15600388…` inalterado.
+- Exports sanitizados regenerados (telefone e phoneNumberId como placeholders).
+- Versões ativas agora: Agendamento `b0ca5857`, Lembrete `d48ce044`, Registrar Mensagem `38ec1e6c`,
+  Notificação de Erros `044473ce`, D `f5e9917a`. A1, B e C continuam fora.
+
+O bloco abaixo é o registro de quando os dois eram rascunhos.
+
 ## Atualização de 06/10/2026 (tarde): Fase 1 em rascunho (nada publicado)
 
 Plano completo em [`docs/plano-v1-final.md`](plano-v1-final.md). Rascunhos prontos e testados:
@@ -76,8 +90,8 @@ evento no Google Agenda e histórico em `mensagens`, e limpar dados e eventos de
 
 | Workflow | ID | Versão publicada |
 |---|---|---|
-| Agendamento via WhatsApp (Supabase) | `ny0fqlw8ojzmId7C` | `bc334c4a` |
-| Lembrete, Cancelamento e Remarcação (Supabase) | `0mPYXZesloutZbek` | `051b4e6b` |
+| Agendamento via WhatsApp (Supabase) | `ny0fqlw8ojzmId7C` | `b0ca5857` (06/10; anterior `bc334c4a`) |
+| Lembrete, Cancelamento e Remarcação (Supabase) | `0mPYXZesloutZbek` | `d48ce044` (06/10; anterior `051b4e6b`) |
 | Registrar Mensagem [v2 historico] | `KcPWQc7VJbj2e4sf` | `38ec1e6c` |
 | Notificação de Erros | `ZxJfBbFmiD5Hqp5o` | `044473ce` (06/10; anterior `be7b77da`) |
 

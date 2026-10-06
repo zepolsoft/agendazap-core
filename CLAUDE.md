@@ -53,6 +53,17 @@ profissionais (um Google Calendar por profissional).
 - Ver `docs/migracao-supabase.md` para o mapeamento completo node a node e uma decisão em aberto
   (nome do serviço vs. `servico_id`) que precisa de definição antes de ir pra produção.
 
+## Publicação de workflows
+
+- Só com comando explícito do dono, com `versionId` explícito, depois de conferir que não há execuções em
+  andamento nem conversa nos últimos 5 minutos, e sempre com plano de rollback (restaurar a versão
+  anterior). Depois: verificar versão ativa e `webhookId`, exportar JSON sanitizado, atualizar a docs e
+  commitar.
+- **Horário:** publicar só depois das 20h (horário de SP) passa a ser **obrigatório quando houver cliente
+  real em produção** (a partir do início do piloto). Até lá, publicar em horário comercial exige
+  autorização explícita do dono, como foi feito em 06/10/2026. Sempre conferir o relógio (`TZ=America/Sao_Paulo date`)
+  em vez de confiar na afirmação de que "já passou das 20h".
+
 ## Skills disponíveis
 
 - `n8n-workflow-builder` — como estruturar e criar/editar workflows via MCP neste projeto,

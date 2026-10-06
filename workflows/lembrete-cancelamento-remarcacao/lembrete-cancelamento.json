@@ -46,7 +46,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT\n  a.google_event_id AS event_id,\n  a.cliente_nome AS nome,\n  a.cliente_telefone AS telefone,\n  s.nome AS servico,\n  a.beneficiario,\n  a.status,\n  to_char(a.data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data\nFROM agendamentos a\nJOIN servicos s ON s.id = a.servico_id;",
+        "query": "SELECT\n  a.google_event_id AS event_id,\n  a.cliente_nome AS nome,\n  a.cliente_telefone AS telefone,\n  s.nome AS servico,\n  a.beneficiario,\n  a.status,\n  to_char(a.data_hora_inicio AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI:SS') || '-03:00' AS data\nFROM agendamentos a\nJOIN servicos s ON s.id = a.servico_id\nWHERE a.data_hora_inicio >= now() + interval '30 minutes'\nORDER BY a.data_hora_inicio, a.criado_em;",
         "options": {}
       },
       "id": "2ea5afa4-6833-472e-908b-76e7195c7339",

@@ -16,8 +16,9 @@ placeholders de `.env.example`.
 
 ## Estado de partida (06/10/2026)
 
-Publicado: Agendamento `bc334c4a`, Lembrete `051b4e6b`, Registrar Mensagem `38ec1e6c`, Notificação de
-Erros `044473ce`, D (Verificação de Saúde) `f5e9917a`.
+Publicado (antes da Fase 1): Agendamento `bc334c4a`, Lembrete `051b4e6b`, Registrar Mensagem `38ec1e6c`,
+Notificação de Erros `044473ce`, D (Verificação de Saúde) `f5e9917a`. **Após a Fase 1 (06/10):**
+Agendamento `b0ca5857` e Lembrete `d48ce044`.
 
 Pré-requisitos fora do n8n (não dependem de código, mas bloqueiam o que vem depois):
 
@@ -28,7 +29,7 @@ Pré-requisitos fora do n8n (não dependem de código, mas bloqueiam o que vem d
 
 ## Fase 1: rascunhos prontos, publicação em duas etapas
 
-### 1A. Remendo do Lembrete atual (rascunho `d48ce044`)
+### 1A. Remendo do Lembrete atual (`d48ce044`, PUBLICADO em 06/10/2026)
 
 - **Entregável:** só a query de "Buscar Agendamentos de Hoje (Planilha)" muda: `WHERE data_hora_inicio
   >= now() + interval '30 minutes'` e `ORDER BY data_hora_inicio, criado_em`. O restante é idêntico à
@@ -44,7 +45,7 @@ Pré-requisitos fora do n8n (não dependem de código, mas bloqueiam o que vem d
   na ordem dos horários, sem lembrete para horário passado.
 - **Rollback:** publicar de novo `051b4e6b`.
 
-### 1B. A2 completo (rascunho `b0ca5857`)
+### 1B. A2 completo (`b0ca5857`, PUBLICADO em 06/10/2026)
 
 - **Entregável (sobre o A2 `e9e414a3`):** aviso de privacidade em mensagem separada na primeira conversa
   do cliente (nodes "Cliente Novo?", "Enviar Aviso de Privacidade no WhatsApp", histórico e "Retomar
