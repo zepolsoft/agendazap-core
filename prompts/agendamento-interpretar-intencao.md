@@ -105,6 +105,10 @@ funcionamento e sugestão de horários livres. Nenhuma linha foi tocada nesta mi
   diz que apagou algo. A regra não está no `systemMessage`: é acrescentada ao `contexto_conversa` pelo node
   "Formatar Contexto da Conversa" (aparece na seção CONTEXTO DA CONVERSA do prompt). Ao reescrever o prompt,
   pode ser movida para dentro dele.
+- **REGRA — NOVO HORÁRIO NO MESMO DIA:** se o cliente pede um horário (`agendar`) num dia em que já tem
+  agendamento ativo, a IA cita o existente antes de propor ("Você já tem o corte das 13h hoje; esse seria um
+  segundo horário. Quer marcar mesmo assim?"), com `confirmado = false`. Também fica no node "Formatar
+  Contexto da Conversa", junto da regra de privacidade.
 - **Texto de falha da IA ao cliente:** "Estou com uma instabilidade aqui e não consegui te responder agora.
   Tenta de novo em alguns minutos, por favor 🙏" (não promete uma pessoa).
 

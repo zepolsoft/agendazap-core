@@ -11,7 +11,7 @@ Plano completo em [`docs/plano-v1-final.md`](plano-v1-final.md). Rascunhos pront
 
 - **Remendo do Lembrete:** rascunho `d48ce044`, feito sobre a publicada `051b4e6b` (não contém o B). Só
   muda a query dos agendamentos de hoje: `ORDER BY` horário e exclusão de início em menos de 30 min.
-- **A2 completo:** rascunho `9c1084ff` do Agendamento (publicada continua `bc334c4a`): A2 mais aviso de
+- **A2 completo:** rascunho `b0ca5857` do Agendamento (publicada continua `bc334c4a`): A2 mais aviso de
   privacidade na primeira conversa, regra de pedido para apagar dados e texto de instabilidade sem
   prometer uma pessoa.
 - Publicação prevista depois das 20h SP, com comando do dono: primeiro o Lembrete, depois o A2.

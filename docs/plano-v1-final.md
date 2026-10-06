@@ -44,7 +44,7 @@ Pré-requisitos fora do n8n (não dependem de código, mas bloqueiam o que vem d
   na ordem dos horários, sem lembrete para horário passado.
 - **Rollback:** publicar de novo `051b4e6b`.
 
-### 1B. A2 completo (rascunho `9c1084ff`)
+### 1B. A2 completo (rascunho `b0ca5857`)
 
 - **Entregável (sobre o A2 `e9e414a3`):** aviso de privacidade em mensagem separada na primeira conversa
   do cliente (nodes "Cliente Novo?", "Enviar Aviso de Privacidade no WhatsApp", histórico e "Retomar
@@ -63,9 +63,14 @@ Pré-requisitos fora do n8n (não dependem de código, mas bloqueiam o que vem d
   diz que não sabe; confirmação cria o evento e informa o profissional; pedido de apagar dados vira
   `encaminhar`; falha da IA (modelo inválido temporário, restaurado) envia o texto novo e escala à
   equipe. Dados e evento de teste apagados.
-- **Não reexecutado nesta rodada:** a regressão antiga "quem atende hoje" com agendamento no dia (foi
-  validada no ciclo A2 anterior) e o remarcar/cancelar (validados no fluxo publicado em 06/10).
-- **Critério de pronto:** publicada a `9c1084ff`; webhookId do gatilho `15600388…` inalterado; uma
+- **Regra da mesma data (completada em 06/10, versão `b0ca5857`):** na primeira rodada (`9c1084ff`) o pedido
+  de um segundo horário livre no mesmo dia respondeu "…também tá disponível" sem citar o agendamento
+  existente. Foi acrescentada a "REGRA — NOVO HORÁRIO NO MESMO DIA" ao contexto da conversa (node "Formatar
+  Contexto da Conversa", junto da regra de privacidade). Reteste com cliente fictício que já tinha corte hoje
+  às 13h e pediu barba hoje às 15h: "Você já tem o corte masculino hoje às 13h — esse seria um segundo
+  horário. Barba às 15h está livre, quer marcar mesmo assim?". "Quem atende hoje?" menciona o agendamento do
+  dia e lista os profissionais que atendem. Remarcar/cancelar foram validados no fluxo publicado em 06/10.
+- **Critério de pronto:** publicada a `b0ca5857`; webhookId do gatilho `15600388…` inalterado; uma
   mensagem real do dono é respondida; uma hora sem execuções com erro.
 - **Rollback:** publicar de novo `bc334c4a`.
 
@@ -77,7 +82,7 @@ conversa nos últimos 5 minutos; versões publicadas atuais conferidas (`bc334c4
 1. **Primeiro o remendo do Lembrete** (`d48ce044`): publicar com `versionId` explícito; conferir versão
    ativa e os dois agendadores (8h e 22h); nada para testar na hora (o gatilho é diário). Conferência
    no dia seguinte, depois das 8h. Exportar JSON sanitizado, atualizar docs, commitar.
-2. **Depois o A2** (`9c1084ff`): publicar com `versionId` explícito; verificar `webhookId` e a versão; o
+2. **Depois o A2** (`b0ca5857`): publicar com `versionId` explícito; verificar `webhookId` e a versão; o
    dono manda uma mensagem real; conferir a execução e a linha em `mensagens`. Exportar, docs, commit.
 3. Entre uma publicação e outra, esperar a verificação da anterior terminar. Se algo falhar, rollback
    imediato para a versão anterior e parar.
@@ -123,7 +128,17 @@ Ordem e dependências: **006 → E2 → E3 → E4**; E5 é independente e pode i
   evento criado e removido no Calendar e `mensagens` gravada; limpeza.
 - **Critério de pronto:** todos os cenários acima passam; nenhuma regressão no fluxo publicado
   comparado com `bc334c4a`/A2; uma hora sem erros em produção.
-- **Rollback:** publicar a versão anterior do Agendamento (A2 `9c1084ff`).
+- **Rollback:** publicar a versão anterior do Agendamento (A2 `b0ca5857`).
+
+**Anotação para esta etapa (pedida em 06/10):** quando o cliente já tem agendamento no dia e pede **outro
+serviço**, a IA deve oferecer **juntar os serviços no mesmo atendimento**, se houver tempo livre logo após o
+horário existente (somando as durações). Ex.: tem corte às 13h e pede barba: "Dá pra fazer a barba logo
+depois do corte, às 13h30 (corte + barba, 50 min no total). Quer juntar?". Pontos a decidir ao implementar:
+verificar na agenda a janela livre imediatamente após o fim do agendamento existente; ao aceitar,
+estender o evento do Calendar e o registro em `agendamentos` (ou criar um segundo agendamento colado, o
+que a exclusion constraint do banco já permite) e ajustar o serviço (existe o serviço "Corte + Barba");
+se não houver tempo livre, manter o fluxo de segundo horário atual. Fica na Etapa 2 (Agendamento), com
+regressão própria.
 
 ### Etapa 3: Lembrete novo (envio em paralelo às 8h, sem esperas)
 
