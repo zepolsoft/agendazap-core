@@ -6,7 +6,10 @@
       "name": "Receber Erro de Workflow",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "parameters": {}
     },
     {
@@ -14,11 +17,14 @@
       "name": "Formatar Resumo do Erro",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [540, 300],
+      "position": [
+        540,
+        300
+      ],
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const item = $input.first().json;\nconst execucao = item.execution || {};\nconst workflow = item.workflow || {};\nconst erro = execucao.error || {};\n\nconst nomeWorkflow = workflow.name || 'workflow desconhecido';\nconst nodeComErro = execucao.lastNodeExecuted || 'node desconhecido';\nconst mensagemErro = erro.message || 'erro sem mensagem';\nconst linkExecucao = execucao.id && workflow.id ? `https://n8n-n8n.wg1izd.easypanel.host/workflow/${workflow.id}/executions/${execucao.id}` : '';\n\nconst texto = `⚠️ Erro no workflow \"${nomeWorkflow}\"\\nNode: ${nodeComErro}\\nErro: ${mensagemErro}` + (linkExecucao ? `\\n${linkExecucao}` : '');\n\nreturn [{ json: { texto_erro: texto } }];"
+        "jsCode": "const item = $input.first().json;\nconst execucao = item.execution || {};\nconst workflow = item.workflow || {};\nconst erro = execucao.error || {};\n\nconst nomeWorkflow = workflow.name || 'workflow desconhecido';\nconst nodeComErro = execucao.lastNodeExecuted || 'node desconhecido';\nconst mensagemErro = erro.message || 'erro sem mensagem';\nconst linkExecucao = execucao.id && workflow.id ? `https://n8n-n8n.wg1izd.easypanel.host/workflow/${workflow.id}/executions/${execucao.id}` : '';\n\nconst texto = `⚠️ Erro no workflow \"${nomeWorkflow}\"\\nNode: ${nodeComErro}\\nErro: ${mensagemErro}` + (linkExecucao ? `\\n${linkExecucao}` : '');\n\nconst assunto = `⚠️ AgendaZap: erro em \"${nomeWorkflow}\"`;\n\nreturn [{ json: { texto_erro: texto, assunto: assunto } }];"
       }
     },
     {
@@ -26,20 +32,73 @@
       "name": "Notificar Erro no WhatsApp",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
-      "position": [840, 300],
+      "position": [
+        840,
+        300
+      ],
       "webhookId": "aac19eeb-74bc-4463-975e-4d6c9963ba81",
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
-        "recipientPhoneNumber": "5511975049937",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
+        "recipientPhoneNumber": "<RESPONSAVEL_PHONE>",
         "textBody": "={{ $json.texto_erro }}",
         "additionalFields": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "767ac2c7-ea71-48d3-b05b-924952b532d6",
+      "name": "Notificar Erro por E-mail",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        840,
+        500
+      ],
+      "webhookId": "SUBSTITUA_PELO_WEBHOOK_ID_DO_NODE",
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "resource": "email",
+        "operation": "send",
+        "fromEmail": "<EMAIL_REMETENTE>",
+        "toEmail": "<EMAIL_RESPONSAVEL>",
+        "subject": "={{ $json.assunto }}",
+        "emailFormat": "text",
+        "text": "={{ $json.texto_erro }}",
+        "options": {
+          "appendAttribution": false
+        }
       }
     }
   ],
   "connections": {
-    "Receber Erro de Workflow": { "main": [[{ "node": "Formatar Resumo do Erro", "type": "main", "index": 0 }]] },
-    "Formatar Resumo do Erro": { "main": [[{ "node": "Notificar Erro no WhatsApp", "type": "main", "index": 0 }]] }
+    "Receber Erro de Workflow": {
+      "main": [
+        [
+          {
+            "node": "Formatar Resumo do Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Resumo do Erro": {
+      "main": [
+        [
+          {
+            "node": "Notificar Erro no WhatsApp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notificar Erro por E-mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "settings": {
     "executionOrder": "v1",

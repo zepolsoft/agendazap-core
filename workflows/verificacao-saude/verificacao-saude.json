@@ -1,0 +1,551 @@
+{
+  "name": "Verificação de Saúde da IA e do WhatsApp",
+  "nodes": [
+    {
+      "id": "390439c1-c23d-4d2f-ab1a-e4ecf96e0333",
+      "name": "Agendar Verificação a Cada 15 Minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/15 8-19 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "0 20 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "25172a7b-b724-47c0-af6d-c5f2cbbcb844",
+      "name": "Fazer Chamada Mínima na IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        96
+      ],
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "{\"model\":\"claude-sonnet-5\",\"max_tokens\":1,\"messages\":[{\"role\":\"user\",\"content\":\"ok\"}]}",
+        "options": {
+          "timeout": 20000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "a6eef581-fe34-4bcd-8aa1-d7f49a1b97a3",
+      "name": "Classificar Resultado da IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        96
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const r = $input.first().json;\nconst codigo = Number(r.statusCode || 0);\nconst erro = (r.body && r.body.error) || {};\nconst msg = String(erro.message || r.message || (r.error && r.error.message) || r.error || '').slice(0, 160);\nlet tipo = null;\nif (codigo >= 200 && codigo < 300) tipo = null;\nelse if (/credit balance/i.test(msg)) tipo = 'credito';\nelse if (codigo === 401 || codigo === 403) tipo = 'autenticacao';\nelse if (codigo === 429) tipo = 'limite';\nelse if (codigo === 529 || codigo >= 500) tipo = 'indisponivel';\nelse if (!codigo) tipo = 'sem_resposta';\nelse tipo = 'outro';\nreturn [{ json: { servico: 'ia', ok: tipo === null, tipo: tipo, detalhe: tipo === null ? '' : ('HTTP ' + (codigo || '-') + (msg ? ': ' + msg : '')) } }];"
+      }
+    },
+    {
+      "id": "28c1dc66-14d2-4abe-92a7-249cde21286e",
+      "name": "Reunir Resultados",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        672,
+        192
+      ],
+      "parameters": {
+        "mode": "append"
+      }
+    },
+    {
+      "id": "bd083b3e-88b1-4934-863d-eafc041e3d1d",
+      "name": "Consultar Número no WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        288
+      ],
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "method": "GET",
+        "url": "https://graph.facebook.com/v26.0/<PHONE_NUMBER_ID>",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendQuery": true,
+        "specifyQuery": "keypair",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "verified_name"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 20000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "e6ef687c-bd8a-404e-b54d-ed802350dcec",
+      "name": "Classificar Resultado do WhatsApp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        288
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const r = $input.first().json;\nconst codigo = Number(r.statusCode || 0);\nconst erro = (r.body && r.body.error) || {};\nconst msg = String(erro.message || r.message || (r.error && r.error.message) || r.error || '').slice(0, 160);\nlet tipo = null;\nif (codigo >= 200 && codigo < 300) tipo = null;\nelse if (codigo === 401 || Number(erro.code) === 190) tipo = 'token';\nelse if (codigo === 429 || [4, 80007, 130429].includes(Number(erro.code))) tipo = 'limite';\nelse if (codigo >= 500) tipo = 'indisponivel';\nelse if (!codigo) tipo = 'sem_resposta';\nelse tipo = 'outro';\nreturn [{ json: { servico: 'whatsapp', ok: tipo === null, tipo: tipo, detalhe: tipo === null ? '' : ('HTTP ' + (codigo || '-') + (msg ? ': ' + msg : '')) } }];"
+      }
+    },
+    {
+      "id": "d9f945cf-54fa-4b2c-9228-d7ff6d30d8ff",
+      "name": "Listar Incidentes Abertos",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        192
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KA15MRniy5Rr8KZM"
+        },
+        "returnAll": true
+      }
+    },
+    {
+      "id": "2844134a-e534-4fd1-a73e-978b54467167",
+      "name": "Decidir Ações de Alerta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        192
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const COOLDOWN_MIN = 29; // cooldown de 30 min com 1 min de folga para a variação do agendador\nconst agora = new Date();\nconst abertos = $('Listar Incidentes Abertos').all().map(i => i.json).filter(r => r.servico);\nconst resultados = $('Reunir Resultados').all().map(i => i.json);\nconst link = 'https://n8n-n8n.wg1izd.easypanel.host/workflow/' + $workflow.id + '/executions/' + $execution.id;\nconst rotulo = { ia: 'IA (Anthropic)', whatsapp: 'WhatsApp (token/número)' };\nconst descricao = {\n  credito: 'sem crédito na conta',\n  autenticacao: 'chave recusada',\n  limite: 'limite de uso',\n  indisponivel: 'serviço fora do ar',\n  sem_resposta: 'sem resposta (timeout)',\n  token: 'token inválido ou expirado',\n  outro: 'erro inesperado'\n};\nconst hora = d => d.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });\nconst duracao = min => min < 60 ? min + ' min' : Math.floor(min / 60) + 'h' + String(min % 60).padStart(2, '0');\nconst saida = [];\n\nfor (const r of resultados) {\n  const doServico = abertos.filter(a => a.servico === r.servico);\n  if (r.ok) {\n    if (!doServico.length) continue;\n    const total = doServico.reduce((s, a) => s + Number(a.falhas || 0), 0);\n    const primeira = new Date(Math.min(...doServico.map(a => new Date(a.primeira_falha_em).getTime())));\n    const min = Math.max(1, Math.round((agora - primeira) / 60000));\n    const texto = '✅ AgendaZap: ' + rotulo[r.servico] + ' voltou\\nFicou com problema por ' + duracao(min) + ' (desde ' + hora(primeira) + ')\\nFalhas no período: ' + total + '\\nExecução: ' + link;\n    saida.push({ json: { acao: 'fechar', notificar: true, servico: r.servico, tipo: '', falhas: total, texto: texto, assunto: '✅ AgendaZap: ' + rotulo[r.servico] + ' voltou' } });\n    continue;\n  }\n  const linha = doServico.find(a => a.tipo === r.tipo);\n  const falhas = (linha ? Number(linha.falhas || 0) : 0) + 1;\n  const primeira = linha ? new Date(linha.primeira_falha_em) : agora;\n  const ultimoAlerta = linha ? new Date(linha.ultimo_alerta_em) : null;\n  const notificar = !linha || (agora - ultimoAlerta) / 60000 >= COOLDOWN_MIN;\n  const texto = '🚨 AgendaZap: ' + rotulo[r.servico] + ' com problema (' + descricao[r.tipo] + ')\\nDesde: ' + hora(primeira) + '\\nFalhas seguidas: ' + falhas + '\\nDetalhe: ' + r.detalhe + '\\nExecução: ' + link;\n  saida.push({ json: {\n    acao: 'gravar', notificar: notificar, servico: r.servico, tipo: r.tipo, falhas: falhas,\n    primeira_falha_em: primeira.toISOString(),\n    ultimo_alerta_em: (notificar ? agora : ultimoAlerta).toISOString(),\n    texto: texto, assunto: '🚨 AgendaZap: ' + rotulo[r.servico] + ' com problema'\n  } });\n}\nreturn saida;"
+      }
+    },
+    {
+      "id": "bcbe18b1-952c-44a6-8e20-5f5aa730fe00",
+      "name": "Incidente Terminou?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        96
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.acao }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "fechar"
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "60867d99-5892-4f12-9d47-4941f1a23e40",
+      "name": "Fechar Incidente",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KA15MRniy5Rr8KZM"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "servico",
+              "condition": "eq",
+              "keyValue": "={{ $json.servico }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "76f88d0f-fc69-49e9-a8a7-2055e3c9d42a",
+      "name": "Gravar Incidente",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        192
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KA15MRniy5Rr8KZM"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "servico",
+              "condition": "eq",
+              "keyValue": "={{ $json.servico }}"
+            },
+            {
+              "keyName": "tipo",
+              "condition": "eq",
+              "keyValue": "={{ $json.tipo }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "servico": "={{ $json.servico }}",
+            "tipo": "={{ $json.tipo }}",
+            "falhas": "={{ $json.falhas }}",
+            "primeira_falha_em": "={{ $json.primeira_falha_em }}",
+            "ultimo_alerta_em": "={{ $json.ultimo_alerta_em }}"
+          },
+          "schema": [
+            {
+              "id": "servico",
+              "displayName": "servico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "falhas",
+              "displayName": "falhas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "primeira_falha_em",
+              "displayName": "primeira_falha_em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "ultimo_alerta_em",
+              "displayName": "ultimo_alerta_em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "bc5d0ddd-03aa-43e2-8bab-72afe34e5fc8",
+      "name": "Precisa Avisar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        384
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.notificar }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "2d904d3f-3645-4021-a9e7-61fc87162b7d",
+      "name": "Avisar Responsável no WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        384
+      ],
+      "onError": "continueRegularOutput",
+      "webhookId": "SUBSTITUA_PELO_WEBHOOK_ID_DO_NODE",
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
+        "recipientPhoneNumber": "<RESPONSAVEL_PHONE>",
+        "textBody": "={{ $json.texto }}",
+        "additionalFields": {}
+      }
+    },
+    {
+      "id": "368d9c09-ba6d-40b0-9bfd-e70bda1e6d3f",
+      "name": "Avisar Responsável por E-mail",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1568,
+        576
+      ],
+      "onError": "continueRegularOutput",
+      "webhookId": "SUBSTITUA_PELO_WEBHOOK_ID_DO_NODE",
+      "parameters": {
+        "resource": "email",
+        "operation": "send",
+        "fromEmail": "<EMAIL_REMETENTE>",
+        "toEmail": "<EMAIL_RESPONSAVEL>",
+        "subject": "={{ $json.assunto }}",
+        "emailFormat": "text",
+        "text": "={{ $json.texto }}",
+        "options": {
+          "appendAttribution": false
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Agendar Verificação a Cada 15 Minutos": {
+      "main": [
+        [
+          {
+            "node": "Fazer Chamada Mínima na IA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Consultar Número no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fazer Chamada Mínima na IA": {
+      "main": [
+        [
+          {
+            "node": "Classificar Resultado da IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classificar Resultado da IA": {
+      "main": [
+        [
+          {
+            "node": "Reunir Resultados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Número no WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Classificar Resultado do WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classificar Resultado do WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Reunir Resultados",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Reunir Resultados": {
+      "main": [
+        [
+          {
+            "node": "Listar Incidentes Abertos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Listar Incidentes Abertos": {
+      "main": [
+        [
+          {
+            "node": "Decidir Ações de Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decidir Ações de Alerta": {
+      "main": [
+        [
+          {
+            "node": "Incidente Terminou?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Precisa Avisar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Incidente Terminou?": {
+      "main": [
+        [
+          {
+            "node": "Fechar Incidente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gravar Incidente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Precisa Avisar?": {
+      "main": [
+        [
+          {
+            "node": "Avisar Responsável no WhatsApp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Avisar Responsável por E-mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "errorWorkflow": "<ID_DO_WORKFLOW_NOTIFICACAO_DE_ERROS>",
+    "availableInMCP": true
+  }
+}

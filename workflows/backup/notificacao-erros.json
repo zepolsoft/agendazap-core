@@ -38,7 +38,7 @@
       ],
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
         "textBody": "={{ $json.texto_erro }}",
         "additionalFields": {}

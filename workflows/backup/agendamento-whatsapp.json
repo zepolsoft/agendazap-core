@@ -432,7 +432,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://graph.facebook.com/v21.0/1367004446487242/messages",
+        "url": "https://graph.facebook.com/v21.0/<PHONE_NUMBER_ID>/messages",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "whatsAppApi",
         "sendBody": true,
@@ -705,7 +705,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "=Opa, me enrolei aqui pra entender sua última mensagem 😅 Já chamei alguém da equipe pra confirmar isso direitinho com você — em instantes te respondem por aqui.",
         "additionalFields": {}
@@ -1053,7 +1053,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "Isso eu não consigo responder por aqui 😅 Mas posso te ajudar com a Barbearia ZAP: quer marcar um horário? É só me dizer o serviço e o dia.",
         "additionalFields": {}
@@ -1077,7 +1077,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
@@ -1133,7 +1133,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "Já repassei sua mensagem pro responsável da Barbearia ZAP — aguarde o contato dele, por favor. 🙂",
         "additionalFields": {}
@@ -1212,7 +1212,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
         "textBody": "=📩 Dúvida de cliente sobre o negócio (não é erro do sistema)\n\nCliente: {{ $('Normalizar Dados da Mensagem').item.json.nome }} ({{ $('Normalizar Dados da Mensagem').item.json.telefone }})\nMensagem: \"{{ $('Normalizar Dados da Mensagem').item.json.mensagem }}\"\n\nA IA não tem essa informação e avisou o cliente que você vai entrar em contato. Responder: https://wa.me/{{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "additionalFields": {}
@@ -1237,7 +1237,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "Pra isso vou te colocar direto com a nossa equipe! Já passei sua mensagem pro responsável da Barbearia ZAP — ele te chama por aqui em breve. 😊",
         "additionalFields": {}
@@ -1274,7 +1274,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $json.mensagem_consulta }}",
         "additionalFields": {}
@@ -1371,7 +1371,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ (nome ? `${nome}, esse` : `Esse`) + ` horário já passou ou está fora do nosso expediente (funcionamos de segunda a sábado, das 9h às 18h). Pode me dizer outro dia ou horário?`, `Esse horário não rola` + (nome ? `, ${nome}` : '') + ` — nosso expediente é de segunda a sábado, 9h às 18h. Qual outro horário funciona pra você?`, `Ops, estamos fechados nesse horário (atendemos seg-sáb, 9h às 18h)` + (nome ? `, ${nome}` : '') + `. Me diz outro dia ou horário que já verifico!` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
         "additionalFields": {}
@@ -1460,7 +1460,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ (nome ? `Poxa, ${nome}, esse horário já ficou ocupado! ` : `Esse horário já ficou ocupado! `) + `Consegue me dizer outro dia ou horário que funcione pra você?`, `Ih, alguém acabou de pegar esse horário` + (nome ? `, ${nome}` : '') + `! Tem outro dia ou horário em mente?`, (nome ? `${nome}, esse` : `Esse`) + ` horário não está mais livre. Qual outro você prefere? Já verifico a disponibilidade certinho.` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
         "additionalFields": {}
@@ -1513,7 +1513,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
@@ -1623,7 +1623,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
@@ -1799,7 +1799,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $json.mensagem_escolha }}",
         "additionalFields": {}
@@ -1980,7 +1980,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $('Interpretar Intenção do Cliente').item.json.output.confirmacao_texto }}",
         "additionalFields": {}
@@ -2149,7 +2149,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const opcoes = [ `Não encontrei nenhum agendamento ativo pra esse número` + (nome ? `, ${nome}` : '') + `. Quer marcar um horário novo?`, (nome ? `${nome}, não` : `Não`) + ` achei nenhum horário marcado aqui pra você. Vamos agendar um?`, `Por aqui não consta nenhum agendamento seu no momento` + (nome ? `, ${nome}` : '') + `. Posso te ajudar a marcar um horário?` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
         "additionalFields": {}
@@ -2197,7 +2197,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const zona = 'America/Sao_Paulo'; const dt = DateTime.fromISO(String(r.data), { zone: zona }); const dif = dt.startOf('day').diff($now.setZone(zona).startOf('day'), 'days').days; const hora = dt.toFormat(dt.minute ? \"H'h'mm\" : \"H'h'\"); const quando = dif === 0 ? `de hoje, às ${hora}` : dif === 1 ? `de amanhã, às ${hora}` : `de ${dt.setLocale('pt-BR').toFormat(\"cccc, 'dia' d 'de' LLLL\")}, às ${hora}`; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; const b = String(r.beneficiario ?? '').trim(); const para = b && b.toLowerCase() !== 'eu mesmo' ? ` (para ${b})` : ''; const opcoes = [ `Pronto${nome ? `, ${nome}` : ''}! Cancelei o ${r.servico}${para} ${quando}. Quando quiser remarcar, é só chamar.`, `Tudo certo, o ${r.servico}${para} ${quando} foi cancelado. Se quiser marcar de novo, é só me chamar!`, `Cancelado${nome ? `, ${nome}` : ''}: ${r.servico}${para} ${quando}. Fico à disposição pra quando quiser voltar!` ]; return opcoes[Math.floor(Math.random() * opcoes.length)]; })() }}",
         "additionalFields": {}
@@ -2375,7 +2375,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $json.mensagem_cliente }}",
         "additionalFields": {}
@@ -2542,7 +2542,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ $json.mensagem_cliente }}",
         "additionalFields": {}
@@ -2621,7 +2621,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Cancelar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir o cancelamento do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar tudo certinho.`; })() }}",
         "additionalFields": {}
@@ -2693,7 +2693,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir a remarcação do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
         "additionalFields": {}
@@ -2813,7 +2813,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const servico = $('Interpretar Intenção do Cliente').item.json.output.servico; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir o agendamento do seu ${servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
         "additionalFields": {}
@@ -2927,7 +2927,7 @@
     {
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "={{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "textBody": "={{ (() => { const r = $('Identificar Agendamento Escolhido (Remarcar)').item.json; const nome = $('Normalizar Dados da Mensagem').item.json.nome || ''; return `Opa${nome ? `, ${nome}` : ''}, tive um probleminha técnico aqui pra concluir a remarcação do seu ${r.servico} 😕 Nossa equipe já foi avisada e vai falar com você em instantes pra deixar seu horário certinho.`; })() }}",
         "additionalFields": {}
@@ -3015,7 +3015,7 @@
       ],
       "parameters": {
         "operation": "send",
-        "phoneNumberId": "1367004446487242",
+        "phoneNumberId": "<PHONE_NUMBER_ID>",
         "recipientPhoneNumber": "SUBSTITUA_PELO_TELEFONE_DO_RESPONSAVEL",
         "textBody": "=📩 Nova mensagem do mesmo cliente (já tinha sido encaminhado há pouco; não é erro do sistema)\n\nCliente: {{ $('Normalizar Dados da Mensagem').item.json.nome }} ({{ $('Normalizar Dados da Mensagem').item.json.telefone }})\nMensagem: \"{{ $('Normalizar Dados da Mensagem').item.json.mensagem }}\"\n\nResponder: https://wa.me/{{ $('Normalizar Dados da Mensagem').item.json.telefone }}",
         "additionalFields": {}

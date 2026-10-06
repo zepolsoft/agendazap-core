@@ -175,10 +175,10 @@ Decisões tomadas antes de começar a rodar o Grupo B:
      - 23: erro provocado apontando um node Postgres **só da cópia** para uma tabela inexistente;
        restaurar depois.
    - 32 (lembrete real): Lembrete em modo manual, com uma linha real no banco para um número de
-     teste que **não é cliente cadastrado na produção**. Confirmado: `5511975049937` (o mesmo
+     teste que **não é cliente cadastrado na produção**. Confirmado: `<RESPONSAVEL_PHONE>` (o mesmo
      número que recebe as notificações de erro/equipe, confirmado pelo responsável como próprio,
      não cliente).
-3. **Notificações de erro (23 e 29):** vão para o número real de produção (`5511975049937`), sem
+3. **Notificações de erro (23 e 29):** vão para o número real de produção (`<RESPONSAVEL_PHONE>`), sem
    criar cópia do "Notificação de Erros". Quem recebe esse WhatsApp deve ser avisado **antes**
    que vão chegar 2 notificações de erro propositais nesse dia, pra não causar susto — o nome do
    workflow (sufixo "...Supabase") já ajuda a diferenciar.
@@ -194,7 +194,7 @@ Decisões tomadas antes de começar a rodar o Grupo B:
 
 ### Pendências antes de executar
 
-- ~~Número de teste do cenário 32~~ **Confirmado**: `5511975049937` (01/10/2026).
+- ~~Número de teste do cenário 32~~ **Confirmado**: `<RESPONSAVEL_PHONE>` (01/10/2026).
 - ~~Troca do trigger do Agendamento~~ **Feita na rodada 13** (01/10/2026): Webhook temporário +
   Set "Extrair Mensagem do Webhook". O workflow continua desativado; o checklist para reverter
   está em `docs/migracao-supabase.md`.
@@ -614,7 +614,7 @@ alterado, nenhum workflow foi ativado.
 - Os dois workflows novos têm `settings.errorWorkflow = ZxJfBbFmiD5Hqp5o`.
 - "Notificação de Erros" (`ZxJfBbFmiD5Hqp5o`) existe, está ativo e publicado: `activeVersionId`
   = `versionId` = `be7b77da-…`, versão única, de 23/09. Tem 3 nodes: Error Trigger →
-  Code "Formatar Resumo do Erro" → WhatsApp para 5511975049937.
+  Code "Formatar Resumo do Erro" → WhatsApp para <RESPONSAVEL_PHONE>.
 - **Formato que ele espera:** o payload padrão do Error Trigger do n8n. O Code lê só
   `workflow.name`, `workflow.id`, `execution.id`, `execution.lastNodeExecuted` e
   `execution.error.message`, e tem valor padrão para cada um que faltar ("workflow
@@ -1116,7 +1116,7 @@ AI Agents, nodes de Code e todos os outros caminhos ficaram iguais.
     existe, o mesmo molde do If do Agendamento).
     - Sim: "Enviar Confirmação de Cancelamento no WhatsApp" → loop, sem mudança.
     - Não: `Preparar Aviso de Erro no Cancelamento` → `Avisar Cliente Sobre Erro no
-      Cancelamento` → `Notificar Equipe Sobre Erro no Cancelamento` (5511975049937, o número das
+      Cancelamento` → `Notificar Equipe Sobre Erro no Cancelamento` (<RESPONSAVEL_PHONE>, o número das
       outras notificações de erro) → volta para "Processar Cada Agendamento".
   - Os dois WhatsApp novos têm `onError: continueRegularOutput`, como os outros WhatsApp desse
     workflow.
@@ -1449,7 +1449,7 @@ execução em série reproduz o caso fielmente.
 
 - **23 e 29 (Error Workflow, Agendamento publicado):** **não bloqueados**. Nenhum dos dois passa
   pelo Lembrete nem depende do lock entre duas mensagens.
-- **32 (envio real do Lembrete para `5511975049937`):** **não bloqueado**. O cenário valida o
+- **32 (envio real do Lembrete para `<RESPONSAVEL_PHONE>`):** **não bloqueado**. O cenário valida o
   envio do lembrete (`messages[0].id`). Há dois cuidados, ambos válidos também para o modo manual:
   - quem responder deve esperar mais de 10 s desde a última mensagem enviada ao Agendamento
     (R14-2);
@@ -1677,7 +1677,7 @@ Limpezas: exec. 1821 (…034) e 1824 (…035, incluindo o evento órfão).
   `mTeBVPh18sAB6Y0q`.
 
 **Próximo passo.** Grupo B fica só com 23, 29 e 32: 23 e 29 com publicação curta e monitorada do
-Agendamento; 32 com o Lembrete manual para o número real `5511975049937`.
+Agendamento; 32 com o Lembrete manual para o número real `<RESPONSAVEL_PHONE>`.
 
 ### Rodada 17 — R16-1, cenários 29, 23 e 32 e reversão do trigger (01/10/2026)
 
@@ -1738,8 +1738,8 @@ Protocolo do G1:
 | Passo | Resultado | Evidência |
 |---|---|---|
 | Execução de produção (`mode: webhook`) | IA rodou 2× (retry) → "Model output doesn't fit required format" → **"Avisar Cliente Sobre Falha da IA" enviado de verdade** ao …029 (`wamid.HBgNNTUxMTA5MTAwMDAyOR…`; a Meta depois devolveu `failed / 131026 undeliverable`, porque o número não existe) → **"Escalar Falha da IA para a Equipe"** → execução `error` | exec. **1829** |
-| Error Workflow "Notificação de Erros" | Disparou sozinho (`mode: error`) e **enviou a notificação para 5511975049937**: "⚠️ Erro no workflow "Agendamento via WhatsApp (Supabase)" / Node: Escalar Falha da IA para a Equipe / Erro: A IA não conseguiu interpretar a mensagem de Vinteenove Teste (5511091000029) … Motivo: Model output doesn't fit required format / {link da execução}" → `wamid.HBgNNTUxMTk3NTA0OTkzNx…` | exec. **1830** |
-| Entrega | Recibo **`read`** dessa mensagem em 5511975049937 às 16:10:03Z, recebido pelo Agendamento de produção como `statuses` e descartado pelo filtro | exec. 1834 (produção) |
+| Error Workflow "Notificação de Erros" | Disparou sozinho (`mode: error`) e **enviou a notificação para <RESPONSAVEL_PHONE>**: "⚠️ Erro no workflow "Agendamento via WhatsApp (Supabase)" / Node: Escalar Falha da IA para a Equipe / Erro: A IA não conseguiu interpretar a mensagem de Vinteenove Teste (5511091000029) … Motivo: Model output doesn't fit required format / {link da execução}" → `wamid.HBgNNTUxMTk3NTA0OTkzNx…` | exec. **1830** |
+| Entrega | Recibo **`read`** dessa mensagem em <RESPONSAVEL_PHONE> às 16:10:03Z, recebido pelo Agendamento de produção como `statuses` e descartado pelo filtro | exec. 1834 (produção) |
 
 #### 3. Cenário 23 — Error Workflow por erro real de banco — ✅ (e R16-1 em produção)
 
@@ -1753,7 +1753,7 @@ Protocolo do G1:
 |---|---|---|
 | "Oi! Quero marcar um corte masculino amanhã às 9h" | IA `agendar`, 02/10 09:00 → "Propor Horário" enviado de verdade ao …023 | exec. 1835 |
 | "Sim, pode marcar" | Evento real `ougntnp9…` criado → `INSERT` falhou: `relation "agendamentos_inexistente_r17" does not exist` → **"Desfazer Evento (Erro no Banco)" `success`** → **"Avisar Cliente Sobre Erro no Agendamento" enviado de verdade** ao …023 (`wamid.HBgNNTUxMTA5MTAwMDAyMx…`) → **Stop and Error** → execução `error` | exec. **1837** |
-| Error Workflow | Notificação enviada para **5511975049937**: "Node: Escalar Erro ao Gravar Agendamento no Banco / Erro: Falha ao gravar no banco o agendamento de Vintetres Teste (5511091000023): relation "agendamentos_inexistente_r17" does not exist — Failed query: …" (`wamid.HBgNNTUxMTk3NTA0OTkzNx…`) | exec. **1838** |
+| Error Workflow | Notificação enviada para **<RESPONSAVEL_PHONE>**: "Node: Escalar Erro ao Gravar Agendamento no Banco / Erro: Falha ao gravar no banco o agendamento de Vintetres Teste (5511091000023): relation "agendamentos_inexistente_r17" does not exist — Failed query: …" (`wamid.HBgNNTUxMTk3NTA0OTkzNx…`) | exec. **1838** |
 | Calendar | Evento desfeito: nenhum evento de teste depois | exec. 1843 |
 
 **Janela publicada.** Despublicado às **16:11:44Z**, logo depois do 23. A janela foi de cerca de
@@ -1771,13 +1771,13 @@ conexões e settings **byte a byte idênticos**. O parser voltou a ter só `json
 de digitação. Ao …023: proposta, aviso de erro e indicador. Todos falham na entrega, porque o
 número não existe. Esses envios estavam previstos, porque 23 e 29 rodam em produção sem pin.
 
-#### 4. Cenário 32 — Lembrete real para 5511975049937 — ✅
+#### 4. Cenário 32 — Lembrete real para <RESPONSAVEL_PHONE> — ✅
 
 Protocolo:
 - Snapshot do Lembrete: a versão `e259b886…`.
 - Desativei **24** nodes de envio: todos os `whatsApp` e o indicador de digitação, **exceto
   "Enviar Lembrete no WhatsApp"**. Assim só o lembrete sai de verdade, e nada depois do Wait.
-- Linha real no banco para hoje às 18h, `5511975049937`, `evt-r17-cenario32` (exec. 1844).
+- Linha real no banco para hoje às 18h, `<RESPONSAVEL_PHONE>`, `evt-r17-cenario32` (exec. 1844).
 
 | Passo | Resultado | Evidência |
 |---|---|---|

@@ -5,6 +5,27 @@ As melhorias do pacote de qualidade de mensagem (A1, A2, B, D, templates, mini-C
 sexta (02/10/2026). Nada abaixo foi publicado; os rascunhos ficam parados até haver motivo para
 publicar. Detalhes de cada rodada de testes: `docs/test-plan.md` (Round 24).
 
+## Atualização de 06/10/2026 (manhã): D e Notificação de Erros publicadas
+
+Com autorização expressa do dono, em horário comercial (~08:10 SP), depois de o Lembrete das 8h
+(execução 2492) terminar com sucesso e sem execuções em andamento:
+
+- **D "Verificação de Saúde da IA e do WhatsApp"** (`U3P466VzvV30hWzk`): publicada, versão `f5e9917a`.
+  Execução real: IA 200, WhatsApp 200, nenhum alerta. Falha simulada (400 de crédito, com envios reais):
+  incidente criado, WhatsApp aceito pela Meta e e-mail enviado; recuperação simulada: aviso "voltou" nos
+  dois canais e incidente apagado (Data Table vazia).
+- **Notificação de Erros** (`ZxJfBbFmiD5Hqp5o`): publicada, versão `044473ce` (e-mail em paralelo ao
+  WhatsApp, os dois com `continueRegularOutput`). Erro controlado em workflow temporário (arquivado):
+  chegaram WhatsApp e e-mail. A versão anterior `be7b77da` é o ponto de rollback.
+- **Rollback:** D: despublicar (workflow novo, não afeta os demais). Notificação de Erros: restaurar
+  `be7b77da` e publicá-la de novo.
+- Exports sanitizados em `workflows/verificacao-saude/` e `workflows/notificacao-erros/`. Também
+  foram mascarados telefone do responsável e phoneNumberId em todos os exports atuais (inclusive
+  `workflows/backup/`) e em `docs/test-plan.md`. **O histórico do git continua contendo os valores
+  antigos** (não foi reescrito; decisão do dono).
+- A1, A2, B e C continuam congelados. Na tabela abaixo, a linha da D e a versão da Notificação de Erros
+  estão atualizadas.
+
 ## Atualização de 06/10/2026: saldo regularizado, demonstração validada
 
 A chamada mínima de IA respondeu 200 às 10:27Z (organização `2adb30ac…`). O fluxo **publicado**
@@ -38,26 +59,26 @@ Depois de resolver: uma chamada mínima de IA; se responder, validar o fluxo **p
 números falsos (conversa nova, agendar, remarcar, cancelar, pergunta fora do escopo), conferindo
 evento no Google Agenda e histórico em `mensagens`, e limpar dados e eventos de teste.
 
-## Publicado em produção (intocado)
+## Publicado em produção
 
 | Workflow | ID | Versão publicada |
 |---|---|---|
 | Agendamento via WhatsApp (Supabase) | `ny0fqlw8ojzmId7C` | `bc334c4a` |
 | Lembrete, Cancelamento e Remarcação (Supabase) | `0mPYXZesloutZbek` | `051b4e6b` |
 | Registrar Mensagem [v2 historico] | `KcPWQc7VJbj2e4sf` | `38ec1e6c` |
-| Notificação de Erros | `ZxJfBbFmiD5Hqp5o` | `be7b77da` |
+| Notificação de Erros | `ZxJfBbFmiD5Hqp5o` | `044473ce` (06/10; anterior `be7b77da`) |
 
-Verificado em 05/10/2026: versões publicadas idênticas às acima e webhookId do gatilho do
+Verificado em 05/10/2026 (Agendamento, Lembrete e Registrar Mensagem): versões publicadas idênticas às acima e webhookId do gatilho do
 Agendamento inalterado.
 
-## Rascunhos (não publicados)
+## Rascunhos (A1, A2, B e C não publicados; D já publicada)
 
 | Ciclo | Onde | Versão | Estado | Falta para publicar |
 |---|---|---|---|---|
 | **A1** | Agendamento | `7a8816bc` | Pronto e testado com números falsos (cancelamento, consulta, vínculo mensagem→agendamento, template `aviso_equipe_v1` só como texto). Versão intermediária do A2. | Publicação, só depois das 20h SP e com comando explícito. |
 | **A2** | Agendamento | `e9e414a3` (inclui A1) | Prompt (estilo, honestidade, profissional, saudação, mesma data), contexto da conversa e textos fixos prontos. Parte da regressão passou. | Regressão curta de 5 cenários (pergunta mista, "quem atende hoje" com agendamento no dia, 2ª mensagem sem saudação, "você é uma pessoa?", confirmação) — **exige a API**. Texto de instabilidade ainda não inserido (ver abaixo). |
 | **B** | Lembrete | `6c922351` (conteúdo = `fff68d93`) | Prompts, textos, cancelamento com profissional e aviso de timeout só com cliente ativo nas últimas 24h prontos. Testes sem IA passaram. | 3 testes pós-Wait (confirmo, remarcar, cancelar) — **exige a API**. Rascunho verificado: 110 nodes, nenhum desabilitado. |
-| **D** | Workflow novo `U3P466VzvV30hWzk` (inativo) + Data Table `saude_ia_incidentes` | — | Verificação a cada 15 min (8h–20h), chamada mínima na Anthropic + GET do número no WhatsApp, incidente por serviço/tipo com cooldown de 30 min, aviso de "voltou". Testado com respostas simuladas; GET real da Graph API validado. | Credencial **"SMTP account"** (e-mail de backup) e os nodes de e-mail; exportar o JSON sanitizado para `workflows/`; publicar **só com a API funcionando** (senão alerta a cada falha). |
+| **D** | Workflow `U3P466VzvV30hWzk` + Data Table `saude_ia_incidentes` | `f5e9917a` | **PUBLICADA em 06/10/2026** (ver atualização acima). WhatsApp e e-mail em paralelo. | Nada; o gatilho roda a cada 15 min, 8h–20h. |
 | **C** | Agendamento e Lembrete | — | Não iniciado. | Aprovação da Meta dos templates `lembrete_agendamento_v1` e `aviso_equipe_v1` (submissão é do dono). |
 
 Ajuste aprovado e ainda não aplicado: novo texto de falha da IA ao cliente ("Estou com uma
@@ -67,15 +88,15 @@ Falha da IA" + cópia do histórico).
 
 ## Regras de publicação (valem para qualquer ciclo)
 
-Só depois das 20h SP; só com comando explícito do dono ("publicar …") e `versionId` explícito;
+Por padrão só depois das 20h SP (exceção: o dono pode autorizar expressamente antes); só com comando explícito do dono ("publicar …") e `versionId` explícito;
 antes, conferir que não há execuções em andamento nem conversas nos últimos 5 minutos; depois,
 verificar o webhookId do gatilho e as versões, exportar os JSONs sanitizados, atualizar a docs e
 commitar. Manter o rollback (restaurar a versão publicada anterior).
 
 ## Ordem recomendada quando surgir o primeiro cliente
 
-1. Resolver o saldo da API e rodar a validação do fluxo publicado (acima).
-2. **D** (com a credencial SMTP): a primeira coisa que um cliente real precisa é saber, em minutos, se
+1. Saldo da API resolvido e fluxo publicado validado em 06/10/2026 (acima).
+2. **D** (já publicada em 06/10/2026): a primeira coisa que um cliente real precisa é saber, em minutos, se
    a IA ou o token do WhatsApp caíram.
 3. **A1** e, depois de validado pelo dono, **A2** (regressão curta antes), já com o texto de instabilidade.
 4. **B** (3 testes pós-Wait antes), com o texto de instabilidade.
@@ -83,7 +104,8 @@ commitar. Manter o rollback (restaurar a versão publicada anterior).
 
 ## Pendências de housekeeping
 
-- Sanitizar `workflows/notificacao-erros/notificacao-erros.json` (ainda tem telefone do responsável e
-  phoneNumberId reais) na próxima exportação. O histórico público do git já contém esses valores de
-  exports antigos.
+- Exports sanitizados (feito em 06/10/2026). Para importar em outra instância, trocar os placeholders
+  `<PHONE_NUMBER_ID>`, `<RESPONSAVEL_PHONE>`, `<EMAIL_REMETENTE>` e `<EMAIL_RESPONSAVEL>`.
+- O histórico público do git ainda contém o telefone do responsável e o phoneNumberId de exports antigos.
+  Só uma reescrita de histórico (`git filter-repo` + force-push) remove isso; não feita.
 - Fazer `git push origin main` (o dono; sem credenciais no shell do Claude).
